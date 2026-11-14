@@ -129,7 +129,7 @@ jobs:
       - name: Reject tracked environment and credential files
         shell: bash
         run: |
-          tracked="$(git ls-files | grep -E '(^|/)\.env($|\.local$|\.production$)|(^|/)(google-services\.json|credentials\.json|.*\.(pem|key|p12))$' || true)"
+          tracked="$(git ls-files | grep -E '(^|/)\.env($|\.local$|\.production$)|(^|/)(google-services\.json|GoogleService-Info\.plist|credentials\.json|razorpaykeys\.txt|.*\.(pem|key|p12))$' || true)"
           if [ -n "$tracked" ]; then
             echo "Tracked secret-like files found:"
             echo "$tracked"
