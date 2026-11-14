@@ -14,6 +14,20 @@ const publicRoutes = [
   ...['first-consultation', 'coins-and-payment-pending', 'booking-cancellation', 'joining-audio-video', 'chat-reconnect', 'account-access', 'refunds-and-complaints'].map(slug => '/help/' + slug),
 ];
 
+const requiredViewports = [
+  { width: 320, height: 568 },
+  { width: 360, height: 800 },
+  { width: 375, height: 812 },
+  { width: 390, height: 844 },
+  { width: 414, height: 896 },
+  { width: 768, height: 1024 },
+  { width: 1024, height: 768 },
+  { width: 1280, height: 720 },
+  { width: 1366, height: 768 },
+  { width: 1440, height: 900 },
+  { width: 1920, height: 1080 },
+];
+
 test.describe('Public route reflow', () => {
   for (const width of [390, 1440]) {
     for (const route of publicRoutes) {
@@ -35,10 +49,10 @@ test.describe('Public route reflow', () => {
 });
 
 test.describe('Representative device sizes', () => {
-  for (const width of [320, 375, 390, 768, 1024, 1440, 1920]) {
-    test(`homepage and key layouts at ${width}px`, async ({ page }) => {
+  for (const { width, height } of requiredViewports) {
+    test(`homepage and key layouts at ${width}x${height}`, async ({ page }) => {
       test.setTimeout(120_000);
-      await page.setViewportSize({ width, height: width < 621 ? 844 : 1000 });
+      await page.setViewportSize({ width, height });
       await mkdir('output/ui-screenshots', { recursive: true });
       for (const [route, name] of [['/', 'home'], ['/pandits', 'pandits'], ['/tools/compatibility', 'compatibility'], ['/login', 'login'], ['/privacy', 'privacy']]) {
         await page.goto(route);
