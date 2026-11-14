@@ -18,6 +18,7 @@ test('navigation identifies the current section and mobile links close the menu'
   await page.goto('/');
   await page.locator('.mobile-menu summary').click();
   const menu = page.locator('#mobile-navigation');
+  await expect(menu).toBeVisible();
   await menu.getByRole('link', { name: 'Find guidance', exact: true }).click();
   await expect(page).toHaveURL(/\/guidance$/);
   await expect(menu).not.toBeVisible();
