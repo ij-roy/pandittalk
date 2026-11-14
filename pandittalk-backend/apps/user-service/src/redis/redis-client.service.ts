@@ -80,6 +80,30 @@ export class RedisClientService implements OnModuleInit, OnModuleDestroy {
     await this.client.set(key, value, { PX: ttlMs });
   }
 
+  async setIfAbsent(
+    key: string,
+    value: string,
+    ttlMs: number,
+  ): Promise<boolean> {
+    const result = await this.client.set(key, value, { NX: true, PX: ttlMs });
+    return result === 'OK';
+  }
+
+  async releaseLock(key: string, value: string): Promise<void> {
+    await this.client.eval(
+      `
+        if redis.call('get', KEYS[1]) == ARGV[1] then
+          return redis.call('del', KEYS[1])
+        end
+        return 0
+      `,
+      {
+        keys: [key],
+        arguments: [value],
+      },
+    );
+  }
+
   /**
    * Run a Lua script atomically. `keys` map to KEYS[]; `args` to ARGV[].
    */

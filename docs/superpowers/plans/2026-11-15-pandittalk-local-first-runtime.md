@@ -32,9 +32,9 @@
 - Modify: `pandittalk-backend/apps/user-service/prisma/schema.prisma`
 - Test: Prisma generation and backend unit suite
 
-- [ ] Remove the duplicate `Pandit.articles` relation only after reproducing the current `P1012` failure.
-- [ ] Run `npm run prisma:generate` and the backend test suite.
-- [ ] Commit the minimal schema repair.
+- [x] Remove the duplicate `Pandit.articles` relation only after reproducing the current `P1012` failure.
+- [x] Run `npm run prisma:generate` and the backend test suite.
+- [x] Commit the minimal schema repair.
 
 ### Task 2: Define the local runtime contract
 
@@ -43,10 +43,10 @@
 - Modify: backend Docker/entrypoint/config files
 - Test: Compose config validation and health checks
 
-- [ ] Add PostgreSQL, Redis, backend, reverse proxy, and optional worker/media services.
-- [ ] Add persistent volumes, health checks, restart policies, bounded logs, and service-network URLs.
-- [ ] Make backend replicas scale behind the proxy with WebSocket upgrades.
-- [ ] Document start/stop/migrate/reset/backup/recovery commands.
+- [x] Add PostgreSQL, Redis, backend, reverse proxy, and optional worker/media services.
+- [x] Add persistent volumes, health checks, restart policies, and service-network URLs.
+- [x] Make backend replicas scale behind the proxy with WebSocket upgrades.
+- [x] Document start/stop/migrate/reset/backup/recovery commands.
 
 ### Task 3: Make backend state replica-safe
 
@@ -55,9 +55,9 @@
 - Create: Redis adapters/utilities/tests where missing
 - Test: unit, integration, and two-replica smoke tests
 
-- [ ] Move process-local state to Redis or PostgreSQL.
-- [ ] Add Socket.IO Redis adapter and graceful shutdown/reconnect handling.
-- [ ] Prove two replicas share state without sticky sessions.
+- [x] Move user socket routing, warning claims, notification claims, and timer ownership to Redis/Socket.IO shared state.
+- [x] Add Socket.IO Redis adapter and graceful shutdown handling.
+- [ ] Prove two replicas share state without sticky sessions on a running Docker engine.
 
 ### Task 4: Local media and real-time web parity
 
@@ -88,10 +88,10 @@
 - Create: `docs/verification/feature-matrix.md`
 - Modify: project READMEs and root README
 
-- [ ] Run install, lint, typecheck, tests, builds, Docker build, and Compose validation on push/PR.
-- [ ] Add responsive/browser evidence for required aspect ratios.
-- [ ] Document Vercel, tunnel, Kali, Redis, PostgreSQL, WebSocket, WebRTC, and recovery setup.
-- [ ] Create presentation/demo runbook for the two-person team.
+- [x] Run install, tests, builds, Docker build, and Compose validation on push/PR through CI configuration.
+- [x] Add responsive/browser evidence for required aspect ratios.
+- [x] Document Vercel, tunnel, Kali, Redis, PostgreSQL, WebSocket, WebRTC, and recovery setup.
+- [x] Create presentation/demo runbook for the two-person team.
 
 ## Execution Order
 

@@ -2,6 +2,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'crypto';
 import {
   ConnectedSocket,
   MessageBody,
@@ -23,6 +24,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import type { NotificationPayload } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { parseAllowedOrigins } from '../config/cors-origins';
+import { RedisClientService } from '../redis/redis-client.service';
 import { DynamoService } from './dynamo.service';
 import type {
   AudioParticipantLeftPayload,
@@ -88,19 +90,13 @@ type BookingWithPandit = Booking & {
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(ChatGateway.name);
   private readonly sessionIntervals = new Map<string, NodeJS.Timeout>();
-  private readonly warnedSessions = new Map<string, boolean>();
   private readonly audioSessionIntervals = new Map<string, NodeJS.Timeout>();
-  private readonly warnedAudioSessions = new Map<string, boolean>();
   private readonly audioWaitTimeouts = new Map<string, NodeJS.Timeout>();
   private readonly videoSessionIntervals = new Map<string, NodeJS.Timeout>();
-  private readonly warnedVideoSessions = new Map<string, boolean>();
   private readonly videoWaitTimeouts = new Map<string, NodeJS.Timeout>();
   private readonly waitingTimeouts = new Map<string, NodeJS.Timeout>();
   private readonly panditReconnectTimeouts = new Map<string, NodeJS.Timeout>();
   private readonly avDisconnectGraceTimeouts = new Map<string, NodeJS.Timeout>();
-  private readonly userSockets = new Map<string, Set<string>>();
-  private readonly sessionStartedNotified = new Set<string>();
-  private readonly sessionEndedNotified = new Set<string>();
   private readonly waitingTimeoutMs: number;
 
   @WebSocketServer()
@@ -115,6 +111,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly panditQueue: PanditQueueService,
     private readonly chimeService: ChimeService,
     private readonly configService: ConfigService,
+    private readonly redisClient: RedisClientService,
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -155,7 +152,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (typeof handshakeToken === 'string' && handshakeToken.length > 0) {
         const userId = await this.authenticateClient(client);
         await client.join(this.userRoom(userId));
-        this.trackUserSocket(userId, client.id);
       }
     } catch (error: unknown) {
       const message =
@@ -191,7 +187,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await client.join(room);
       client.data.bookingId = data.bookingId;
       client.data.role = isPandit ? 'pandit' : 'user';
-      this.trackUserSocket(userId, client.id);
 
       const queueRoom = this.panditQueue.queueRoom(booking.panditId);
       await client.join(queueRoom);
@@ -325,7 +320,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       await client.join(this.panditRoom(pandit.id));
-      this.trackUserSocket(userId, client.id);
     } catch (error: unknown) {
       this.emitError(client, error);
     }
@@ -931,10 +925,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private async handleClientDisconnect(client: ChatSocket): Promise<void> {
     const userId = client.data.userId;
-    if (userId) {
-      this.untrackUserSocket(userId, client.id);
-    }
-
     if (client.data.audioBookingId && userId) {
       await this.handleAvSocketDisconnect(
         client.data.audioBookingId,
@@ -1263,9 +1253,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.clearWaitingTimeout(bookingId);
     this.clearPanditReconnectTimeout(bookingId);
     await this.clearSessionRedisKeys(bookingId);
-    this.warnedSessions.delete(bookingId);
-    this.sessionStartedNotified.delete(bookingId);
-    this.sessionEndedNotified.delete(bookingId);
 
     if (panditId) {
       await this.panditAvailability.clearPanditActive(panditId);
@@ -1286,6 +1273,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private async tickSessionTimer(bookingId: string): Promise<void> {
+    await this.withDistributedLock(`lock:session-timer:${bookingId}`, () =>
+      this.tickSessionTimerOwned(bookingId),
+    );
+  }
+
+  private async tickSessionTimerOwned(bookingId: string): Promise<void> {
     const endTime = await this.cacheManager.get<number>(
       this.sessionEndKey(bookingId),
     );
@@ -1302,9 +1295,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       if (
         secondsLeft <= FIVE_MINUTES_SECONDS &&
-        !this.warnedSessions.get(bookingId)
+        (await this.claimOnce(this.sessionWarningKey(bookingId), 15 * 60 * 1000))
       ) {
-        this.warnedSessions.set(bookingId, true);
         this.server.to(room).emit('warningFiveMinutes', { bookingId });
       }
     }
@@ -1342,6 +1334,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.emit('timeRemaining', { secondsLeft });
   }
 
+  private async withDistributedLock(
+    key: string,
+    task: () => Promise<void>,
+  ): Promise<void> {
+    const token = randomUUID();
+    const acquired = await this.redisClient.setIfAbsent(key, token, 2_500);
+    if (!acquired) {
+      return;
+    }
+
+    try {
+      await task();
+    } finally {
+      await this.redisClient.releaseLock(key, token);
+    }
+  }
+
   private async hasSessionStarted(bookingId: string): Promise<boolean> {
     const startedAt = await this.cacheManager.get<number>(
       this.sessionStartKey(bookingId),
@@ -1377,6 +1386,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.cacheManager.del(this.sessionStartKey(bookingId));
     await this.cacheManager.del(this.sessionEndKey(bookingId));
     await this.cacheManager.del(this.sessionWaitingKey(bookingId));
+    await this.redisClient.del(this.sessionWarningKey(bookingId));
+    await this.redisClient.del(this.sessionNotificationKey('started', bookingId));
+    await this.redisClient.del(this.sessionNotificationKey('ended', bookingId));
   }
 
   private sessionRoom(bookingId: string): string {
@@ -1515,6 +1527,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private async tickAudioSessionTimer(bookingId: string): Promise<void> {
+    await this.withDistributedLock(`lock:audio-timer:${bookingId}`, () =>
+      this.tickAudioSessionTimerOwned(bookingId),
+    );
+  }
+
+  private async tickAudioSessionTimerOwned(bookingId: string): Promise<void> {
     const endTime = await this.cacheManager.get<number>(
       this.audioEndKey(bookingId),
     );
@@ -1534,9 +1552,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (
       secondsLeft <= FIVE_MINUTES_SECONDS &&
-      !this.warnedAudioSessions.get(bookingId)
+      (await this.claimOnce(this.audioWarningKey(bookingId), 15 * 60 * 1000))
     ) {
-      this.warnedAudioSessions.set(bookingId, true);
       this.server.to(room).emit('warningFiveMinutes', { bookingId });
     }
 
@@ -1596,9 +1613,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.cacheManager.del(this.audioRoomKey(bookingId));
     await this.cacheManager.del(this.audioStartKey(bookingId));
     await this.cacheManager.del(this.audioEndKey(bookingId));
-    this.warnedAudioSessions.delete(bookingId);
-    this.sessionStartedNotified.delete(bookingId);
-    this.sessionEndedNotified.delete(bookingId);
+    await this.redisClient.del(this.audioWarningKey(bookingId));
+    await this.redisClient.del(this.sessionNotificationKey('started', bookingId));
+    await this.redisClient.del(this.sessionNotificationKey('ended', bookingId));
   }
 
   private videoRoom(bookingId: string): string {
@@ -1704,6 +1721,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private async tickVideoSessionTimer(bookingId: string): Promise<void> {
+    await this.withDistributedLock(`lock:video-timer:${bookingId}`, () =>
+      this.tickVideoSessionTimerOwned(bookingId),
+    );
+  }
+
+  private async tickVideoSessionTimerOwned(bookingId: string): Promise<void> {
     const endTime = await this.cacheManager.get<number>(
       this.videoEndKey(bookingId),
     );
@@ -1723,9 +1746,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (
       secondsLeft <= FIVE_MINUTES_SECONDS &&
-      !this.warnedVideoSessions.get(bookingId)
+      (await this.claimOnce(this.videoWarningKey(bookingId), 15 * 60 * 1000))
     ) {
-      this.warnedVideoSessions.set(bookingId, true);
       this.server.to(room).emit('warningFiveMinutes', { bookingId });
     }
 
@@ -1785,26 +1807,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.cacheManager.del(this.videoRoomKey(bookingId));
     await this.cacheManager.del(this.videoStartKey(bookingId));
     await this.cacheManager.del(this.videoEndKey(bookingId));
-    this.warnedVideoSessions.delete(bookingId);
-    this.sessionStartedNotified.delete(bookingId);
-    this.sessionEndedNotified.delete(bookingId);
-  }
-
-  private trackUserSocket(userId: string, socketId: string): void {
-    const sockets = this.userSockets.get(userId) ?? new Set<string>();
-    sockets.add(socketId);
-    this.userSockets.set(userId, sockets);
-  }
-
-  private untrackUserSocket(userId: string, socketId: string): void {
-    const sockets = this.userSockets.get(userId);
-    if (!sockets) {
-      return;
-    }
-    sockets.delete(socketId);
-    if (sockets.size === 0) {
-      this.userSockets.delete(userId);
-    }
+    await this.redisClient.del(this.videoWarningKey(bookingId));
+    await this.redisClient.del(this.sessionNotificationKey('started', bookingId));
+    await this.redisClient.del(this.sessionNotificationKey('ended', bookingId));
   }
 
   private emitToUser(
@@ -1812,13 +1817,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     event: string,
     payload: unknown,
   ): void {
-    const socketIds = this.userSockets.get(userId);
-    if (!socketIds) {
-      return;
-    }
-    for (const socketId of socketIds) {
-      this.server.to(socketId).emit(event, payload);
-    }
+    this.server.to(this.userRoom(userId)).emit(event, payload);
   }
 
   private isChatNowBooking(booking: Booking): boolean {
@@ -1830,14 +1829,33 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
   }
 
+  private async claimOnce(key: string, ttlMs: number): Promise<boolean> {
+    return this.redisClient.setIfAbsent(key, '1', ttlMs);
+  }
+
+  private sessionWarningKey(bookingId: string): string {
+    return `session:warning:${bookingId}`;
+  }
+
+  private audioWarningKey(bookingId: string): string {
+    return `audio:warning:${bookingId}`;
+  }
+
+  private videoWarningKey(bookingId: string): string {
+    return `video:warning:${bookingId}`;
+  }
+
+  private sessionNotificationKey(
+    kind: 'started' | 'ended',
+    bookingId: string,
+  ): string {
+    return `session:notification:${kind}:${bookingId}`;
+  }
+
   private async notifySessionStarted(
     bookingId: string,
     booking?: Booking,
   ): Promise<void> {
-    if (this.sessionStartedNotified.has(bookingId)) {
-      return;
-    }
-
     const resolved =
       booking ??
       (await this.prisma.booking.findUnique({ where: { id: bookingId } }));
@@ -1845,7 +1863,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    this.sessionStartedNotified.add(bookingId);
+    if (
+      !(await this.claimOnce(
+        this.sessionNotificationKey('started', bookingId),
+        24 * 60 * 60 * 1000,
+      ))
+    ) {
+      return;
+    }
 
     await this.notificationsService.createNotification(
       resolved.userId,
@@ -1867,10 +1892,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private async notifySessionEnded(bookingId: string): Promise<void> {
-    if (this.sessionEndedNotified.has(bookingId)) {
-      return;
-    }
-
     const booking = await this.prisma.booking.findUnique({
       where: { id: bookingId },
     });
@@ -1878,7 +1899,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    this.sessionEndedNotified.add(bookingId);
+    if (
+      !(await this.claimOnce(
+        this.sessionNotificationKey('ended', bookingId),
+        24 * 60 * 60 * 1000,
+      ))
+    ) {
+      return;
+    }
 
     await this.notificationsService.createNotification(
       booking.userId,
@@ -1963,7 +1991,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     client.data.userId = payload.sub;
     await client.join(this.userRoom(payload.sub));
-    this.trackUserSocket(payload.sub, client.id);
     return payload.sub;
   }
 
