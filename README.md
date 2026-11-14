@@ -70,6 +70,7 @@ Useful commands:
 docker compose logs -f api
 docker compose up -d --scale api=2 --no-recreate api proxy
 docker compose exec -T api node scripts/ensure-local-demo-data.cjs
+docker compose exec -T api npx prisma migrate deploy --schema apps/user-service/prisma/schema.prisma
 Push-Location pandittalk-website; npm run test:local-replica; Pop-Location
 Push-Location pandittalk-website; npm run test:local-api; Pop-Location
 docker compose exec -T redis redis-cli ping
@@ -151,12 +152,12 @@ Push-Location pandittalk-mobile; npm ci; npm run typecheck; npm run test:webview
 docker compose config --quiet
 ```
 
-GitHub Actions runs install, backend Prisma/tests/build gates, client
+GitHub Actions runs install, backend Prisma/tests/typecheck/build gates, client
 typechecks/lint/build gates, website browser checks, Docker/Compose startup
 smoke checks, and tracked-secret hygiene checks on every push and pull request.
 The backend’s existing all-files ESLint configuration has unrelated legacy
 findings, so backend type safety is enforced by Prisma generation, Jest, and the
-Nest build while client lint remains a blocking gate. A hosted run is still
+TypeScript check/Nest build while client lint remains a blocking gate. A hosted run is still
 required after the branch is pushed; local green output is not a substitute for
 the CI check.
 
@@ -170,6 +171,12 @@ the CI check.
    profile.
 5. Keep the host on a UPS or automatic-resume configuration and back up
    PostgreSQL before upgrades.
+
+`docker compose stop` pauses the stack without removing volumes; `docker compose
+down` stops and removes containers while preserving named data volumes. To reset
+only this isolated development project, use `docker compose down -v` and then
+start it again with `docker compose up -d --build`; never use that reset command
+on a production Compose project.
 
 Docker restart policies and named volumes allow recovery after a power cut:
 
