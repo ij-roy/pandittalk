@@ -69,6 +69,7 @@ jobs:
           cache: npm
           cache-dependency-path: pandittalk-mobile/package-lock.json
       - run: npm ci
+      - run: npm run typecheck
       - run: npm run test:webview-allowlist
 
   compose:

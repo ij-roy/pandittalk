@@ -37,6 +37,7 @@ import { chatSocket } from '@/lib/chatSocket';
 import { chimeAudio } from '@/lib/chimeAudio';
 import { shouldKeepScreenAwake } from '@/lib/screenAwake';
 import { leaveCallPrompt } from '@/lib/sessionLeaveCopy';
+import { remoteAudioStatus } from '@/lib/remoteAudioStatus';
 import {
   alertOpenSettingsForPermission,
   isMediaPermissionDeniedError,

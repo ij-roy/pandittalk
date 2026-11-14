@@ -158,11 +158,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    color: TEXT_PRIMARY_DARK,
-    ...Typography.subtitle,
+    ...Typography.h3,
   },
   content: { padding: 20, paddingBottom: 40 },
-  title: { ...Typography.title, color: TEXT_PRIMARY_DARK, marginTop: 16 },
+  title: { ...Typography.h1, color: TEXT_PRIMARY_DARK, marginTop: 16 },
   plainBox: {
     marginBottom: 20,
     padding: 14,
@@ -172,11 +171,11 @@ const styles = StyleSheet.create({
     borderColor: GOLD_BORDER,
   },
   plainTitle: {
-    ...Typography.subtitle,
+    ...Typography.h3,
     color: TEXT_PRIMARY_DARK,
     marginBottom: 8,
   },
   section: { marginBottom: 18 },
-  heading: { ...Typography.subtitle, color: TEXT_PRIMARY_DARK, marginBottom: 6 },
+  heading: { ...Typography.h3, color: TEXT_PRIMARY_DARK, marginBottom: 6 },
   body: { ...Typography.body, color: GREY_LABEL, lineHeight: 22 },
 });
