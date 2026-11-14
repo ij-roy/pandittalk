@@ -58,7 +58,8 @@ the API container starts.
 
 `/` is a liveness check. `/readiness` verifies PostgreSQL, Redis, and
 DynamoDB Local before returning `ready`; use it for tunnel/load-balancer health
-checks.
+checks. Compose applies bounded Docker JSON logs to every service (10 MB per
+file, three retained files) so a long-running Kali host does not fill its disk.
 
 Useful commands:
 

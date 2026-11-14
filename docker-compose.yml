@@ -1,9 +1,16 @@
 name: pandittalk
 
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
+
 services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    logging: *default-logging
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-pandittalk}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pandittalk-local-only}
@@ -22,6 +29,7 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    logging: *default-logging
     command: ['redis-server', '--appendonly', 'yes', '--save', '60', '1000']
     expose:
       - '6379'
@@ -36,6 +44,7 @@ services:
   dynamodb:
     image: amazon/dynamodb-local:latest
     restart: unless-stopped
+    logging: *default-logging
     user: root
     command: ['-jar', 'DynamoDBLocal.jar', '-sharedDb', '-dbPath', './data']
     expose:
@@ -54,6 +63,7 @@ services:
       context: ./pandittalk-backend
       dockerfile: Dockerfile
     restart: unless-stopped
+    logging: *default-logging
     env_file:
       - .env
     environment:
@@ -96,6 +106,7 @@ services:
       context: ./pandittalk-backend
       dockerfile: Dockerfile
     restart: unless-stopped
+    logging: *default-logging
     env_file:
       - .env
     environment:
@@ -111,6 +122,7 @@ services:
   proxy:
     image: caddy:2-alpine
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - '${API_EXTERNAL_PORT:-3001}:80'
     volumes:
@@ -127,6 +139,7 @@ services:
     image: coturn/coturn:4.6
     profiles: ['webrtc']
     restart: unless-stopped
+    logging: *default-logging
     command:
       - '--no-cli'
       - '--fingerprint'
