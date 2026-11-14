@@ -1,0 +1,17 @@
+/dist
+/node_modules
+/.env
+/.env.*
+!/.env.example
+/apps/*/.env
+/apps/*/.env.*
+!/apps/*/.env.example
+/coverage
+*.log
+.DS_Store
+ngrok.exe
+*.pem
+*.key
+credentials.json
+secrets.json
+uploads/

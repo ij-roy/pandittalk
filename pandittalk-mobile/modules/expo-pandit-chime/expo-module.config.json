@@ -1,0 +1,9 @@
+{
+  "platforms": ["android", "ios"],
+  "android": {
+    "modules": ["expo.modules.panditchime.ExpoPanditChimeModule"]
+  },
+  "ios": {
+    "modules": ["ExpoPanditChimeModule"]
+  }
+}

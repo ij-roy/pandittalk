@@ -1,0 +1,189 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--white);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--deep-grey);
+  color: var(--white);
+  flex-shrink: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaveBtn {
+  padding: 0.45rem 0.85rem;
+  border: none;
+  border-radius: 8px;
+  background: #3a3a52;
+  color: var(--white);
+  font-weight: 600;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.leaveBtn:hover {
+  background: #4a4a62;
+}
+
+.banner {
+  padding: 0.75rem 1rem;
+  background: #fdecea;
+  color: var(--error);
+  font-size: 0.9rem;
+}
+
+.warningBanner {
+  padding: 0.5rem 1rem;
+  background: #fdecea;
+  color: #b45309;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7a7a90;
+  background: var(--light-grey);
+}
+
+.bottomPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--light-grey);
+  min-height: 0;
+}
+
+.resizeHandle {
+  flex-shrink: 0;
+  height: 10px;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--deep-grey);
+  touch-action: none;
+}
+
+.resizeHandle::after {
+  content: '';
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: #5a5a72;
+}
+
+.infoBar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+
+.userName {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--deep-grey);
+}
+
+.timer {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.sessionBeginsText {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--deep-grey);
+}
+
+.status {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #7a7a90;
+}
+
+.micStatus {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #7a7a90;
+}
+
+.micStatusActive {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.micStatusError {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.muteBtn {
+  margin: 0 auto 1rem;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--deep-grey);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.muteBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.muteBtn:hover:not(:disabled) {
+  border-color: var(--gold);
+}
+
+.muteBtnActive {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--deep-grey);
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-wrap: wrap;
+  }
+
+  .title {
+    width: 100%;
+  }
+
+  .leaveBtn {
+    width: 100%;
+  }
+}

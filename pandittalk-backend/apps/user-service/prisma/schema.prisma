@@ -1,0 +1,482 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  phoneNumber      String   @unique @map("phone_number")
+  name             String?
+  firstName        String?  @map("first_name")
+  lastName         String?  @map("last_name")
+  gender           String?
+  email            String?  @unique
+  googleSub        String?  @unique @map("google_sub")
+  appleSub         String?  @unique @map("apple_sub")
+  maritalStatus    String?  @map("marital_status")
+  dob              String?
+  timeOfBirth      String?  @map("time_of_birth")
+  placeOfBirth     String?  @map("place_of_birth")
+  zodiacSign       String?  @map("zodiac_sign")
+  currentAddress   String?  @map("current_address")
+  city             String?
+  postalCode       String?  @map("postal_code")
+  profileImageUrl  String?  @map("profile_image_url")
+  profileCompleted Boolean  @default(false) @map("profile_completed")
+  isActive         Boolean  @default(true) @map("is_active")
+  walletBalance    Decimal  @default(0) @map("wallet_balance") @db.Decimal(14, 2)
+  /** Legal consent captured at OTP verify (login checkbox). */
+  acceptedAge18       Boolean?  @map("accepted_age_18")
+  termsAcceptedAt     DateTime? @map("terms_accepted_at") @db.Timestamptz(6)
+  privacyAcceptedAt   DateTime? @map("privacy_accepted_at") @db.Timestamptz(6)
+  termsVersion        String?   @map("terms_version")
+  privacyVersion      String?   @map("privacy_version")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  pandit        Pandit?
+  bookings      Booking[]
+  reviews       Review[]
+  transactions  Transaction[]
+  notifications Notification[]
+  savedReports  SavedReport[]
+  authSessions  AuthSession[]
+  savedContexts SavedContext[]
+  notificationPreferences NotificationPreference?
+  pushDevices PushDevice[]
+  supportRequests SupportRequest[]
+  phoneChangeChallenges PhoneChangeChallenge[]
+  panditBlocks UserPanditBlock[]
+  panditFollows PanditFollow[]
+  familyMembers FamilyMember[]
+
+  @@map("users")
+}
+
+model AuthSession {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  tokenHash    String    @unique @map("token_hash")
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz(6)
+  replacedById String?   @map("replaced_by_id") @db.Uuid
+  userAgent    String?   @map("user_agent")
+  ip           String?
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replacedBy AuthSession? @relation("AuthSessionReplacement", fields: [replacedById], references: [id])
+  replaces   AuthSession[] @relation("AuthSessionReplacement")
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("auth_sessions")
+}
+
+model Pandit {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String?  @unique @map("user_id") @db.Uuid
+  name            String
+  headline        String
+  bio             String
+  specialty       String
+  languages       String[] @default([])
+  experience      Int
+  pricePerSession Decimal  @map("price_per_session") @db.Decimal(10, 2)
+  rating          Decimal  @default(0) @db.Decimal(3, 2)
+  totalReviews    Int      @default(0) @map("total_reviews")
+  imageUrl        String?  @map("image_url")
+  isVerified      Boolean  @default(false) @map("is_verified")
+  isOnline        Boolean  @default(false) @map("is_online")
+  presenceSeenAt  DateTime? @map("presence_seen_at") @db.Timestamptz(6)
+  isPremium       Boolean  @default(false) @map("is_premium")
+  category        String
+  guidanceAreas   String[] @default([]) @map("guidance_areas")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user         User?                @relation(fields: [userId], references: [id])
+  availability PanditAvailability[]
+  bookings     Booking[]
+  reviews      Review[]
+  articles     Article[]
+  articles     Article[]
+  blockedByUsers UserPanditBlock[]
+  followers    PanditFollow[]
+
+  @@map("pandits")
+}
+
+model PanditFollow {
+  userId    String   @map("user_id") @db.Uuid
+  panditId  String   @map("pandit_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pandit Pandit @relation(fields: [panditId], references: [id], onDelete: Cascade)
+
+  @@id([userId, panditId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("pandit_follows")
+}
+
+model PanditAvailability {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  panditId    String  @map("pandit_id") @db.Uuid
+  dayOfWeek   Int     @map("day_of_week")
+  windowStart String  @map("window_start")
+  windowEnd   String  @map("window_end")
+  isActive    Boolean @default(true) @map("is_active")
+
+  pandit Pandit @relation(fields: [panditId], references: [id])
+
+  @@map("pandit_availability")
+}
+
+model Booking {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  panditId        String   @map("pandit_id") @db.Uuid
+  area            String
+  depth           String
+  format          String
+  durationMinutes Int      @map("duration_minutes")
+  sessionModel    String   @default("legacy_timed") @map("session_model")
+  startTime       DateTime @map("start_time") @db.Timestamptz(6)
+  endTime         DateTime @map("end_time") @db.Timestamptz(6)
+  bufferEndTime   DateTime @map("buffer_end_time") @db.Timestamptz(6)
+  totalPrice      Decimal  @map("total_price") @db.Decimal(10, 2)
+  coinsDeducted   Int      @map("coins_deducted")
+  status          String   @default("confirmed")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user        User         @relation(fields: [userId], references: [id])
+  pandit      Pandit       @relation(fields: [panditId], references: [id])
+  review        Review?
+  transactions  Transaction[]
+  notifications Notification[]
+  contextShares SavedContextShare[]
+
+  @@map("bookings")
+}
+
+model Review {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  bookingId String   @unique @map("booking_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  panditId  String   @map("pandit_id") @db.Uuid
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  pandit  Pandit  @relation(fields: [panditId], references: [id])
+
+  @@map("reviews")
+}
+
+model CoinPackage {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label       String
+  coins       Int
+  priceInr    Decimal  @map("price_inr") @db.Decimal(10, 2)
+  bonusCoins  Int      @default(0) @map("bonus_coins")
+  isPopular   Boolean  @default(false) @map("is_popular")
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  transactions Transaction[]
+
+  @@map("coin_packages")
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum ArticleCategory {
+  astrology
+  spirituality
+  vastu
+  numerology
+  tarot
+  palmistry
+  relationships
+  career
+}
+
+enum ArticleStatus {
+  draft
+  scheduled
+  published
+  unpublished
+}
+
+enum ArticleLanguage {
+  hi
+  en
+  mixed
+}
+
+enum ArticleEventType {
+  view
+  read
+  cta_click
+}
+
+enum ArticleEventSource {
+  app
+  web
+}
+
+enum NotificationType {
+  booking_confirmed
+  session_reminder_30
+  session_reminder_10
+  session_reminder_5
+  session_started
+  session_ended
+  new_message
+  chat_now_accepted
+  chat_now_missed
+}
+
+model Article {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title            String
+  slug             String           @unique
+  category         ArticleCategory
+  author           String           @default("PanditTalk Editorial")
+  authorPanditId   String?          @map("author_pandit_id") @db.Uuid
+  status           ArticleStatus    @default(draft)
+  language         ArticleLanguage  @default(mixed)
+  coverImageUrl    String           @map("cover_image_url")
+  coverAlt         String?          @map("cover_alt")
+  excerpt          String
+  content          String           @db.Text
+  seoTitle         String?          @map("seo_title")
+  seoDescription   String?          @map("seo_description")
+  readTimeMinutes  Int              @map("read_time_minutes")
+  publishedAt      DateTime         @map("published_at") @db.Timestamptz(6)
+  scheduledAt      DateTime?        @map("scheduled_at") @db.Timestamptz(6)
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  authorPandit Pandit?        @relation(fields: [authorPanditId], references: [id], onDelete: SetNull)
+  events       ArticleEvent[]
+
+  @@index([publishedAt(sort: Desc), id(sort: Desc)])
+  @@index([category])
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([authorPanditId])
+  @@map("articles")
+}
+
+model ArticleEvent {
+  id        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  articleId String             @map("article_id") @db.Uuid
+  type      ArticleEventType
+  source    ArticleEventSource
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, type, createdAt(sort: Desc)])
+  @@map("article_events")
+}
+
+model Notification {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  type      NotificationType
+  title     String
+  body      String
+  bookingId String?          @map("booking_id") @db.Uuid
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user    User     @relation(fields: [userId], references: [id])
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @unique @map("user_id") @db.Uuid
+  bookingReminders Boolean @default(true) @map("booking_reminders")
+  sessionUpdates Boolean @default(true) @map("session_updates")
+  messages Boolean @default(true)
+  marketing Boolean @default(false)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("notification_preferences")
+}
+
+/** Expo / APNs / FCM push tokens for remote notifications when the app is killed (#65 / #316). */
+model PushDevice {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  platform  String   // ios | android | web
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_devices")
+}
+
+model SavedContext {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  text      String   @db.Text
+  version   Int      @default(1)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shares SavedContextShare[]
+  @@index([userId, updatedAt(sort: Desc)])
+  @@map("saved_contexts")
+}
+
+model SavedContextShare {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  contextId String   @map("context_id") @db.Uuid
+  bookingId String   @map("booking_id") @db.Uuid
+  panditId  String   @map("pandit_id") @db.Uuid
+  contextVersion Int @map("context_version")
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  context SavedContext @relation(fields: [contextId], references: [id], onDelete: Cascade)
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  @@unique([contextId, bookingId])
+  @@index([bookingId, panditId])
+  @@map("saved_context_shares")
+}
+
+model SupportRequest {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  email     String?
+  category  String
+  message   String   @db.Text
+  status    String   @default("received")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("support_requests")
+}
+
+/** User blocked a pandit (Guideline 1.2 / marketplace safety). */
+model UserPanditBlock {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  panditId  String   @map("pandit_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pandit Pandit @relation(fields: [panditId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, panditId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("user_pandit_blocks")
+}
+
+model PanditApplication {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  phone     String
+  email     String?
+  practice  String
+  languages String[] @default([])
+  message   String? @db.Text
+  consent   Boolean
+  status    String   @default("received")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  @@index([createdAt(sort: Desc)])
+  @@map("pandit_applications")
+}
+
+model PhoneChangeChallenge {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  phoneNumber String @map("phone_number")
+  otpHash   String   @map("otp_hash")
+  attempts  Int      @default(0)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  verifiedAt DateTime? @map("verified_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, expiresAt])
+  @@map("phone_change_challenges")
+}
+
+model Transaction {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String            @map("user_id") @db.Uuid
+  type              String
+  coinsAmount       Int               @map("coins_amount")
+  amountInr         Decimal?          @map("amount_inr") @db.Decimal(10, 2)
+  status            TransactionStatus @default(PENDING)
+  razorpayOrderId   String?           @unique @map("razorpay_order_id")
+  razorpayPaymentId String?           @map("razorpay_payment_id")
+  coinPackageId     String?           @map("coin_package_id") @db.Uuid
+  bookingId         String?           @map("booking_id") @db.Uuid
+  description       String?
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user        User         @relation(fields: [userId], references: [id])
+  coinPackage CoinPackage? @relation(fields: [coinPackageId], references: [id])
+  booking     Booking?     @relation(fields: [bookingId], references: [id])
+
+  @@index([userId])
+  @@index([razorpayOrderId])
+  @@map("transactions")
+}
+
+model SavedReport {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  type         String
+  title        String
+  inputSummary String   @map("input_summary")
+  payload      Json
+  coinsSpent   Int      @map("coins_spent")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("saved_reports")
+}
+
+model FamilyMember {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  relation     String
+  name         String
+  dob          String
+  timeOfBirth  String   @map("time_of_birth")
+  placeOfBirth String   @map("place_of_birth")
+  coordinates  String?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("family_members")
+}

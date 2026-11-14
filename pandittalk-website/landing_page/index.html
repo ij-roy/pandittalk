@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="PanditTalk — your spiritual companion. Join the waitlist for expert pandits, horoscope, and on-demand guidance.">
+  <meta name="theme-color" content="#1F1F1F">
+  <title>PanditTalk — Coming Soon</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <div class="haze haze-a"></div>
+    <div class="haze haze-b"></div>
+    <div class="haze haze-c"></div>
+    <div class="grain"></div>
+    <div class="constellation"></div>
+  </div>
+
+  <main class="page">
+    <section class="hero" aria-labelledby="brand-name">
+      <div class="brand reveal" style="--d: 0s">
+        <div class="brand-mark" aria-hidden="true">
+          <img src="logo.png" alt="" width="96" height="96" decoding="async">
+        </div>
+        <h1 id="brand-name" class="brand-name">PanditTalk</h1>
+      </div>
+
+      <p class="status reveal" style="--d: 0.08s">
+        <span class="status-dot" aria-hidden="true"></span>
+        Coming soon
+      </p>
+
+      <p class="tagline reveal" style="--d: 0.14s">Guidance when life asks.</p>
+      <p class="lede reveal" style="--d: 0.2s">
+        Talk to verified pandits, decode your chart, and get calm answers — anytime.
+      </p>
+
+      <form class="waitlist glass reveal" style="--d: 0.28s" id="waitlistForm" novalidate>
+        <label class="sr-only" for="email">Email</label>
+        <div class="waitlist-row">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="email-input neo-inset"
+            placeholder="you@email.com"
+            autocomplete="email"
+            inputmode="email"
+            required
+          >
+          <button type="submit" class="notify-btn neo-press" id="notifyBtn">
+            <span class="btn-label">Notify Me</span>
+          </button>
+        </div>
+        <p class="form-msg" id="formMsg" role="status" aria-live="polite"></p>
+        <p class="form-note">Be first in line. No spam — launch updates only.</p>
+      </form>
+    </section>
+
+    <section class="values" aria-label="What you get">
+      <ul class="value-list">
+        <li class="value-item glass reveal" style="--d: 0.36s">
+          <span class="value-label">Chat &amp; call</span>
+          <span class="value-desc">Experts on demand</span>
+        </li>
+        <li class="value-item glass reveal" style="--d: 0.42s">
+          <span class="value-label">Horoscope &amp; tools</span>
+          <span class="value-desc">Daily clarity, kundli-ready</span>
+        </li>
+        <li class="value-item glass reveal" style="--d: 0.48s">
+          <span class="value-label">Always near</span>
+          <span class="value-desc">Spiritual guidance, phone-first</span>
+        </li>
+      </ul>
+    </section>
+
+    <footer class="site-footer reveal" style="--d: 0.54s">
+      <span class="footer-mark">PanditTalk</span>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <span>Something rare is loading.</span>
+    </footer>
+  </main>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

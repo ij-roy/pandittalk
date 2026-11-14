@@ -1,0 +1,89 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(20, 20, 34, 0.45);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh 1rem 1rem;
+}
+
+.panel {
+  width: min(520px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 0.95rem 1rem;
+  font-size: 1rem;
+  background: transparent;
+}
+
+.input:focus {
+  outline: none;
+}
+
+.list {
+  margin: 0;
+  padding: 0.4rem;
+  list-style: none;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  min-height: 2.6rem;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  text-align: left;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.item:hover {
+  background: var(--surface-muted);
+}
+
+.hint {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-subtle);
+}
+
+.empty {
+  padding: 1rem 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.footer {
+  margin: 0;
+  padding: 0.55rem 0.9rem 0.7rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+}
+
+.footer kbd {
+  font-family: inherit;
+  font-weight: 700;
+  padding: 0.05rem 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--canvas);
+}

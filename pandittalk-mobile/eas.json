@@ -1,0 +1,39 @@
+{
+  "cli": {
+    "appVersionSource": "local"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE": "https://api.pandittalk.com"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "ios": {
+        "autoIncrement": "buildNumber"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "autoIncrement": "versionCode"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE": "https://api.pandittalk.com"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "admininfo@pandittalk.com",
+        "appleTeamId": "K54M9H3JQG",
+        "ascAppId": "6797837559",
+        "companyName": "Personal Astrology Numerology Directional Info Talk Tech Private Limited"
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "expo-pandit-chime",
+  "version": "1.0.0",
+  "description": "Amazon Chime native audio for PanditTalk mobile",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}

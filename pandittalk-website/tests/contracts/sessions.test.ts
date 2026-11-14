@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseBooking,calendarText,newBookingBlock} from '../../src/features/bookings/types';
+import {reconcileMessages,parseMessage,sessionEvents} from '../../src/features/sessions/events';
+const booking={id:'b-1',panditId:'p-1',format:'chat',status:'confirmed',area:'career',startTime:'2026-09-10T10:00:00Z',durationMinutes:25,totalPrice:251,coinsDeducted:251,notes:'PRIVATE NOTE',review:null};
+test('booking refuses unknown lifecycle, invalid dates, negative coins and absent legacy duration',()=>{for(const patch of [{status:'unknown'},{startTime:'bad'},{coinsDeducted:-1},{durationMinutes:undefined}])assert.throws(()=>parseBooking({...booking,...patch}));assert.equal(parseBooking(booking).id,'b-1');});
+test('calendar uses the persisted UTC start and excludes sensitive notes',()=>{const text=calendarText(parseBooking(booking));assert.match(text,/DTSTART:20260910T100000Z/);assert.match(text,/DTEND:20260910T102500Z/);assert.ok(!text.includes('PRIVATE'));});
+test('legacy history reconciliation follows persisted timestamp key and does not duplicate replay',()=>{const m={senderId:'u',senderRole:'user' as const,message:'hello',timestamp:10};assert.deepEqual(reconcileMessages([m],[m]),[m]);assert.equal(parseMessage({...m,timestamp:'bad'}),null);assert.equal(reconcileMessages([m],[{...m,timestamp:9}])[0].timestamp,9);});
+test('media and chat emit observed exact lifecycle event names',()=>{assert.equal(sessionEvents('chat').join,'joinSession');assert.equal(sessionEvents('audio').end,'endAudioSession');assert.equal(sessionEvents('video').leave,'leaveVideoSession');assert.equal(sessionEvents('video').timeUp,'videoSessionTimeUp');});
+test('new consultation gate explicitly rules out charging',()=>assert.match(newBookingBlock,/No coins will be charged/));

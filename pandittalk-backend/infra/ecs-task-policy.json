@@ -1,0 +1,31 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ChatDynamoDB",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:DescribeTable",
+        "dynamodb:PutItem",
+        "dynamodb:Query"
+      ],
+      "Resource": "arn:aws:dynamodb:ap-south-1:576557633000:table/pandittalk-chat-messages"
+    },
+    {
+      "Sid": "ChimeMeetings",
+      "Effect": "Allow",
+      "Action": [
+        "chime:CreateMeeting",
+        "chime:CreateAttendee",
+        "chime:DeleteMeeting"
+      ],
+      "Resource": "arn:aws:chime:ap-south-1:576557633000:meeting/*"
+    },
+    {
+      "Sid": "MediaS3Runtime",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::pandittalk-media/*"
+    }
+  ]
+}

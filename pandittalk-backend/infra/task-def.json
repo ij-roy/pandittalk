@@ -1,0 +1,72 @@
+{
+  "family": "pandittalk-user-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::576557633000:role/pandittalk-ecs-execution-role",
+  "taskRoleArn": "arn:aws:iam::576557633000:role/pandittalk-ecs-task-role",
+  "containerDefinitions": [
+    {
+      "name": "pandittalk-user-service",
+      "image": "576557633000.dkr.ecr.ap-south-1.amazonaws.com/pandittalk-user-service:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3001,
+          "protocol": "tcp"
+        }
+      ],
+      "secrets": [
+        { "name": "ALLOWED_ORIGINS", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:ALLOWED_ORIGINS::" },
+        { "name": "AVATAR_STORAGE", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:AVATAR_STORAGE::" },
+        { "name": "AWS_REGION", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:AWS_REGION::" },
+        { "name": "CHAT_WAITING_TIMEOUT_MS", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:CHAT_WAITING_TIMEOUT_MS::" },
+        { "name": "DATABASE_URL", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:DATABASE_URL::" },
+        { "name": "DYNAMODB_TABLE_CHAT", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:DYNAMODB_TABLE_CHAT::" },
+        { "name": "JWT_EXPIRES_IN", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:JWT_EXPIRES_IN::" },
+        { "name": "JWT_SECRET", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:JWT_SECRET::" },
+        { "name": "REFRESH_TOKEN_TTL_DAYS", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:REFRESH_TOKEN_TTL_DAYS::" },
+        { "name": "COOKIE_SECURE", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:COOKIE_SECURE::" },
+        { "name": "MEDIA_CDN_URL", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:MEDIA_CDN_URL::" },
+        { "name": "OPENAI_API_KEY", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:OPENAI_API_KEY::" },
+        { "name": "OTP_SMS_PROVIDER", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:OTP_SMS_PROVIDER::" },
+        { "name": "MSG91_AUTH_KEY", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:MSG91_AUTH_KEY::" },
+        { "name": "MSG91_TEMPLATE_ID", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:MSG91_TEMPLATE_ID::" },
+        { "name": "MSG91_SENDER_ID", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:MSG91_SENDER_ID::" },
+        { "name": "ALLOW_TEST_OTP", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:ALLOW_TEST_OTP::" },
+        { "name": "TEST_OTP_PHONE_ALLOWLIST", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:TEST_OTP_PHONE_ALLOWLIST::" },
+        { "name": "PROKERALA_CLIENT_ID", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:PROKERALA_CLIENT_ID::" },
+        { "name": "PROKERALA_CLIENT_SECRET", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:PROKERALA_CLIENT_SECRET::" },
+        { "name": "RAZORPAY_KEY_ID", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:RAZORPAY_KEY_ID::" },
+        { "name": "RAZORPAY_KEY_SECRET", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:RAZORPAY_KEY_SECRET::" },
+        { "name": "RAZORPAY_WEBHOOK_SECRET", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:RAZORPAY_WEBHOOK_SECRET::" },
+        { "name": "REDIS_HOST", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:REDIS_HOST::" },
+        { "name": "REDIS_PORT", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:REDIS_PORT::" },
+        { "name": "S3_MEDIA_BUCKET", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:S3_MEDIA_BUCKET::" },
+        { "name": "S3_MEDIA_REGION", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:S3_MEDIA_REGION::" },
+        { "name": "GOOGLE_CLIENT_IDS", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:GOOGLE_CLIENT_IDS::" },
+        { "name": "APPLE_CLIENT_ID", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:APPLE_CLIENT_ID::" },
+        { "name": "USER_SERVICE_PORT", "valueFrom": "arn:aws:secretsmanager:ap-south-1:576557633000:secret:pandittalk/prod-mjymxv:USER_SERVICE_PORT::" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/pandittalk-user-service",
+          "awslogs-region": "ap-south-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "node -e \"require('http').get('http://127.0.0.1:3001/',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))\""
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

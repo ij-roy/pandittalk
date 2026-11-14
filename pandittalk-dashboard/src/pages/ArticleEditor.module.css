@@ -1,0 +1,277 @@
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 3rem;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #5a5a72;
+  font-size: 0.88rem;
+}
+
+.status {
+  text-transform: capitalize;
+  font-weight: 700;
+  color: var(--deep-grey);
+}
+
+.saveState {
+  color: #8a8aa0;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ghostBtn,
+.primaryBtn,
+.toolBtn {
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.ghostBtn {
+  border: 1px solid var(--border);
+  background: var(--white);
+  padding: 0.5rem 0.85rem;
+}
+
+.primaryBtn {
+  border: none;
+  background: var(--gold);
+  color: var(--deep-grey);
+  padding: 0.55rem 1rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.editorCol {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem 2rem;
+  min-height: 70vh;
+}
+
+.titleInput {
+  width: 100%;
+  border: none;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--deep-grey);
+  padding: 0;
+  margin-bottom: 0.85rem;
+}
+
+.titleInput:focus {
+  outline: none;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.toolBtn {
+  border: 1px solid var(--border);
+  background: #fafafa;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.8rem;
+}
+
+.toolBtnActive {
+  background: var(--deep-grey);
+  color: var(--white);
+  border-color: var(--deep-grey);
+}
+
+.editorSurface {
+  min-height: 48vh;
+}
+
+.tiptap {
+  min-height: 48vh;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--deep-grey);
+}
+
+.tiptap:focus {
+  outline: none;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap a {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #8a8aa0;
+  font-weight: 400;
+}
+
+.tiptap h2,
+.tiptap h3 {
+  margin: 1.4rem 0 0.5rem;
+}
+
+.tiptap p {
+  margin: 0 0 0.9rem;
+}
+
+.tiptap blockquote {
+  margin: 0 0 1rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--gold);
+  color: #5a5a72;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.previewTabs {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.tab,
+.tabActive {
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.tab {
+  border: 1px solid var(--border);
+  background: var(--white);
+}
+
+.tabActive {
+  border: none;
+  background: var(--deep-grey);
+  color: var(--white);
+}
+
+.webFrame,
+.phoneFrame {
+  background: #fffaf2;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.webFrame {
+  border-radius: 12px;
+}
+
+.phoneFrame {
+  border-radius: 28px;
+  max-width: 340px;
+  margin: 0 auto;
+  border-width: 8px;
+  border-color: var(--deep-grey);
+}
+
+.previewCover {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+}
+
+.previewBody {
+  padding: 1rem;
+}
+
+.previewKicker {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8a6d00;
+}
+
+.previewTitle {
+  margin: 0.35rem 0 0.75rem;
+  font-size: 1.25rem;
+}
+
+.previewProse {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #333;
+}
+
+.previewProse h2,
+.previewProse h3 {
+  margin: 1rem 0 0.35rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #5a5a72;
+}
+
+.field input,
+.field select,
+.field textarea {
+  font-weight: 400;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  color: var(--deep-grey);
+}
+
+.liveLink {
+  color: #1d4ed8;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.error {
+  color: var(--error);
+}
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

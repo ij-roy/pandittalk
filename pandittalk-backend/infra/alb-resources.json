@@ -1,0 +1,22 @@
+{
+  "region": "ap-south-1",
+  "albDnsName": "pandittalk-alb-1839993011.ap-south-1.elb.amazonaws.com",
+  "albArn": "arn:aws:elasticloadbalancing:ap-south-1:576557633000:loadbalancer/app/pandittalk-alb/72f69fbc98f5b9bf",
+  "targetGroupArn": "arn:aws:elasticloadbalancing:ap-south-1:576557633000:targetgroup/pandittalk-tg/34fa2cd2c70c268e",
+  "albSecurityGroupId": "sg-08c0112cbbef67c57",
+  "ecsSecurityGroupId": "sg-02e3104a1c613a2d9",
+  "vpcId": "vpc-00bf5da9e9e1616ae",
+  "listenerHttpArn": "arn:aws:elasticloadbalancing:ap-south-1:576557633000:listener/app/pandittalk-alb/72f69fbc98f5b9bf/e2eecc8a8da13188",
+  "containerName": "pandittalk-user-service",
+  "containerPort": 3001,
+  "certificateArn": "arn:aws:acm:ap-south-1:576557633000:certificate/531a9bd0-0f5e-4f79-a395-690047d863dc",
+  "certificateDomain": "api.pandittalk.com",
+  "certificateValidationStatus": "ISSUED",
+  "certificateValidationRecord": {
+    "name": "_f51f5dd6f97c9a9b2c5ddc75631f1566.api.pandittalk.com.",
+    "type": "CNAME",
+    "value": "_db375771753faa10748d8546e8c061aa.jkddzztszm.acm-validations.aws."
+  },
+  "listenerHttpsArn": "arn:aws:elasticloadbalancing:ap-south-1:576557633000:listener/app/pandittalk-alb/72f69fbc98f5b9bf/d5ac2681e2de3d47",
+  "sslPolicy": "ELBSecurityPolicy-TLS13-1-2-2021-06"
+}
