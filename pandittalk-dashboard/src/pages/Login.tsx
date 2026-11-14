@@ -145,7 +145,7 @@ export function Login() {
         const pandit = await fetchPanditMe();
         setPanditInfo(pandit.id, pandit.name, pandit.isOnline);
         navigate('/dashboard', { replace: true });
-      } catch (err) {
+      } catch {
         await logoutSession().catch(() => clearLocalAuth());
         setNotRegistered(true);
         setOtpSent(false);
