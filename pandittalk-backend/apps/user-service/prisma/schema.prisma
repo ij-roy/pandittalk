@@ -103,7 +103,6 @@ model Pandit {
   bookings     Booking[]
   reviews      Review[]
   articles     Article[]
-  articles     Article[]
   blockedByUsers UserPanditBlock[]
   followers    PanditFollow[]
 
