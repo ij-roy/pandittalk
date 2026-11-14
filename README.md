@@ -67,6 +67,7 @@ docker compose logs -f api
 docker compose up -d --scale api=2 --no-recreate api proxy
 docker compose exec -T api node scripts/ensure-local-demo-data.cjs
 Push-Location pandittalk-website; npm run test:local-replica; Pop-Location
+Push-Location pandittalk-website; npm run test:local-api; Pop-Location
 docker compose exec -T redis redis-cli ping
 docker compose exec -T postgres pg_isready -U pandittalk -d pandittalk
 docker compose down

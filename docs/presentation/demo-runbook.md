@@ -16,6 +16,7 @@ being graded.
    docker compose up -d --build
    docker compose ps
    docker compose exec -T api node scripts/ensure-local-demo-data.cjs
+   cd pandittalk-website && npm run test:local-api && cd ..
    curl --fail http://localhost:3001/
    curl --fail http://localhost:3001/readiness
    curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
@@ -53,6 +54,7 @@ docker compose exec -T postgres pg_isready -U pandittalk -d pandittalk
 docker compose up -d --scale api=2 --no-recreate api proxy
 docker compose ps
 docker compose exec -T api node scripts/ensure-local-demo-data.cjs
+cd pandittalk-website && npm run test:local-api && cd ..
 cd pandittalk-website && npm run test:local-replica && cd ..
 curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
 ```
