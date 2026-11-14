@@ -43,6 +43,7 @@ COPY --chown=node:node --from=build /app/node_modules/.prisma ./node_modules/.pr
 COPY --chown=node:node --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --chown=node:node --from=build /app/node_modules/prisma ./node_modules/prisma
 COPY --chown=node:node apps/user-service/prisma ./apps/user-service/prisma
+COPY --chown=node:node scripts/ensure-local-demo-data.cjs ./scripts/ensure-local-demo-data.cjs
 COPY --chown=node:node package.json ./
 
 EXPOSE 3001

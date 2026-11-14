@@ -38,6 +38,18 @@ docker compose ps
 Invoke-WebRequest http://localhost:3001/
 ```
 
+For a repeatable local customer/dashboard smoke test, seed only the demo
+records (no fake reviews or payments) and use OTP `1234` for the two phones in
+`TEST_OTP_PHONE_ALLOWLIST`:
+
+```powershell
+docker compose exec -T api node scripts/ensure-local-demo-data.cjs
+```
+
+The script creates one customer, one linked pandit, and one confirmed chat
+booking. It is not part of application startup and is intended only for local
+verification.
+
 The API is available at `http://localhost:3001`. The Pandit service, Redis,
 PostgreSQL, and DynamoDB Local stay on the private Compose network so they do
 not collide with software already using ports on the host. Migrations run when
@@ -48,6 +60,8 @@ Useful commands:
 ```powershell
 docker compose logs -f api
 docker compose up -d --scale api=2 --no-recreate api proxy
+docker compose exec -T api node scripts/ensure-local-demo-data.cjs
+Push-Location pandittalk-website; npm run test:local-replica; Pop-Location
 docker compose exec -T redis redis-cli ping
 docker compose exec -T postgres pg_isready -U pandittalk -d pandittalk
 docker compose down

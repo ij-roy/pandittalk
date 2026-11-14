@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test tests/contracts/*.test.ts",
-    "test:ui": "playwright test"
+    "test:ui": "playwright test",
+    "test:local-replica": "node tests/local-replica-smoke.cjs"
   },
   "dependencies": {
     "amazon-chime-sdk-js": "3.32.0",

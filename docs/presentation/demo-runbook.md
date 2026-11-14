@@ -15,6 +15,7 @@ being graded.
    ```bash
    docker compose up -d --build
    docker compose ps
+   docker compose exec -T api node scripts/ensure-local-demo-data.cjs
    curl --fail http://localhost:3001/
    curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
    ```
@@ -49,13 +50,16 @@ docker compose exec -T redis redis-cli ping
 docker compose exec -T postgres pg_isready -U pandittalk -d pandittalk
 docker compose up -d --scale api=2 --no-recreate api proxy
 docker compose ps
+docker compose exec -T api node scripts/ensure-local-demo-data.cjs
+cd pandittalk-website && npm run test:local-replica && cd ..
 curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
 ```
 
-Then show the browser clients. Exchange a chat message, scale the API, and
-exchange another message. Explain that the message/room coordination uses Redis
-and that Caddy does not require sticky sessions. Do not run `docker compose down`
-during the presentation.
+Use the local demo phones from `TEST_OTP_PHONE_ALLOWLIST` with OTP `1234`, then
+show the browser clients. Exchange a chat message, reconnect one client, and
+show that the message history and session state return. Explain that the
+message/room coordination uses Redis and that Caddy does not require sticky
+sessions. Do not run `docker compose down` during the presentation.
 
 ## Architecture answers to prepare
 
