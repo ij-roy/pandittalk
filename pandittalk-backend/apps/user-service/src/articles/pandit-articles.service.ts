@@ -92,7 +92,12 @@ export type ArticleStatsResponse = {
   }>;
 };
 
-const ALLOWED_COVER_MIMES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
+const ALLOWED_COVER_MIMES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+]);
 const MAX_COVER_BYTES = 5 * 1024 * 1024;
 
 @Injectable()
@@ -114,7 +119,9 @@ export class PanditArticlesService {
         ? {
             OR: [
               { title: { contains: query.search.trim(), mode: 'insensitive' } },
-              { excerpt: { contains: query.search.trim(), mode: 'insensitive' } },
+              {
+                excerpt: { contains: query.search.trim(), mode: 'insensitive' },
+              },
             ],
           }
         : {}),
@@ -147,8 +154,7 @@ export class PanditArticlesService {
     const content = dto.content?.trim() ?? '';
     const category = dto.category ?? ArticleCategory.spirituality;
     const slug = await this.uniqueSlug(dto.slug?.trim() || slugifyTitle(title));
-    const excerpt =
-      dto.excerpt?.trim() || excerptFromContent(content || title);
+    const excerpt = dto.excerpt?.trim() || excerptFromContent(content || title);
 
     const created = await this.prisma.article.create({
       data: {
@@ -159,7 +165,8 @@ export class PanditArticlesService {
         authorPanditId: pandit.id,
         status: ArticleStatus.draft,
         language: dto.language ?? detectLanguage(title, content),
-        coverImageUrl: dto.coverImageUrl?.trim() || coverImageForCategory(category),
+        coverImageUrl:
+          dto.coverImageUrl?.trim() || coverImageForCategory(category),
         coverAlt: dto.coverAlt?.trim() || null,
         excerpt: excerpt.slice(0, 280),
         content,
@@ -199,8 +206,7 @@ export class PanditArticlesService {
         slug,
         category,
         language: dto.language ?? detectLanguage(title, content),
-        coverImageUrl:
-          dto.coverImageUrl?.trim() || existing.coverImageUrl,
+        coverImageUrl: dto.coverImageUrl?.trim() || existing.coverImageUrl,
         coverAlt:
           dto.coverAlt === undefined
             ? existing.coverAlt
@@ -260,10 +266,7 @@ export class PanditArticlesService {
     return this.toPayload(updated);
   }
 
-  async unpublish(
-    pandit: Pandit,
-    id: string,
-  ): Promise<PanditArticlePayload> {
+  async unpublish(pandit: Pandit, id: string): Promise<PanditArticlePayload> {
     const existing = await this.requireOwned(pandit, id);
     const updated = await this.prisma.article.update({
       where: { id: existing.id },
@@ -272,10 +275,7 @@ export class PanditArticlesService {
     return this.toPayload(updated);
   }
 
-  async deleteDraft(
-    pandit: Pandit,
-    id: string,
-  ): Promise<{ id: string }> {
+  async deleteDraft(pandit: Pandit, id: string): Promise<{ id: string }> {
     const existing = await this.requireOwned(pandit, id);
     if (
       existing.status !== ArticleStatus.draft &&
@@ -306,7 +306,11 @@ export class PanditArticlesService {
       throw new BadRequestException('Cover image must be 5MB or smaller');
     }
 
-    const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg';
+    const ext = mime.includes('png')
+      ? 'png'
+      : mime.includes('webp')
+        ? 'webp'
+        : 'jpg';
     const key = `articles/${existing.id}/cover.${ext}`;
     const url = await this.storage.put(key, file.buffer, mime);
     const coverImageUrl = `${url}?v=${Date.now()}`;
@@ -318,10 +322,7 @@ export class PanditArticlesService {
     return this.toPayload(updated);
   }
 
-  async stats(
-    pandit: Pandit,
-    days = 30,
-  ): Promise<ArticleStatsResponse> {
+  async stats(pandit: Pandit, days = 30): Promise<ArticleStatsResponse> {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     const mine = await this.prisma.article.findMany({
       where: { authorPanditId: pandit.id },
@@ -363,7 +364,10 @@ export class PanditArticlesService {
       if (event.type === 'view') {
         totals.views += 1;
         point.views += 1;
-        byArticle.set(event.articleId, (byArticle.get(event.articleId) ?? 0) + 1);
+        byArticle.set(
+          event.articleId,
+          (byArticle.get(event.articleId) ?? 0) + 1,
+        );
       } else if (event.type === 'read') {
         totals.reads += 1;
         point.reads += 1;
@@ -410,7 +414,10 @@ export class PanditArticlesService {
     return article;
   }
 
-  private async uniqueSlug(desired: string, excludeId?: string): Promise<string> {
+  private async uniqueSlug(
+    desired: string,
+    excludeId?: string,
+  ): Promise<string> {
     const base = slugifyTitle(desired) || `article-${Date.now().toString(36)}`;
     let candidate = base;
     let n = 2;

@@ -79,7 +79,9 @@ export class ExpoPushService {
         });
         if (!res.ok) {
           const text = await res.text().catch(() => '');
-          this.logger.warn(`Expo push HTTP ${res.status}: ${text.slice(0, 200)}`);
+          this.logger.warn(
+            `Expo push HTTP ${res.status}: ${text.slice(0, 200)}`,
+          );
           continue;
         }
         const json = (await res.json().catch(() => null)) as {

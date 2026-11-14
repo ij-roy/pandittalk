@@ -28,7 +28,9 @@ export class AppleTokenVerifier {
         throw new UnauthorizedException('Apple sign-in failed');
       }
       const email =
-        typeof claims.email === 'string' ? claims.email.trim().toLowerCase() : '';
+        typeof claims.email === 'string'
+          ? claims.email.trim().toLowerCase()
+          : '';
       return {
         provider: 'apple',
         subject,

@@ -6,10 +6,7 @@ import {
   IsString,
   Matches,
 } from 'class-validator';
-import {
-  INDIA_MOBILE_E164_REGEX,
-  normalizeIndiaPhone,
-} from '../phone.util';
+import { INDIA_MOBILE_E164_REGEX, normalizeIndiaPhone } from '../phone.util';
 
 /**
  * Accepts `phoneNumber` or legacy/mobile key `phone`.

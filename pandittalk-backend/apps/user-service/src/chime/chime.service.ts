@@ -130,11 +130,7 @@ export class ChimeService {
     }
 
     cache.attendees[userId] = attendee;
-    await this.cacheManager.set(
-      this.meetingKey(bookingId),
-      cache,
-      cache.ttlMs,
-    );
+    await this.cacheManager.set(this.meetingKey(bookingId), cache, cache.ttlMs);
 
     return attendee;
   }

@@ -1,7 +1,11 @@
 import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
-import { AuthService, type SocialAuthPendingResponse, type VerifyOtpResponse } from './auth.service';
+import {
+  AuthService,
+  type SocialAuthPendingResponse,
+  type VerifyOtpResponse,
+} from './auth.service';
 import { clientIp } from './client-ip.util';
 import { AppleAuthDto } from './dto/apple-auth.dto';
 import { CompleteSocialDto } from './dto/complete-social.dto';

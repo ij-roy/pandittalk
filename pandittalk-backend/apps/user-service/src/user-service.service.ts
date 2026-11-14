@@ -1,10 +1,18 @@
-import { Injectable, NotFoundException, Inject, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma, type User } from '@prisma/client';
 import { HealthResponseDto } from '@pandittalk/common';
 import { PrismaService } from './prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { computeProfileProgress, type ProfileProgress } from './auth/profile-progress';
+import {
+  computeProfileProgress,
+  type ProfileProgress,
+} from './auth/profile-progress';
 import {
   AVATAR_STORAGE,
   userAvatarObjectKey,
@@ -17,11 +25,7 @@ import {
   underageAccountMessage,
 } from './lib/age';
 
-const ALLOWED_AVATAR_MIMES = new Set([
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
-]);
+const ALLOWED_AVATAR_MIMES = new Set(['image/jpeg', 'image/jpg', 'image/png']);
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
 
 export type UserProfilePayload = {
@@ -64,7 +68,10 @@ export class UserServiceService {
       'local',
     );
     this.localAvatarPublicBaseUrl = this.configService
-      .get<string>('AVATAR_PUBLIC_BASE_URL', 'http://localhost:3001/static/avatars')
+      .get<string>(
+        'AVATAR_PUBLIC_BASE_URL',
+        'http://localhost:3001/static/avatars',
+      )
       .replace(/\/$/, '');
   }
 

@@ -2,10 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { RedisClientService } from '../redis/redis-client.service';
 import { hashOtp } from './otp-crypto.util';
-import {
-  MAX_VERIFY_ATTEMPTS,
-  OtpStoreService,
-} from './otp-store.service';
+import { MAX_VERIFY_ATTEMPTS, OtpStoreService } from './otp-store.service';
 
 describe('OtpStoreService', () => {
   const secret = 'test-jwt-secret';
@@ -61,8 +58,8 @@ describe('OtpStoreService', () => {
 
   it('verifyAndConsume returns false when Lua returns 0', async () => {
     redis.eval.mockResolvedValue(0);
-    await expect(
-      store.verifyAndConsume('+919876543210', '0000'),
-    ).resolves.toBe(false);
+    await expect(store.verifyAndConsume('+919876543210', '0000')).resolves.toBe(
+      false,
+    );
   });
 });

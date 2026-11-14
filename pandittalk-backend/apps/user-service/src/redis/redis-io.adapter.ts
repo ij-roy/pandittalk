@@ -45,7 +45,9 @@ export class RedisIoAdapter extends IoAdapter {
     const server = super.createIOServer(port, options) as Server;
 
     if (!this.adapterConstructor) {
-      throw new Error('RedisIoAdapter.connectToRedis() must run before creating Socket.IO servers');
+      throw new Error(
+        'RedisIoAdapter.connectToRedis() must run before creating Socket.IO servers',
+      );
     }
 
     server.adapter(this.adapterConstructor);

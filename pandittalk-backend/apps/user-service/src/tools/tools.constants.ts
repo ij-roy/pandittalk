@@ -35,7 +35,9 @@ export function resolveCityKey(placeOfBirth: string): string | null {
 }
 
 /** Resolve lat,lng string for astro APIs. */
-export function resolveCoordinatesFromPlace(placeOfBirth: string): string | undefined {
+export function resolveCoordinatesFromPlace(
+  placeOfBirth: string,
+): string | undefined {
   const fromExpanded = lookupCityCoordinates(placeOfBirth);
   if (fromExpanded) return fromExpanded;
   const cityKey = resolveCityKey(placeOfBirth);
@@ -63,7 +65,11 @@ export const ZODIAC_SIGNS = [
 
 export const HOROSCOPE_TYPES = ['daily', 'monthly'] as const;
 
-export const PALM_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export const PALM_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+] as const;
 
 export const MAJOR_ARCANA = [
   'The Fool',

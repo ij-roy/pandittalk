@@ -28,56 +28,43 @@ import { ledgerRefundWrite } from './ledger-copy';
 import { PanditAvailabilityService } from './pandit-availability.service';
 import { PanditQueueService } from './pandit-queue.service';
 import { publicReviewWhere } from '../experts/public-reviews';
-import {
-  isAtLeastAge,
-  MINIMUM_ACCOUNT_AGE,
-} from '../lib/age';
+import { isAtLeastAge, MINIMUM_ACCOUNT_AGE } from '../lib/age';
 import { isPanditPresent } from '../experts/presence-fresh';
 
-import type { BookingDepth, BookingFormat, BookingSessionModel } from './dto/create-booking.dto';
+import type {
+  BookingDepth,
+  BookingFormat,
+  BookingSessionModel,
+} from './dto/create-booking.dto';
 import type { ChatNowDto } from './dto/create-chat-now.dto';
 import type { BookingStatusUpdate } from './dto/update-booking-status.dto';
 
 const AGE_GATE_MARKETPLACE_MESSAGE =
   'Confirm your date of birth in Profile (you must be 18+) before booking or chatting.';
 
-
-
 const DEPTH_PRICES: Record<BookingDepth, number> = {
-
   entry: 151,
 
   standard: 301,
 
   deep: 501,
-
 };
 
-
-
 const FORMAT_SURCHARGE: Record<BookingFormat, number> = {
-
   video: 150,
 
   audio: 0,
 
   chat: -50,
-
 };
 
-
-
 const DEPTH_DURATION_MINUTES: Record<BookingDepth, number> = {
-
   entry: 15,
 
   standard: 25,
 
   deep: 45,
-
 };
-
-
 
 const BOOKING_BUFFER_MINUTES = 5;
 
@@ -86,7 +73,6 @@ const CHAT_NOW_DURATION_MINUTES = 15;
 const CHAT_NOW_BUFFER_MINUTES = 5;
 
 export interface BookingListItem {
-
   id: string;
 
   panditId: string;
@@ -116,13 +102,9 @@ export interface BookingListItem {
   createdAt: string;
 
   review: { id: string; rating: number; comment: string | null } | null;
-
 }
 
-
-
 export interface BookingReviewSummary {
-
   id: string;
 
   rating: number;
@@ -130,13 +112,9 @@ export interface BookingReviewSummary {
   comment: string | null;
 
   createdAt: string;
-
 }
 
-
-
 export interface BookingPanditDetail {
-
   id: string;
 
   name: string;
@@ -148,13 +126,9 @@ export interface BookingPanditDetail {
   imageUrl: string | null;
 
   rating: number;
-
 }
 
-
-
 export interface BookingDetail {
-
   id: string;
 
   userId: string;
@@ -192,10 +166,7 @@ export interface BookingDetail {
   pandit: BookingPanditDetail;
 
   review: BookingReviewSummary | null;
-
 }
-
-
 
 export interface CreatedBookingResponse {
   sessionModel: string;
@@ -252,16 +223,14 @@ export interface RefundResult {
   applied: boolean;
 }
 
-function calculateTotalPrice(depth: BookingDepth, format: BookingFormat): number {
-
+function calculateTotalPrice(
+  depth: BookingDepth,
+  format: BookingFormat,
+): number {
   return DEPTH_PRICES[depth] + FORMAT_SURCHARGE[format];
-
 }
 
-
-
 @Injectable()
-
 export class BookingsService {
   constructor(
     private readonly prisma: PrismaService,
@@ -273,10 +242,7 @@ export class BookingsService {
     private readonly notificationsService: NotificationsService,
   ) {}
 
-
-
   async create(
-
     userId: string,
 
     panditId: string,
@@ -294,7 +260,6 @@ export class BookingsService {
     sessionModel: BookingSessionModel = 'legacy_timed',
 
     platform: ClientPlatform = 'unknown',
-
   ): Promise<CreatedBookingResponse> {
     // App Store Option C: reopen scheduled bookings. iOS clients may only
     // create chat-format bookings (A/V gated until Chime iOS ships).
@@ -318,30 +283,18 @@ export class BookingsService {
     const startTime = new Date(startTimeIso);
 
     if (Number.isNaN(startTime.getTime())) {
-
       throw new BadRequestException('Invalid startTime');
-
     }
 
-
-
     const pandit = await this.prisma.pandit.findUnique({
-
       where: { id: panditId },
 
       select: { name: true },
-
     });
 
-
-
     if (!pandit) {
-
       throw new BadRequestException('Pandit not found');
-
     }
-
-
 
     const totalPrice = calculateTotalPrice(depth, format);
 
@@ -349,52 +302,31 @@ export class BookingsService {
 
     const durationMinutes = DEPTH_DURATION_MINUTES[depth];
 
-    const endTime = new Date(
-
-      startTime.getTime() + durationMinutes * 60 * 1000,
-
-    );
+    const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
 
     const bufferEndTime = new Date(
-
       endTime.getTime() + BOOKING_BUFFER_MINUTES * 60 * 1000,
-
     );
 
-
-
     const user = await this.prisma.user.findFirst({
-
       where: { id: userId, isActive: true },
 
       select: { walletBalance: true, dob: true },
-
     });
 
-
-
     if (!user) {
-
       throw new NotFoundException('User not found');
-
     }
 
     this.assertAdultDob(user.dob);
 
     if (Number(user.walletBalance) < totalPrice) {
-
       throw new BadRequestException('Insufficient wallet balance');
-
     }
 
-
-
     const booking = await this.prisma.$transaction(async (tx) => {
-
       const conflict = await tx.booking.findFirst({
-
         where: {
-
           panditId,
 
           status: { not: 'cancelled' },
@@ -402,59 +334,37 @@ export class BookingsService {
           startTime: { lt: bufferEndTime },
 
           endTime: { gt: startTime },
-
         },
-
       });
 
-
-
       if (conflict) {
-
         throw new ConflictException({
           code: 'SLOT_TAKEN',
           message:
             'That time was just taken. Please choose another available slot.',
         });
-
       }
 
-
-
       const walletUpdate = await tx.user.updateMany({
-
         where: {
-
           id: userId,
 
           isActive: true,
 
           walletBalance: { gte: totalPrice },
-
         },
 
         data: {
-
           walletBalance: { decrement: totalPrice },
-
         },
-
       });
 
-
-
       if (walletUpdate.count === 0) {
-
         throw new BadRequestException('Insufficient wallet balance');
-
       }
 
-
-
       return tx.booking.create({
-
         data: {
-
           userId,
 
           panditId,
@@ -480,19 +390,12 @@ export class BookingsService {
           coinsDeducted,
 
           notes: notes ?? null,
-
         },
-
       });
-
     });
 
-
-
     await this.prisma.transaction.create({
-
       data: {
-
         userId,
 
         type: 'booking_debit',
@@ -506,12 +409,8 @@ export class BookingsService {
         bookingId: booking.id,
 
         description: `Session booking: ${area} with ${pandit.name}`,
-
       },
-
     });
-
-
 
     await this.notifyBookingConfirmed(
       userId,
@@ -522,7 +421,6 @@ export class BookingsService {
     );
 
     return this.toCreatedResponse(booking, pandit.name);
-
   }
 
   async createChatNow(
@@ -565,7 +463,9 @@ export class BookingsService {
     }
 
     const now = new Date();
-    const liveStatus = await this.panditAvailability.getLiveStatus(dto.panditId);
+    const liveStatus = await this.panditAvailability.getLiveStatus(
+      dto.panditId,
+    );
 
     if (liveStatus.state === 'busy') {
       throw new PanditBusyException({
@@ -595,7 +495,9 @@ export class BookingsService {
       });
 
       if (conflict) {
-        const status = await this.panditAvailability.getLiveStatus(dto.panditId);
+        const status = await this.panditAvailability.getLiveStatus(
+          dto.panditId,
+        );
         throw new PanditBusyException({
           code: 'PANDIT_BUSY',
           message: 'Pandit is currently on another call.',
@@ -668,27 +570,19 @@ export class BookingsService {
   }
 
   async findAllForUser(userId: string): Promise<BookingListItem[]> {
-
     const bookings = await this.prisma.booking.findMany({
-
       where: { userId },
 
       orderBy: { createdAt: 'desc' },
 
       include: {
-
         pandit: { select: { name: true } },
 
         review: { select: { id: true, rating: true, comment: true } },
-
       },
-
     });
 
-
-
     return bookings.map((booking) => ({
-
       id: booking.id,
 
       panditId: booking.panditId,
@@ -724,55 +618,33 @@ export class BookingsService {
             comment: booking.review.comment,
           }
         : null,
-
     }));
-
   }
 
-
-
   async findAllForPanditUser(userId: string): Promise<BookingListItem[]> {
-
     const pandit = await this.prisma.pandit.findUnique({
-
       where: { userId },
 
       select: { id: true },
-
     });
 
-
-
     if (!pandit) {
-
       throw new NotFoundException(
-
         'No pandit profile linked to this user account',
-
       );
-
     }
 
-
-
     const bookings = await this.prisma.booking.findMany({
-
       where: { panditId: pandit.id },
 
       orderBy: { createdAt: 'desc' },
 
       include: {
-
         pandit: { select: { name: true } },
-
       },
-
     });
 
-
-
     return bookings.map((booking) => ({
-
       id: booking.id,
 
       panditId: booking.panditId,
@@ -802,25 +674,19 @@ export class BookingsService {
       createdAt: booking.createdAt.toISOString(),
 
       review: null,
-
     }));
-
   }
 
-
-
-  async findOneForUser(userId: string, bookingId: string): Promise<BookingDetail> {
-
+  async findOneForUser(
+    userId: string,
+    bookingId: string,
+  ): Promise<BookingDetail> {
     const booking = await this.prisma.booking.findFirst({
-
       where: { id: bookingId, userId },
 
       include: {
-
         pandit: {
-
           select: {
-
             id: true,
 
             name: true,
@@ -832,15 +698,11 @@ export class BookingsService {
             imageUrl: true,
 
             rating: true,
-
           },
-
         },
 
         review: {
-
           select: {
-
             id: true,
 
             rating: true,
@@ -848,47 +710,49 @@ export class BookingsService {
             comment: true,
 
             createdAt: true,
-
           },
-
         },
-
       },
-
     });
-
-
 
     if (!booking) {
-
       throw new NotFoundException(`Booking with id "${bookingId}" not found`);
-
     }
-
-
 
     return this.toDetail(booking);
-
   }
 
-  async findSharedContext(userId: string, bookingId: string): Promise<SharedBookingContext[]> {
+  async findSharedContext(
+    userId: string,
+    bookingId: string,
+  ): Promise<SharedBookingContext[]> {
     const booking = await this.prisma.booking.findFirst({
       where: { id: bookingId },
-      include: { pandit: { select: { userId: true } }, contextShares: { where: { revokedAt: null }, include: { context: true }, orderBy: { createdAt: 'desc' } } },
+      include: {
+        pandit: { select: { userId: true } },
+        contextShares: {
+          where: { revokedAt: null },
+          include: { context: true },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
-    if (!booking || (booking.userId !== userId && booking.pandit.userId !== userId)) {
+    if (
+      !booking ||
+      (booking.userId !== userId && booking.pandit.userId !== userId)
+    ) {
       throw new NotFoundException(`Booking with id "${bookingId}" not found`);
     }
-    return booking.contextShares.filter((share) => !share.context.deletedAt).map((share) => ({
-      id: share.context.id,
-      text: share.context.text,
-      version: share.context.version,
-      sharedAt: share.createdAt.toISOString(),
-      contextVersion: share.contextVersion,
-    }));
+    return booking.contextShares
+      .filter((share) => !share.context.deletedAt)
+      .map((share) => ({
+        id: share.context.id,
+        text: share.context.text,
+        version: share.context.version,
+        sharedAt: share.createdAt.toISOString(),
+        contextVersion: share.contextVersion,
+      }));
   }
-
-
 
   async reschedule(
     userId: string,
@@ -897,8 +761,13 @@ export class BookingsService {
   ): Promise<BookingDetail> {
     const startTime = new Date(startTimeIso);
     const minLeadMs = 15 * 60 * 1000;
-    if (Number.isNaN(startTime.getTime()) || startTime.getTime() < Date.now() + minLeadMs) {
-      throw new BadRequestException('Choose a time at least 15 minutes from now.');
+    if (
+      Number.isNaN(startTime.getTime()) ||
+      startTime.getTime() < Date.now() + minLeadMs
+    ) {
+      throw new BadRequestException(
+        'Choose a time at least 15 minutes from now.',
+      );
     }
 
     const booking = await this.prisma.booking.findFirst({
@@ -908,7 +777,9 @@ export class BookingsService {
       throw new NotFoundException(`Booking with id "${bookingId}" not found`);
     }
     if (booking.status !== 'confirmed') {
-      throw new BadRequestException('Only upcoming confirmed sessions can be rescheduled.');
+      throw new BadRequestException(
+        'Only upcoming confirmed sessions can be rescheduled.',
+      );
     }
     if (booking.startTime.getTime() - Date.now() < minLeadMs) {
       throw new BadRequestException(
@@ -923,7 +794,9 @@ export class BookingsService {
     }
 
     const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
-    const bufferEndTime = new Date(endTime.getTime() + BOOKING_BUFFER_MINUTES * 60 * 1000);
+    const bufferEndTime = new Date(
+      endTime.getTime() + BOOKING_BUFFER_MINUTES * 60 * 1000,
+    );
 
     await this.prisma.$transaction(async (tx) => {
       const conflict = await tx.booking.findFirst({
@@ -948,54 +821,33 @@ export class BookingsService {
   }
 
   async updateStatus(
-
     userId: string,
 
     bookingId: string,
 
     status: BookingStatusUpdate,
-
   ): Promise<BookingDetail> {
-
     const booking = await this.prisma.booking.findFirst({
-
       where: { id: bookingId, userId },
-
     });
 
-
-
     if (!booking) {
-
       throw new NotFoundException(`Booking with id "${bookingId}" not found`);
-
     }
-
-
 
     if (booking.status === status) {
-
       return this.findOneForUser(userId, bookingId);
-
     }
-
-
 
     if (status === 'cancelled') {
       await this.cancelWithRefund(bookingId, 'Refund: cancelled session');
     } else {
-
       await this.prisma.booking.update({
-
         where: { id: bookingId },
 
         data: { status },
-
       });
-
     }
-
-
 
     return this.findOneForUser(userId, bookingId);
   }
@@ -1028,10 +880,7 @@ export class BookingsService {
       throw new BadRequestException('Only confirmed bookings can be cancelled');
     }
 
-    await this.cancelWithRefund(
-      bookingId,
-      'Refund: cancelled by pandit',
-    );
+    await this.cancelWithRefund(bookingId, 'Refund: cancelled by pandit');
 
     const detail = await this.prisma.booking.findUnique({
       where: { id: bookingId },
@@ -1245,7 +1094,6 @@ export class BookingsService {
   }
 
   async createReview(
-
     userId: string,
 
     bookingId: string,
@@ -1253,49 +1101,28 @@ export class BookingsService {
     rating: number,
 
     comment?: string,
-
   ): Promise<BookingReviewSummary> {
-
     const booking = await this.prisma.booking.findFirst({
-
       where: { id: bookingId, userId },
 
       include: { review: { select: { id: true } } },
-
     });
 
-
-
     if (!booking) {
-
       throw new NotFoundException(`Booking with id "${bookingId}" not found`);
-
     }
-
-
 
     if (booking.status !== 'completed') {
-
       throw new BadRequestException('Only completed bookings can be reviewed');
-
     }
-
-
 
     if (booking.review) {
-
       throw new ConflictException('A review already exists for this booking');
-
     }
 
-
-
     const review = await this.prisma.$transaction(async (tx) => {
-
       const created = await tx.review.create({
-
         data: {
-
           bookingId,
 
           userId,
@@ -1305,55 +1132,34 @@ export class BookingsService {
           rating,
 
           comment: comment ?? null,
-
         },
-
       });
 
-
-
       const aggregate = await tx.review.aggregate({
-
         where: publicReviewWhere({ panditId: booking.panditId }),
 
         _avg: { rating: true },
 
         _count: true,
-
       });
 
-
-
       const avgRating =
-
         Math.round((aggregate._avg.rating ?? rating) * 100) / 100;
 
-
-
       await tx.pandit.update({
-
         where: { id: booking.panditId },
 
         data: {
-
           rating: avgRating,
 
           totalReviews: aggregate._count,
-
         },
-
       });
 
-
-
       return created;
-
     });
 
-
-
     return {
-
       id: review.id,
 
       rating: review.rating,
@@ -1361,12 +1167,8 @@ export class BookingsService {
       comment: review.comment,
 
       createdAt: review.createdAt.toISOString(),
-
     };
-
   }
-
-
 
   private assertAdultDob(dob: string | null | undefined): void {
     if (!dob || !isAtLeastAge(dob, MINIMUM_ACCOUNT_AGE)) {
@@ -1375,15 +1177,11 @@ export class BookingsService {
   }
 
   private toCreatedResponse(
-
     booking: Booking,
 
     panditName: string,
-
   ): CreatedBookingResponse {
-
     return {
-
       id: booking.id,
 
       userId: booking.userId,
@@ -1411,33 +1209,20 @@ export class BookingsService {
       panditName,
 
       startTime: booking.startTime.toISOString(),
-
     };
-
   }
 
-
-
   private toDetail(
-
     booking: Booking & {
-
       pandit: Pick<
-
         Pandit,
-
         'id' | 'name' | 'headline' | 'specialty' | 'imageUrl' | 'rating'
-
       >;
 
       review: Pick<Review, 'id' | 'rating' | 'comment' | 'createdAt'> | null;
-
     },
-
   ): BookingDetail {
-
     return {
-
       id: booking.id,
 
       userId: booking.userId,
@@ -1473,7 +1258,6 @@ export class BookingsService {
       updatedAt: booking.updatedAt.toISOString(),
 
       pandit: {
-
         id: booking.pandit.id,
 
         name: booking.pandit.name,
@@ -1485,13 +1269,10 @@ export class BookingsService {
         imageUrl: booking.pandit.imageUrl,
 
         rating: Number(booking.pandit.rating),
-
       },
 
       review: booking.review
-
         ? {
-
             id: booking.review.id,
 
             rating: booking.review.rating,
@@ -1499,13 +1280,9 @@ export class BookingsService {
             comment: booking.review.comment,
 
             createdAt: booking.review.createdAt.toISOString(),
-
           }
-
         : null,
-
     };
-
   }
 
   private async notifyBookingConfirmed(
@@ -1529,5 +1306,4 @@ export class BookingsService {
       bookingId,
     );
   }
-
 }

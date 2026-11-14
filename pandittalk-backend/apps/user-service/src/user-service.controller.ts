@@ -17,10 +17,7 @@ import { HealthResponseDto } from '@pandittalk/common';
 import { CurrentUser } from './auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import {
-  UserProfilePayload,
-  UserServiceService,
-} from './user-service.service';
+import { UserProfilePayload, UserServiceService } from './user-service.service';
 import { readFeatureFlags } from './config/feature-flags';
 import { PrismaService } from './prisma/prisma.service';
 import { RedisClientService } from './redis/redis-client.service';
@@ -85,7 +82,10 @@ export class UserServiceController {
   @Get('public/app-update')
   getAppUpdatePolicy() {
     const iosLatest = this.config.get<string>('IOS_LATEST_VERSION', '1.0.9');
-    const iosMin = this.config.get<string>('IOS_MIN_SUPPORTED_VERSION', '1.0.0');
+    const iosMin = this.config.get<string>(
+      'IOS_MIN_SUPPORTED_VERSION',
+      '1.0.0',
+    );
     const androidLatest = this.config.get<string>(
       'ANDROID_LATEST_VERSION',
       '1.0.9',

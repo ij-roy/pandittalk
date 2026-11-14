@@ -23,7 +23,10 @@ export class LocalAvatarStorageService implements AvatarStorage {
       'uploads/avatars',
     );
     this.publicBaseUrl = this.configService
-      .get<string>('AVATAR_PUBLIC_BASE_URL', 'http://localhost:3001/static/avatars')
+      .get<string>(
+        'AVATAR_PUBLIC_BASE_URL',
+        'http://localhost:3001/static/avatars',
+      )
       .replace(/\/$/, '');
   }
 

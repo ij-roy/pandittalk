@@ -23,7 +23,12 @@ describe('UserServiceController', () => {
         { provide: PrismaService, useValue: prismaMock },
         { provide: RedisClientService, useValue: { ping: jest.fn() } },
         { provide: DynamoService, useValue: { ping: jest.fn() } },
-        { provide: ConfigService, useValue: { get: jest.fn((_key: string, fallback?: unknown) => fallback) } },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((_key: string, fallback?: unknown) => fallback),
+          },
+        },
         { provide: AVATAR_STORAGE, useValue: {} },
       ],
     }).compile();

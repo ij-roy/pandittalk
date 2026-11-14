@@ -152,21 +152,21 @@ presentation sequence is in
 Local checks:
 
 ```powershell
-Push-Location pandittalk-backend; npm ci; npm run prisma:generate; npm test -- --runInBand; npm run typecheck; npm run build; Pop-Location
+Push-Location pandittalk-backend; npm ci; npm run prisma:generate; npm run lint:check; npm test -- --runInBand; npm run typecheck; npm run build; Pop-Location
 Push-Location pandittalk-website; npm ci; npm test; npm run test:ui; npm run build; Pop-Location
 Push-Location pandittalk-dashboard; npm ci; npm run lint; npm run build; Pop-Location
 Push-Location pandittalk-mobile; npm ci; npm run typecheck; npm run test:webview-allowlist; npx expo export --platform web; Pop-Location
 docker compose config --quiet
 ```
 
-GitHub Actions runs install, backend Prisma/tests/typecheck/build gates, client
+GitHub Actions runs install, backend Prisma/lint/tests/typecheck/build gates, client
 typechecks/lint/build gates, website browser checks, Docker/Compose startup
 smoke checks, and tracked-secret hygiene checks on every push and pull request.
-The backend’s existing all-files ESLint configuration has unrelated legacy
-findings, so backend type safety is enforced by Prisma generation, Jest, and the
-TypeScript check/Nest build while client lint remains a blocking gate. A hosted run is still
-required after the branch is pushed; local green output is not a substitute for
-the CI check.
+Backend formatting and unused-symbol checks are blocking. Existing dynamic
+provider/socket payload checks remain visible as ESLint warnings while the
+runtime is migrated toward stricter types; `npm run lint:check` still fails on
+blocking lint errors. A hosted run is still required after the branch is pushed;
+local green output is not a substitute for the CI check.
 
 ## Kali deployment and recovery
 

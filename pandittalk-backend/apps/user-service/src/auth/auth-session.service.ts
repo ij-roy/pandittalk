@@ -1,14 +1,8 @@
-import {
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { AuthSession } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  generateRefreshToken,
-  hashRefreshToken,
-} from './refresh-token.util';
+import { generateRefreshToken, hashRefreshToken } from './refresh-token.util';
 
 export type SessionMeta = {
   ip?: string;

@@ -1,7 +1,7 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
 import { AuthSessionService } from './auth-session.service';
@@ -89,7 +89,10 @@ function createModule(allowTestOtp: string, testOtpAllowlist = '') {
       { provide: AuthSessionService, useValue: authSessions },
       { provide: GoogleTokenVerifier, useValue: { verify: jest.fn() } },
       { provide: AppleTokenVerifier, useValue: { verify: jest.fn() } },
-      { provide: SocialPendingStore, useValue: { save: jest.fn(), consume: jest.fn() } },
+      {
+        provide: SocialPendingStore,
+        useValue: { save: jest.fn(), consume: jest.fn() },
+      },
       { provide: ConfigService, useValue: config },
     ],
   }).compile();

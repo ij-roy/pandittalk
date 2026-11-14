@@ -33,7 +33,9 @@ export class DetailedKundliGuard extends AuthGuard('jwt') {
     _info: unknown,
     context: ExecutionContext,
   ): TUser | null {
-    const request = context.switchToHttp().getRequest<{ body?: { detailed?: unknown } }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<{ body?: { detailed?: unknown } }>();
     if (request.body?.detailed === true) {
       if (err || !user) {
         throw err ?? new UnauthorizedException();

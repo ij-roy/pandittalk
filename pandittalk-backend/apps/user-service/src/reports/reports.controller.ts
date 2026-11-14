@@ -19,9 +19,7 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Get()
-  findAll(
-    @CurrentUser('sub') userId: string,
-  ): Promise<SavedReportSummary[]> {
+  findAll(@CurrentUser('sub') userId: string): Promise<SavedReportSummary[]> {
     return this.reportsService.findAllForUser(userId);
   }
 

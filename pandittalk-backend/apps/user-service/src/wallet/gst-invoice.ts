@@ -27,7 +27,11 @@ export function invoiceNumberFor(transactionId: string): string {
 }
 
 /** Split a GST-inclusive rupee amount into taxable value and tax, in paise. */
-export function splitInclusiveGst(amountInr: number): { taxablePaise: number; gstPaise: number; totalPaise: number } {
+export function splitInclusiveGst(amountInr: number): {
+  taxablePaise: number;
+  gstPaise: number;
+  totalPaise: number;
+} {
   const totalPaise = Math.round(amountInr * 100);
   if (!Number.isFinite(totalPaise) || totalPaise <= 0) {
     throw new Error('Invoice amount must be a positive rupee value');
@@ -88,7 +92,9 @@ export function buildGstInvoice(input: GstInvoiceInput): GstInvoice {
     `GST @ ${GST_PERCENT}% ${gstInr}`,
     `Total paid ${totalInr}`,
     `Coins credited ${input.coinsAmount}`,
-    input.paymentReference?.trim() ? `Payment reference ${input.paymentReference.trim()}` : null,
+    input.paymentReference?.trim()
+      ? `Payment reference ${input.paymentReference.trim()}`
+      : null,
     '',
     'Coins fund live consultations on PanditTalk.',
   ].filter((line): line is string => line !== null);

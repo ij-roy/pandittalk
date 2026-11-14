@@ -12,7 +12,6 @@ import { ChatGateway } from '../chat/chat.gateway';
 import { PrismaService } from '../prisma/prisma.service';
 import { isPanditPresent } from '../experts/presence-fresh';
 import type {
-  QueueExpiredReason,
   QueuePositionUpdatedPayload,
   QueueReadyPayload,
 } from '../chat/types/chat.types';
@@ -86,7 +85,10 @@ export class PanditQueueService {
       throw new BadRequestException('Pandit is offline');
     }
 
-    const queue = await this.pruneQueue(panditId, await this.getQueue(panditId));
+    const queue = await this.pruneQueue(
+      panditId,
+      await this.getQueue(panditId),
+    );
 
     if (queue.some((entry) => entry.userId === userId)) {
       throw new BadRequestException('You are already in the queue');
@@ -110,7 +112,10 @@ export class PanditQueueService {
   }
 
   async leaveQueue(userId: string, panditId: string): Promise<void> {
-    const queue = await this.pruneQueue(panditId, await this.getQueue(panditId));
+    const queue = await this.pruneQueue(
+      panditId,
+      await this.getQueue(panditId),
+    );
     const filtered = queue.filter((entry) => entry.userId !== userId);
 
     if (filtered.length === queue.length) {
@@ -134,7 +139,10 @@ export class PanditQueueService {
     userId: string,
     panditId: string,
   ): Promise<QueuePositionResult> {
-    const queue = await this.pruneQueue(panditId, await this.getQueue(panditId));
+    const queue = await this.pruneQueue(
+      panditId,
+      await this.getQueue(panditId),
+    );
     const index = queue.findIndex((entry) => entry.userId === userId);
     return {
       position: index === -1 ? null : index + 1,
@@ -143,7 +151,10 @@ export class PanditQueueService {
   }
 
   async removeUserFromQueue(userId: string, panditId: string): Promise<void> {
-    const queue = await this.pruneQueue(panditId, await this.getQueue(panditId));
+    const queue = await this.pruneQueue(
+      panditId,
+      await this.getQueue(panditId),
+    );
     const filtered = queue.filter((entry) => entry.userId !== userId);
     if (filtered.length !== queue.length) {
       await this.saveQueue(panditId, filtered);

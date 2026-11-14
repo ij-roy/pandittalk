@@ -15,7 +15,8 @@ import { DynamoService } from './dynamo.service';
     RedisModule,
     ChimeModule,
     forwardRef(() => BookingsModule),
-    forwardRef(() => NotificationsModule),    JwtModule.registerAsync({
+    forwardRef(() => NotificationsModule),
+    JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService): JwtModuleOptions => {
         const secret = configService.get<string>('JWT_SECRET');

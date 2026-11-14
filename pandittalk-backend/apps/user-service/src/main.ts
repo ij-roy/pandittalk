@@ -9,9 +9,12 @@ import { RedisIoAdapter } from './redis/redis-io.adapter';
 import { UserServiceModule } from './user-service.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(UserServiceModule, {
-    bodyParser: false,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(
+    UserServiceModule,
+    {
+      bodyParser: false,
+    },
+  );
 
   app.set('trust proxy', 1);
 
@@ -40,7 +43,11 @@ async function bootstrap() {
   const httpServer = app.getHttpAdapter().getInstance();
   httpServer.set('etag', false);
   app.use(
-    (_req: express.Request, res: express.Response, next: express.NextFunction) => {
+    (
+      _req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) => {
       res.setHeader(
         'Cache-Control',
         'no-store, no-cache, must-revalidate, private',

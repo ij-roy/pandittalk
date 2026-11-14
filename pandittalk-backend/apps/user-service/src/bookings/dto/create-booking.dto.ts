@@ -1,4 +1,10 @@
-import { IsDateString, IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export const BOOKING_DEPTHS = ['entry', 'standard', 'deep'] as const;
 export const BOOKING_FORMATS = ['video', 'audio', 'chat'] as const;

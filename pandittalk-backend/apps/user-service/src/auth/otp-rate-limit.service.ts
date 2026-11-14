@@ -191,9 +191,7 @@ export class OtpRateLimitService {
       return;
     }
     if (code === 1) {
-      throw new OtpRateLimitException(
-        ttl > 0 ? ttl : VERIFY_PHONE_WINDOW_SEC,
-      );
+      throw new OtpRateLimitException(ttl > 0 ? ttl : VERIFY_PHONE_WINDOW_SEC);
     }
     throw new OtpRateLimitException(ttl > 0 ? ttl : VERIFY_IP_WINDOW_SEC);
   }

@@ -43,7 +43,9 @@ export function computeProfileProgress(
   const hasName =
     filled(input.firstName) || filled(input.lastName) || filled(input.name);
   const hasBirth =
-    filled(input.dob) && filled(input.timeOfBirth) && filled(input.placeOfBirth);
+    filled(input.dob) &&
+    filled(input.timeOfBirth) &&
+    filled(input.placeOfBirth);
 
   const items: ProfileProgressItem[] = [
     {

@@ -9,10 +9,7 @@ import {
   Matches,
   MaxLength,
 } from 'class-validator';
-import {
-  INDIA_MOBILE_E164_REGEX,
-  normalizeIndiaPhone,
-} from '../phone.util';
+import { INDIA_MOBILE_E164_REGEX, normalizeIndiaPhone } from '../phone.util';
 
 export class VerifyOtpDto {
   @Transform(({ obj }: { obj: Record<string, unknown> }) => {

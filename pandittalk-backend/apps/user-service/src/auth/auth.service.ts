@@ -9,10 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { randomInt } from 'crypto';
 import type { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  AuthSessionService,
-  type SessionMeta,
-} from './auth-session.service';
+import { AuthSessionService, type SessionMeta } from './auth-session.service';
 import { AppleTokenVerifier } from './apple-token.verifier';
 import { GoogleTokenVerifier } from './google-token.verifier';
 import { OtpRateLimitService } from './otp-rate-limit.service';
@@ -99,7 +96,8 @@ export class AuthService {
     private readonly socialPending: SocialPendingStore,
     config: ConfigService,
   ) {
-    this.allowTestOtp = config.get<string>('ALLOW_TEST_OTP', 'false') === 'true';
+    this.allowTestOtp =
+      config.get<string>('ALLOW_TEST_OTP', 'false') === 'true';
     this.testOtpAllowlist = new Set(
       config
         .get<string>('TEST_OTP_PHONE_ALLOWLIST', '')
@@ -274,7 +272,9 @@ export class AuthService {
         },
       });
       if (!user.isActive) {
-        throw new UnauthorizedException('User account is inactive or not found');
+        throw new UnauthorizedException(
+          'User account is inactive or not found',
+        );
       }
       return this.toVerifyResponse(user, false, meta);
     }
@@ -391,7 +391,10 @@ export class AuthService {
     return this.testOtpAllowlist.has(phoneNumber.replace(/\D/g, ''));
   }
 
-  private async assertOtpValid(phoneNumber: string, otp: string): Promise<void> {
+  private async assertOtpValid(
+    phoneNumber: string,
+    otp: string,
+  ): Promise<void> {
     const isTestBypass =
       otp === TEST_OTP &&
       (this.allowTestOtp || this.isPhoneAllowlisted(phoneNumber));
@@ -426,7 +429,9 @@ export class AuthService {
     const existing = await this.findUserForSocial(identity);
     if (existing) {
       if (!existing.isActive) {
-        throw new UnauthorizedException('User account is inactive or not found');
+        throw new UnauthorizedException(
+          'User account is inactive or not found',
+        );
       }
       const user = await this.prisma.user.update({
         where: { id: existing.id },
@@ -448,8 +453,11 @@ export class AuthService {
     return { needsPhone: true, pendingToken };
   }
 
-  private async findUserForSocial(identity: SocialIdentity): Promise<User | null> {
-    const or: Array<{ googleSub?: string; appleSub?: string; email?: string }> = [];
+  private async findUserForSocial(
+    identity: SocialIdentity,
+  ): Promise<User | null> {
+    const or: Array<{ googleSub?: string; appleSub?: string; email?: string }> =
+      [];
     if (identity.provider === 'google') {
       or.push({ googleSub: identity.subject });
     } else {
@@ -532,11 +540,11 @@ export class AuthService {
       googleSub:
         pending.provider === 'google'
           ? pending.subject
-          : user.googleSub ?? undefined,
+          : (user.googleSub ?? undefined),
       appleSub:
         pending.provider === 'apple'
           ? pending.subject
-          : user.appleSub ?? undefined,
+          : (user.appleSub ?? undefined),
       email: user.email || pending.email || undefined,
       firstName: user.firstName || pending.firstName || undefined,
       lastName: user.lastName || pending.lastName || undefined,
