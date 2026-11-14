@@ -27,17 +27,19 @@ interface ChimeMeetingCache {
 @Injectable()
 export class ChimeService {
   private readonly client: ChimeSDKMeetingsClient;
+  private readonly configured: boolean;
 
   constructor(
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {
-    const accessKeyId =
-      this.configService.get<string>('AWS_CHIME_ACCESS_KEY_ID') ??
-      this.configService.get<string>('AWS_ACCESS_KEY_ID');
-    const secretAccessKey =
-      this.configService.get<string>('AWS_CHIME_SECRET_ACCESS_KEY') ??
-      this.configService.get<string>('AWS_SECRET_ACCESS_KEY');
+    const accessKeyId = this.configService
+      .get<string>('AWS_CHIME_ACCESS_KEY_ID')
+      ?.trim();
+    const secretAccessKey = this.configService
+      .get<string>('AWS_CHIME_SECRET_ACCESS_KEY')
+      ?.trim();
+    this.configured = Boolean(accessKeyId && secretAccessKey);
 
     const region = this.configService.get<string>('AWS_REGION', 'ap-south-1');
     this.client = new ChimeSDKMeetingsClient({
@@ -52,6 +54,7 @@ export class ChimeService {
     bookingId: string,
     durationMinutes: number,
   ): Promise<Meeting> {
+    this.assertConfigured();
     try {
       const response = await this.client.send(
         new CreateMeetingCommand({
@@ -111,6 +114,7 @@ export class ChimeService {
     userId: string,
     cache: ChimeMeetingCache,
   ): Promise<Attendee> {
+    this.assertConfigured();
     const response = await this.client.send(
       new CreateAttendeeCommand({
         MeetingId: cache.meeting.MeetingId,
@@ -177,6 +181,14 @@ export class ChimeService {
 
   private meetingKey(bookingId: string): string {
     return `chime:meeting:${bookingId}`;
+  }
+
+  private assertConfigured(): void {
+    if (!this.configured) {
+      throw new ServiceUnavailableException(
+        'AWS Chime credentials are invalid or missing. Check AWS_CHIME_ACCESS_KEY_ID and AWS_CHIME_SECRET_ACCESS_KEY in .env.',
+      );
+    }
   }
 
   private async getCache(bookingId: string): Promise<ChimeMeetingCache> {

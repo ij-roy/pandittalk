@@ -47,9 +47,11 @@ records (no fake reviews or payments) and use OTP `1234` for the two phones in
 docker compose exec -T api node scripts/ensure-local-demo-data.cjs
 ```
 
-The script creates one customer, one linked pandit, and one confirmed chat
-booking. It is not part of application startup and is intended only for local
-verification.
+The script creates one customer, one linked pandit, and confirmed chat, audio,
+and video bookings. It is not part of application startup and is intended only
+for local verification. Use the printed media booking IDs to open the real
+audio/video routes; with blank Chime credentials they should show the provider
+unavailable state rather than a fake connected call.
 
 The API is available at `http://localhost:3001`. The Pandit service, Redis,
 PostgreSQL, and DynamoDB Local stay on the private Compose network so they do

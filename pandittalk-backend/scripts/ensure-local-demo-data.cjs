@@ -15,6 +15,47 @@ const CUSTOMER_PHONE = '+919999999998';
 const PANDIT_PHONE = '+919999999997';
 const PANDIT_ID = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a001';
 const BOOKING_ID = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a002';
+const AUDIO_BOOKING_ID = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a003';
+const VIDEO_BOOKING_ID = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a004';
+
+function upsertDemoBooking({ id, customerId, panditId, format, durationMinutes, totalPrice, notes, startTime, endTime, bufferEndTime }) {
+  return prisma.booking.upsert({
+    where: { id },
+    create: {
+      id,
+      userId: customerId,
+      panditId,
+      area: 'career',
+      depth: 'entry',
+      format,
+      durationMinutes,
+      sessionModel: 'legacy_timed',
+      startTime,
+      endTime,
+      bufferEndTime,
+      totalPrice,
+      coinsDeducted: totalPrice,
+      status: 'confirmed',
+      notes,
+    },
+    update: {
+      userId: customerId,
+      panditId,
+      area: 'career',
+      depth: 'entry',
+      format,
+      durationMinutes,
+      sessionModel: 'legacy_timed',
+      startTime,
+      endTime,
+      bufferEndTime,
+      totalPrice,
+      coinsDeducted: totalPrice,
+      status: 'confirmed',
+      notes,
+    },
+  });
+}
 
 async function main() {
   const now = new Date();
@@ -118,41 +159,41 @@ async function main() {
     },
   });
 
-  const booking = await prisma.booking.upsert({
-    where: { id: BOOKING_ID },
-    create: {
-      id: BOOKING_ID,
-      userId: customer.id,
-      panditId: pandit.id,
-      area: 'career',
-      depth: 'entry',
-      format: 'chat',
-      durationMinutes: 15,
-      sessionModel: 'legacy_timed',
-      startTime,
-      endTime,
-      bufferEndTime,
-      totalPrice: 101,
-      coinsDeducted: 101,
-      status: 'confirmed',
-      notes: 'Local-only replica and dashboard verification booking.',
-    },
-    update: {
-      userId: customer.id,
-      panditId: pandit.id,
-      area: 'career',
-      depth: 'entry',
-      format: 'chat',
-      durationMinutes: 15,
-      sessionModel: 'legacy_timed',
-      startTime,
-      endTime,
-      bufferEndTime,
-      totalPrice: 101,
-      coinsDeducted: 101,
-      status: 'confirmed',
-      notes: 'Local-only replica and dashboard verification booking.',
-    },
+  const booking = await upsertDemoBooking({
+    id: BOOKING_ID,
+    customerId: customer.id,
+    panditId: pandit.id,
+    format: 'chat',
+    durationMinutes: 15,
+    totalPrice: 101,
+    notes: 'Local-only replica and dashboard verification booking.',
+    startTime,
+    endTime,
+    bufferEndTime,
+  });
+  const audioBooking = await upsertDemoBooking({
+    id: AUDIO_BOOKING_ID,
+    customerId: customer.id,
+    panditId: pandit.id,
+    format: 'audio',
+    durationMinutes: 30,
+    totalPrice: 201,
+    notes: 'Local-only browser audio-provider verification booking.',
+    startTime,
+    endTime: new Date(startTime.getTime() + 30 * 60_000),
+    bufferEndTime: new Date(startTime.getTime() + 35 * 60_000),
+  });
+  const videoBooking = await upsertDemoBooking({
+    id: VIDEO_BOOKING_ID,
+    customerId: customer.id,
+    panditId: pandit.id,
+    format: 'video',
+    durationMinutes: 30,
+    totalPrice: 301,
+    notes: 'Local-only browser video-provider verification booking.',
+    startTime,
+    endTime: new Date(startTime.getTime() + 30 * 60_000),
+    bufferEndTime: new Date(startTime.getTime() + 35 * 60_000),
   });
 
   console.log(JSON.stringify({
@@ -160,6 +201,10 @@ async function main() {
     customer: { phone: CUSTOMER_PHONE, id: customer.id, otp: '1234' },
     pandit: { phone: PANDIT_PHONE, id: pandit.id, userId: panditUser.id, otp: '1234' },
     booking: { id: booking.id, format: booking.format, status: booking.status },
+    mediaBookings: [
+      { id: audioBooking.id, format: audioBooking.format, status: audioBooking.status },
+      { id: videoBooking.id, format: videoBooking.format, status: videoBooking.status },
+    ],
   }, null, 2));
 }
 
