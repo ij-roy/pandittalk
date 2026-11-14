@@ -36,6 +36,7 @@ Copy-Item .env.example .env
 docker compose up -d --build
 docker compose ps
 Invoke-WebRequest http://localhost:3001/
+Invoke-WebRequest http://localhost:3001/readiness
 ```
 
 For a repeatable local customer/dashboard smoke test, seed only the demo
@@ -54,6 +55,10 @@ The API is available at `http://localhost:3001`. The Pandit service, Redis,
 PostgreSQL, and DynamoDB Local stay on the private Compose network so they do
 not collide with software already using ports on the host. Migrations run when
 the API container starts.
+
+`/` is a liveness check. `/readiness` verifies PostgreSQL, Redis, and
+DynamoDB Local before returning `ready`; use it for tunnel/load-balancer health
+checks.
 
 Useful commands:
 

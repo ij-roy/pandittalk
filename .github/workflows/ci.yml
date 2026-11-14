@@ -98,12 +98,12 @@ jobs:
         shell: bash
         run: |
           for attempt in {1..30}; do
-            if curl --fail --silent http://localhost:3001/ >/dev/null; then
+            if curl --fail --silent http://localhost:3001/readiness >/dev/null; then
               exit 0
             fi
             sleep 2
           done
-          curl --fail http://localhost:3001/
+          curl --fail http://localhost:3001/readiness
       - name: Verify dependencies and Socket.IO handshake
         run: |
           docker compose exec -T redis redis-cli ping

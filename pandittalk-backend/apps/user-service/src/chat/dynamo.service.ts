@@ -50,6 +50,12 @@ export class DynamoService implements OnModuleInit {
     await this.ensureTableExists();
   }
 
+  async ping(): Promise<void> {
+    await this.client.send(
+      new DescribeTableCommand({ TableName: this.tableName }),
+    );
+  }
+
   async saveMessage(
     sessionId: string,
     senderId: string,

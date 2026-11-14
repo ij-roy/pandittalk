@@ -17,6 +17,7 @@ being graded.
    docker compose ps
    docker compose exec -T api node scripts/ensure-local-demo-data.cjs
    curl --fail http://localhost:3001/
+   curl --fail http://localhost:3001/readiness
    curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
    ```
 
@@ -46,6 +47,7 @@ Run these in order, keeping the output visible:
 ```bash
 docker compose ps
 curl --fail http://localhost:3001/
+curl --fail http://localhost:3001/readiness
 docker compose exec -T redis redis-cli ping
 docker compose exec -T postgres pg_isready -U pandittalk -d pandittalk
 docker compose up -d --scale api=2 --no-recreate api proxy

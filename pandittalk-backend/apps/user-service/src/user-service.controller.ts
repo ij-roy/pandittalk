@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  ServiceUnavailableException,
   Patch,
   Post,
   UploadedFile,
@@ -21,17 +22,60 @@ import {
   UserServiceService,
 } from './user-service.service';
 import { readFeatureFlags } from './config/feature-flags';
+import { PrismaService } from './prisma/prisma.service';
+import { RedisClientService } from './redis/redis-client.service';
+import { DynamoService } from './chat/dynamo.service';
 
 @Controller()
 export class UserServiceController {
   constructor(
     private readonly userServiceService: UserServiceService,
     private readonly config: ConfigService,
+    private readonly prisma: PrismaService,
+    private readonly redis: RedisClientService,
+    private readonly dynamo: DynamoService,
   ) {}
 
   @Get()
   getHealth(): HealthResponseDto {
     return this.userServiceService.getHealth();
+  }
+
+  @Get('readiness')
+  async getReadiness(): Promise<{
+    status: 'ready';
+    service: string;
+    checks: { postgres: 'ok'; redis: 'ok'; dynamodb: 'ok' };
+    timestamp: string;
+  }> {
+    const results = await Promise.allSettled([
+      this.prisma.$queryRaw`SELECT 1`,
+      this.redis.ping(),
+      this.dynamo.ping(),
+    ]);
+    const [postgres, redis, dynamodb] = results;
+    if (
+      postgres.status !== 'fulfilled' ||
+      redis.status !== 'fulfilled' ||
+      dynamodb.status !== 'fulfilled'
+    ) {
+      throw new ServiceUnavailableException({
+        status: 'not_ready',
+        service: 'user-service',
+        checks: {
+          postgres: postgres.status === 'fulfilled' ? 'ok' : 'error',
+          redis: redis.status === 'fulfilled' ? 'ok' : 'error',
+          dynamodb: dynamodb.status === 'fulfilled' ? 'ok' : 'error',
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    return {
+      status: 'ready',
+      service: 'user-service',
+      checks: { postgres: 'ok', redis: 'ok', dynamodb: 'ok' },
+      timestamp: new Date().toISOString(),
+    };
   }
 
   /**

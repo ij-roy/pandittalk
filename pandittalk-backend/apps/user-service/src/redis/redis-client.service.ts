@@ -32,6 +32,10 @@ export class RedisClientService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  async ping(): Promise<string> {
+    return this.client.ping();
+  }
+
   /** Increment key; set TTL on first increment. Returns new count. */
   async incrWithExpire(key: string, ttlSeconds: number): Promise<number> {
     const count = await this.client.incr(key);
