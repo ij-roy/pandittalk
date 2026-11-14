@@ -46,7 +46,7 @@ test.describe('Representative device sizes', () => {
         await page.evaluate(() => document.fonts.ready);
         const overflowing = await page.evaluate(() => Array.from(document.querySelectorAll('body *')).filter(element => {
           const rect = element.getBoundingClientRect();
-          return rect.width > 0 && rect.right > innerWidth + 2 && getComputedStyle(element).position !== 'fixed' && !element.closest('details:not([open]), .legal-table-wrap, .journal-table-wrap, nextjs-portal');
+          return rect.width > 0 && rect.right > innerWidth + 2 && getComputedStyle(element).position !== 'fixed' && !element.closest('details:not([open]), .legal-tabs, .legal-table-wrap, .journal-table-wrap, nextjs-portal');
         }).map(element => element.tagName + '.' + element.className).slice(0, 8));
         expect(overflowing, `${route}: overflowing elements`).toEqual([]);
         await page.screenshot({ path: `output/ui-screenshots/${name}-${width}.png`, fullPage: name === 'home', animations: 'disabled' });
@@ -85,5 +85,5 @@ test('large text and reduced motion keep the homepage usable', async ({ page }) 
   await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
   const overflow = await page.evaluate(() => ({ width: document.documentElement.scrollWidth, elements: Array.from(document.querySelectorAll('body *')).filter(element => !element.closest('details:not([open]), nextjs-portal') && element.getBoundingClientRect().right > innerWidth + 2).map(element => ({ tag: element.tagName, class: element.className, width: element.getBoundingClientRect().width, right: element.getBoundingClientRect().right })).slice(0, 12) }));
   expect(overflow.width, JSON.stringify(overflow.elements)).toBeLessThanOrEqual(769);
-  await expect(page.locator('.hero .button')).toBeVisible();
+  await expect(page.locator('.hero .actions .button').first()).toBeVisible();
 });

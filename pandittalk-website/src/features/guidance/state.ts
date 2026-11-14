@@ -19,11 +19,12 @@ export function readDraft(): GuidanceDraft {
   } catch { return { ...emptyDraft }; }
 }
 
-export function saveGuidanceDraft(draft: Partial<GuidanceDraft>) {
+export function saveGuidanceDraft(draft: Partial<GuidanceDraft>): boolean {
   try {
     sessionStorage.setItem(draftKey, JSON.stringify({ ...readDraft(), ...draft, notes: (draft.notes ?? readDraft().notes).slice(0, 200) }));
+    return true;
   } catch {
-    /* storage full or blocked */
+    return false;
   }
 }
 

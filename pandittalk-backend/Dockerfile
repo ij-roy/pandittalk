@@ -3,12 +3,17 @@
 # Compose runs migrations before starting user-service; the image itself remains
 # reusable for a one-off migration task or another process command.
 
-FROM node:24-bookworm-slim AS deps
+FROM node:24-bookworm-slim AS base
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM node:24-bookworm-slim AS build
+FROM base AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json nest-cli.json tsconfig.json tsconfig.build.json ./
@@ -17,12 +22,12 @@ COPY apps/pandit-service ./apps/pandit-service
 COPY libs/common ./libs/common
 RUN npm run prisma:generate && npm run build
 
-FROM node:24-bookworm-slim AS prod-deps
+FROM base AS prod-deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
-FROM node:24-bookworm-slim AS runner
+FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production

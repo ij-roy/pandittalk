@@ -8,8 +8,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-pandittalk}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pandittalk-local-only}
       POSTGRES_DB: ${POSTGRES_DB:-pandittalk}
-    ports:
-      - '${POSTGRES_PORT:-5432}:5432'
+    expose:
+      - '5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,8 +23,8 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     command: ['redis-server', '--appendonly', 'yes', '--save', '60', '1000']
-    ports:
-      - '${REDIS_EXTERNAL_PORT:-6379}:6379'
+    expose:
+      - '6379'
     volumes:
       - redis_data:/data
     healthcheck:
@@ -36,11 +36,18 @@ services:
   dynamodb:
     image: amazon/dynamodb-local:latest
     restart: unless-stopped
+    user: root
     command: ['-jar', 'DynamoDBLocal.jar', '-sharedDb', '-dbPath', './data']
-    ports:
-      - '${DYNAMODB_EXTERNAL_PORT:-8000}:8000'
+    expose:
+      - '8000'
     volumes:
       - dynamodb_data:/home/dynamodblocal/data
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -s http://127.0.0.1:8000/ >/dev/null']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
 
   api:
     build:
@@ -73,7 +80,7 @@ services:
       redis:
         condition: service_healthy
       dynamodb:
-        condition: service_started
+        condition: service_healthy
     command: ['sh', '-c', 'npx prisma migrate deploy --schema apps/user-service/prisma/schema.prisma && node dist/apps/user-service/main.js']
     expose:
       - '3001'

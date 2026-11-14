@@ -77,8 +77,7 @@ export default function GuidanceFlow() {
 
   useEffect(() => {
     if (!ready) return;
-    try { saveGuidanceDraft(draft); setStorageError(''); }
-    catch { setStorageError('This browser cannot preserve your draft. Keep this page open.'); }
+    setStorageError(saveGuidanceDraft(draft) ? '' : 'This browser cannot preserve your draft. Keep this page open.');
   }, [draft, ready]);
 
   useEffect(() => {

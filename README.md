@@ -28,7 +28,7 @@ docker compose ps
 Invoke-WebRequest http://localhost:3001/
 ```
 
-The API is available at `http://localhost:3001`, the pandit service is internal at port 3002, Redis is `localhost:6379`, PostgreSQL is `localhost:5432`, and DynamoDB Local is `localhost:8000`. Migrations run when the API container starts.
+The API is available at `http://localhost:3001`. The pandit service, Redis, PostgreSQL, and DynamoDB Local stay on the private Compose network so they do not collide with software already using ports on the host. Migrations run when the API container starts.
 
 Useful commands:
 
