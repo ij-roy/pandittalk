@@ -1,10 +1,7 @@
 # syntax=docker/dockerfile:1
-# Production image for user-service (ECS Fargate).
-# Default CMD starts the API only — migrations are NOT run on container start.
-#
-# One-off migration task (same image, command override):
-#   npx prisma migrate deploy --schema apps/user-service/prisma/schema.prisma
-# ECS example: set container command override to the above; provide DATABASE_URL via task env/secrets.
+# Local-first production-like image for both Nest services.
+# Compose runs migrations before starting user-service; the image itself remains
+# reusable for a one-off migration task or another process command.
 
 FROM node:24-bookworm-slim AS deps
 WORKDIR /app
@@ -16,8 +13,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json nest-cli.json tsconfig.json tsconfig.build.json ./
 COPY apps/user-service ./apps/user-service
+COPY apps/pandit-service ./apps/pandit-service
 COPY libs/common ./libs/common
-RUN npm run prisma:generate && npm run build:user-service
+RUN npm run prisma:generate && npm run build
 
 FROM node:24-bookworm-slim AS prod-deps
 WORKDIR /app

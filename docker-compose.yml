@@ -1,0 +1,140 @@
+name: pandittalk
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pandittalk}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pandittalk-local-only}
+      POSTGRES_DB: ${POSTGRES_DB:-pandittalk}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes', '--save', '60', '1000']
+    ports:
+      - '${REDIS_EXTERNAL_PORT:-6379}:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    restart: unless-stopped
+    command: ['-jar', 'DynamoDBLocal.jar', '-sharedDb', '-dbPath', './data']
+    ports:
+      - '${DYNAMODB_EXTERNAL_PORT:-8000}:8000'
+    volumes:
+      - dynamodb_data:/home/dynamodblocal/data
+
+  api:
+    build:
+      context: ./pandittalk-backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      USER_SERVICE_PORT: 3001
+      DATABASE_URL: ${DATABASE_URL:-postgresql://pandittalk:pandittalk-local-only@postgres:5432/pandittalk?schema=public}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DYNAMODB_ENDPOINT: http://dynamodb:8000
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-local}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-local}
+      AWS_REGION: ${AWS_REGION:-ap-south-1}
+      DYNAMODB_TABLE_CHAT: ${DYNAMODB_TABLE_CHAT:-pandittalk-chat-messages}
+      AVATAR_STORAGE: ${AVATAR_STORAGE:-local}
+      AVATAR_UPLOAD_DIR: /app/uploads/avatars
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8081}
+      JWT_SECRET: ${JWT_SECRET:-replace-with-a-long-local-development-secret}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    volumes:
+      - media_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      dynamodb:
+        condition: service_started
+    command: ['sh', '-c', 'npx prisma migrate deploy --schema apps/user-service/prisma/schema.prisma && node dist/apps/user-service/main.js']
+    expose:
+      - '3001'
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:3001/').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  pandit-service:
+    build:
+      context: ./pandittalk-backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PANDIT_SERVICE_PORT: 3002
+    depends_on:
+      api:
+        condition: service_healthy
+    command: ['node', 'dist/apps/pandit-service/main.js']
+    expose:
+      - '3002'
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '${API_EXTERNAL_PORT:-3001}:80'
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      pandit-service:
+        condition: service_started
+
+  turn:
+    image: coturn/coturn:4.6
+    profiles: ['webrtc']
+    restart: unless-stopped
+    command:
+      - '--no-cli'
+      - '--fingerprint'
+      - '--lt-cred-mech'
+      - '--realm=${TURN_REALM:-localhost}'
+      - '--user=${TURN_USERNAME:-pandittalk}:${TURN_PASSWORD:-local-turn-password}'
+      - '--log-file=stdout'
+    ports:
+      - '${TURN_PORT:-3478}:3478/tcp'
+      - '${TURN_PORT:-3478}:3478/udp'
+
+volumes:
+  postgres_data:
+  redis_data:
+  dynamodb_data:
+  media_data:
+  caddy_data:
+  caddy_config:

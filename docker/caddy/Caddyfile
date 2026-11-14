@@ -1,0 +1,22 @@
+{
+  auto_https off
+}
+
+:80 {
+  encode gzip
+
+  @pandit_health path /_internal/pandit
+  handle @pandit_health {
+    uri strip_prefix /_internal/pandit
+    reverse_proxy pandit-service:3002
+  }
+
+  # Caddy upgrades WebSocket connections automatically. DNS-based upstream
+  # discovery lets Compose-scaled api replicas share traffic without sticky sessions.
+  reverse_proxy api:3001 {
+    lb_policy random
+    health_uri /
+    health_interval 5s
+    health_timeout 2s
+  }
+}
