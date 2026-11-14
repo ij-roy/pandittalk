@@ -22,7 +22,8 @@ PostgreSQL is the durable source of truth. Redis holds shared cache, short-lived
 room/session state, rate limits, Socket.IO fan-out, and distributed
 timer/notification locks. The backend does not use sticky sessions. DynamoDB
 Local remains for the current chat-history adapter. Avatar uploads use a named
-Docker volume for local operation. AWS Chime, payment, astrology, and AI
+Docker volume for local operation. The local Prisma URL limits each API replica
+to ten database connections with a bounded pool wait. AWS Chime, payment, astrology, and AI
 providers are optional environment-controlled integrations; no real credentials
 belong in this repository.
 
