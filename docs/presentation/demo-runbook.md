@@ -29,6 +29,17 @@ being graded.
    credentials are not available, demonstrate the clear unavailable/error state
    and say so; do not present text chat as proof of media.
 
+For the external rehearsal, start a tunnel after Compose is healthy:
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:3001
+```
+
+Copy its HTTPS origin into the Vercel API/Socket variables, `ALLOWED_ORIGINS`,
+and `EXPO_PUBLIC_API_BASE`. Use the same origin for website and dashboard. Keep
+the TURN endpoint separate because an HTTP tunnel only carries HTTPS/WSS
+signaling and API traffic.
+
 ## Suggested timing and speaking ownership
 
 | Time | Speaker | Content | Evidence |

@@ -84,6 +84,13 @@ A public tunnel must support HTTPS and WebSockets. Set the tunnel hostname/API
 origin and Vercel origins in `.env` before starting the stack; do not commit
 those values.
 
+For a quick HTTPS/WSS tunnel during development, install `cloudflared` on Kali
+and run `cloudflared tunnel --url http://127.0.0.1:3001` (or use an equivalent
+named tunnel/ngrok deployment). Put the resulting HTTPS origin into the website
+and dashboard API variables, `SOCKET_URL`, `APP_ORIGIN`, `ALLOWED_ORIGINS`, and
+`EXPO_PUBLIC_API_BASE`. A normal HTTP tunnel does not relay WebRTC media; expose
+TURN separately when real audio/video is enabled.
+
 ## Configuration table
 
 | Consumer | Local value | Tunnel/Vercel value | Variable |
