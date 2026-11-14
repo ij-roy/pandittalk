@@ -141,7 +141,7 @@ presentation sequence is in
 Local checks:
 
 ```powershell
-Push-Location pandittalk-backend; npm ci; npm run prisma:generate; npm test -- --runInBand; npm run build; Pop-Location
+Push-Location pandittalk-backend; npm ci; npm run prisma:generate; npm test -- --runInBand; npm run typecheck; npm run build; Pop-Location
 Push-Location pandittalk-website; npm ci; npm test; npm run test:ui; npm run build; Pop-Location
 Push-Location pandittalk-dashboard; npm ci; npm run lint; npm run build; Pop-Location
 Push-Location pandittalk-mobile; npm ci; npm run typecheck; npm run test:webview-allowlist; npx expo export --platform web; Pop-Location

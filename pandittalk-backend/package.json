@@ -31,6 +31,7 @@
     "test:e2e:user-service": "jest --config ./apps/user-service/test/jest-e2e.json",
     "test:e2e:pandit-service": "jest --config ./apps/pandit-service/test/jest-e2e.json",
     "prisma:generate": "prisma generate --schema apps/user-service/prisma/schema.prisma",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "prisma:migrate": "prisma migrate dev --schema apps/user-service/prisma/schema.prisma",
     "prisma:migrate:deploy": "prisma migrate deploy --schema apps/user-service/prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema apps/user-service/prisma/schema.prisma",
