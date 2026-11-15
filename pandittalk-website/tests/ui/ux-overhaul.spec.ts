@@ -401,14 +401,27 @@ test('interactive tools keep keyboard implementation help out of visible instruc
 });
 
 test('login keeps social sign-in copy and brand marks consistent', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/login');
+  for (const width of [390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/login');
 
-  await expect(page.locator('#social-consent-help')).toContainText('Phone sign-in remains available without this checkbox.');
-  await expect(page.getByText('Needed for Google or Apple.', { exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Continue with Google', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).toHaveCount(0);
+    await expect(page.locator('#social-consent-help')).toContainText('Phone sign-in remains available without this checkbox.');
+    await expect(page.getByText('Needed for Google or Apple.', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Continue with Google', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).toHaveCount(0);
+    await expect(page.locator('[data-provider="apple"] [data-brand-logo="apple"]')).toBeVisible();
+    await expect(page.locator('[data-provider="google"] [data-brand-logo="google"]')).toBeVisible();
 
-  await expect(page.locator('[data-provider="apple"] [data-brand-logo="apple"]')).toBeVisible();
-  await expect(page.locator('[data-provider="google"] [data-brand-logo="google"]')).toBeVisible();
+    const sizes = await page.locator('.auth-panel .actions[aria-label="Social sign-in options"]').evaluate(actions => {
+      const actionWidth = Math.round(actions.getBoundingClientRect().width);
+      const buttons = [...actions.querySelectorAll<HTMLButtonElement>('.social-provider-button')].map(button => {
+        const rect = button.getBoundingClientRect();
+        return { width: Math.round(rect.width), height: Math.round(rect.height) };
+      });
+      return { actionWidth, buttons };
+    });
+    expect(sizes.buttons).toHaveLength(2);
+    expect(sizes.buttons.map(button => button.width)).toEqual([sizes.actionWidth, sizes.actionWidth]);
+    expect(sizes.buttons[0].height).toBe(sizes.buttons[1].height);
+  }
 });
