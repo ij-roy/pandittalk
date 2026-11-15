@@ -1,32 +1,30 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   buildIndiaPhone,
+  fetchCurrentUser,
   fetchPanditMe,
   getErrorMessage,
   logoutSession,
   requestOtp,
   verifyOtp,
-} from '../lib/api';
-import {
-  PRIVACY_POLICY_PATH,
-  TERMS_PATH,
-} from '../lib/legal';
-import { usePanditStore } from '../store/usePanditStore';
-import styles from './Login.module.css';
+} from "../lib/api";
+import { PRIVACY_POLICY_PATH, TERMS_PATH } from "../lib/legal";
+import { usePanditStore } from "../store/usePanditStore";
+import styles from "./Login.module.css";
 
 const RESEND_SECONDS = 30;
-const SUPPORT_EMAIL = 'admininfo@pandittalk.com';
+const SUPPORT_EMAIL = "admininfo@pandittalk.com";
 
 function isNotRegisteredPanditError(err: unknown): boolean {
   if (!axios.isAxiosError(err)) return false;
   if (err.response?.status !== 403) return false;
   const msg = getErrorMessage(err).toLowerCase();
   return (
-    msg.includes('not registered') ||
-    msg.includes('pandittalk expert') ||
-    msg.includes('dashboard access')
+    msg.includes("not registered") ||
+    msg.includes("pandittalk expert") ||
+    msg.includes("dashboard access")
   );
 }
 
@@ -37,9 +35,10 @@ export function Login() {
   const setAuth = usePanditStore((state) => state.setAuth);
   const setPanditInfo = usePanditStore((state) => state.setPanditInfo);
   const clearLocalAuth = usePanditStore((state) => state.clearLocalAuth);
+  const role = usePanditStore((state) => state.role);
 
-  const [phoneDigits, setPhoneDigits] = useState('');
-  const [otp, setOtp] = useState('');
+  const [phoneDigits, setPhoneDigits] = useState("");
+  const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [legalAccepted, setLegalAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,9 +48,9 @@ export function Login() {
 
   useEffect(() => {
     if (authHydrated && accessToken && !notRegistered) {
-      navigate('/dashboard', { replace: true });
+      navigate(role === "ADMIN" ? "/admin" : "/dashboard", { replace: true });
     }
-  }, [accessToken, authHydrated, navigate, notRegistered]);
+  }, [accessToken, authHydrated, navigate, notRegistered, role]);
 
   useEffect(() => {
     if (resendIn <= 0) return;
@@ -89,23 +88,23 @@ export function Login() {
   }
 
   const phoneE164 = buildIndiaPhone(phoneDigits);
-  const phoneValid = phoneDigits.replace(/\D/g, '').length === 10;
+  const phoneValid = phoneDigits.replace(/\D/g, "").length === 10;
   const otpValid = /^\d{4}$/.test(otp);
 
   async function handleSendOtp() {
     if (!phoneValid) {
-      setError('Enter a valid 10-digit mobile number');
+      setError("Enter a valid 10-digit mobile number");
       return;
     }
     if (!legalAccepted) {
-      setError('Please accept the Terms & Conditions and Privacy Policy');
+      setError("Please accept the Terms & Conditions and Privacy Policy");
       return;
     }
     setLoading(true);
     setError(null);
     setNotRegistered(false);
     try {
-      await requestOtp(phoneE164, 'dashboard');
+      await requestOtp(phoneE164, "dashboard");
       setOtpSent(true);
       setResendIn(RESEND_SECONDS);
     } catch (err) {
@@ -123,40 +122,46 @@ export function Login() {
 
   async function handleVerify() {
     if (!otpValid) {
-      setError('Enter the 4-digit OTP');
+      setError("Enter the 4-digit OTP");
       return;
     }
     if (!legalAccepted) {
-      setError('Please accept the Terms & Conditions and Privacy Policy');
+      setError("Please accept the Terms & Conditions and Privacy Policy");
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const response = await verifyOtp(phoneE164, otp, true, 'dashboard');
+      const response = await verifyOtp(phoneE164, otp, true, "dashboard");
       const user = response.user[0];
       if (!user) {
-        setError('Invalid login response');
+        setError("Invalid login response");
         return;
       }
-      setAuth(response.accessToken, user.id);
+      setAuth(response.accessToken, user.id, user.role);
+
+      if (user.role === "ADMIN") {
+        navigate("/admin", { replace: true });
+        return;
+      }
 
       try {
+        await fetchCurrentUser();
         const pandit = await fetchPanditMe();
         setPanditInfo(pandit.id, pandit.name, pandit.isOnline);
-        navigate('/dashboard', { replace: true });
+        navigate("/dashboard", { replace: true });
       } catch {
         await logoutSession().catch(() => clearLocalAuth());
         setNotRegistered(true);
         setOtpSent(false);
-        setOtp('');
+        setOtp("");
         setError(null);
       }
     } catch (err) {
       if (isNotRegisteredPanditError(err)) {
         setNotRegistered(true);
         setOtpSent(false);
-        setOtp('');
+        setOtp("");
         setError(null);
       } else {
         setError(getErrorMessage(err));
@@ -168,7 +173,7 @@ export function Login() {
 
   function handleChangeNumber() {
     setOtpSent(false);
-    setOtp('');
+    setOtp("");
     setResendIn(0);
     setError(null);
     setNotRegistered(false);
@@ -178,7 +183,7 @@ export function Login() {
     setNotRegistered(false);
     setError(null);
     setOtpSent(false);
-    setOtp('');
+    setOtp("");
     setResendIn(0);
   }
 
@@ -201,18 +206,18 @@ export function Login() {
                 <p className={styles.deniedEyebrow}>Access restricted</p>
                 <h1 className={styles.title}>Not a registered pandit</h1>
                 <p className={styles.deniedBody}>
-                  <strong>+91 {phoneDigits || '••••••••••'}</strong> is not linked
-                  to a PanditTalk expert account. This dashboard is only for
-                  approved pandits.
+                  <strong>+91 {phoneDigits || "••••••••••"}</strong> is not
+                  linked to a PanditTalk expert account. This dashboard is only
+                  for approved pandits.
                 </p>
                 <p className={styles.deniedBody}>
-                  If you are an expert waiting for access, contact the PanditTalk
-                  admin team and ask them to register your number.
+                  If you are an expert waiting for access, contact the
+                  PanditTalk admin team and ask them to register your number.
                 </p>
                 <a
                   className={`btn btnPrimary ${styles.button}`}
                   href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
-                    'Pandit dashboard access request',
+                    "Pandit dashboard access request",
                   )}&body=${encodeURIComponent(
                     `Hello PanditTalk team,\n\nPlease register my number +91 ${phoneDigits} for the pandit dashboard.\n\nThank you.`,
                   )}`}
@@ -220,8 +225,11 @@ export function Login() {
                   Contact admin
                 </a>
                 <p className={styles.deniedMeta}>
-                  Or email{' '}
-                  <a className={styles.consentLink} href={`mailto:${SUPPORT_EMAIL}`}>
+                  Or email{" "}
+                  <a
+                    className={styles.consentLink}
+                    href={`mailto:${SUPPORT_EMAIL}`}
+                  >
                     {SUPPORT_EMAIL}
                   </a>
                 </p>
@@ -261,7 +269,7 @@ export function Login() {
                     value={phoneDigits}
                     onChange={(e) =>
                       setPhoneDigits(
-                        e.target.value.replace(/\D/g, '').slice(0, 10),
+                        e.target.value.replace(/\D/g, "").slice(0, 10),
                       )
                     }
                     disabled={loading || otpSent}
@@ -277,7 +285,7 @@ export function Login() {
                     disabled={loading}
                   />
                   <span className={styles.consentText}>
-                    I am 18+ and agree to the{' '}
+                    I am 18+ and agree to the{" "}
                     <Link
                       to={TERMS_PATH}
                       target="_blank"
@@ -286,8 +294,8 @@ export function Login() {
                       onClick={(e) => e.stopPropagation()}
                     >
                       Terms &amp; Conditions
-                    </Link>{' '}
-                    and{' '}
+                    </Link>{" "}
+                    and{" "}
                     <Link
                       to={PRIVACY_POLICY_PATH}
                       target="_blank"
@@ -307,7 +315,7 @@ export function Login() {
                     onClick={() => void handleSendOtp()}
                     disabled={loading || !phoneValid || !legalAccepted}
                   >
-                    {loading ? 'Checking…' : 'Send OTP'}
+                    {loading ? "Checking…" : "Send OTP"}
                   </button>
                 ) : (
                   <div className={styles.otpSection}>
@@ -335,7 +343,7 @@ export function Login() {
                       maxLength={4}
                       value={otp}
                       onChange={(e) =>
-                        setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))
+                        setOtp(e.target.value.replace(/\D/g, "").slice(0, 4))
                       }
                       disabled={loading}
                     />
@@ -345,11 +353,11 @@ export function Login() {
                       onClick={() => void handleVerify()}
                       disabled={loading || !otpValid || !legalAccepted}
                     >
-                      {loading ? 'Verifying…' : 'Verify & continue'}
+                      {loading ? "Verifying…" : "Verify & continue"}
                     </button>
                     <div
                       className={styles.otpMeta}
-                      style={{ marginTop: '0.85rem' }}
+                      style={{ marginTop: "0.85rem" }}
                     >
                       <button
                         type="button"
@@ -357,9 +365,7 @@ export function Login() {
                         onClick={() => void handleSendOtp()}
                         disabled={loading || resendIn > 0}
                       >
-                        {resendIn > 0
-                          ? `Resend in ${resendIn}s`
-                          : 'Resend OTP'}
+                        {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend OTP"}
                       </button>
                     </div>
                   </div>

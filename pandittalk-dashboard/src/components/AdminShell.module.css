@@ -1,0 +1,135 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  background: var(--canvas);
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.35rem 1rem 1.1rem;
+  background: var(--shell);
+  color: var(--text-on-dark);
+}
+
+.brandBlock {
+  padding: 0.35rem 0.65rem 0.75rem;
+}
+.brand {
+  margin: 0;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+.workspaceLabel {
+  margin: 0.2rem 0 0;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+.navLink {
+  display: flex;
+  align-items: center;
+  min-height: 2.45rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-md);
+  color: var(--text-on-dark-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.navLink:hover {
+  color: var(--text-on-dark);
+  background: var(--shell-hover);
+}
+.navLinkActive {
+  color: var(--gold);
+  background: var(--shell-active);
+}
+.logout {
+  min-height: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-on-dark);
+  font-weight: 700;
+}
+.logout:hover:not(:disabled) {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.main {
+  min-width: 0;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem var(--page-pad) 1rem;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--canvas);
+}
+.eyebrow {
+  margin: 0;
+  color: var(--text-subtle);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.title {
+  margin: 0.15rem 0 0;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  font-weight: 600;
+}
+.content {
+  max-width: 1280px;
+  padding: 1.5rem var(--page-pad) 3rem;
+}
+
+@media (max-width: 800px) {
+  .page {
+    display: block;
+  }
+  .sidebar {
+    position: static;
+    height: auto;
+    padding: 0.8rem;
+  }
+  .brandBlock {
+    padding-bottom: 0;
+  }
+  .nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .navLink {
+    justify-content: center;
+    padding-inline: 0.35rem;
+    font-size: 0.78rem;
+    text-align: center;
+  }
+  .logout {
+    display: none;
+  }
+  .topbar {
+    padding: 1rem;
+  }
+  .content {
+    padding: 1rem 0.85rem 2rem;
+  }
+}
