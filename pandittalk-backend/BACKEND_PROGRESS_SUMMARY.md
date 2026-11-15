@@ -12,7 +12,7 @@
 
 **PanditTalk** is a mobile + web platform backend connecting users with pandits (spiritual/astrology experts). The backend is a **NestJS monorepo** designed for growth into real-time chat, caching, and async messaging.
 
-**Current maturity:** **user-service** (port 3001) — users, pandits, bookings, wallet/Razorpay, astrology tools, live text chat (Socket.IO + DynamoDB), **live audio + video** (WebRTC media + Socket.IO/Redis signaling), Chat Now, Redis pandit queues, **articles/blog**, **in-app notifications**, account soft-delete. **pandit-service** (3002) = health scaffold only.
+**Current maturity:** **user-service** (port 3001) — users, pandits, bookings, wallet/Razorpay, astrology tools, live text chat (Socket.IO + MongoDB), **live audio + video** (WebRTC media + Socket.IO/Redis signaling), Chat Now, Redis pandit queues, **articles/blog**, **in-app notifications**, account soft-delete. **pandit-service** (3002) = health scaffold only.
 
 > **Local-first media note:** The old paid-meeting design notes later in this historical handoff are superseded. The active runtime returns provider-neutral WebRTC session configuration, uses free STUN by default, and supports optional coturn when a relay is needed.
 
@@ -57,7 +57,7 @@ apps/backend/
 │   │       ├── articles/        # Blog + optional Blogger sync
 │   │       ├── auth/
 │   │       ├── bookings/        # + chat-now, pandit queue, pandit endpoints
-│   │       ├── chat/            # WebSocket gateway + DynamoDB + notification emit
+│   │       ├── chat/            # WebSocket gateway + MongoDB + notification emit
 │   │       ├── webrtc/          # Provider-neutral audio/video session config
 │   │       ├── experts/         # + GET /experts/me, ?search, ?area
 │   │       ├── notifications/   # In-app notification CRUD
@@ -80,7 +80,7 @@ apps/backend/
 |---------|-------|-------|---------------|
 | **postgres** | postgres:16-alpine | 5432 | ✅ Prisma |
 | **redis** | redis:7-alpine | 6379 | ✅ Cache + pandit queue |
-| **dynamodb** | amazon/dynamodb-local | 8000 | ✅ Chat messages |
+| **mongo** | mongo:7 | 27017 | ✅ Chat messages |
 | **rabbitmq** | rabbitmq:3.13-management | 5672, 15672 | ❌ Not wired |
 
 Credentials: Postgres/RabbitMQ user/pass/db = `pandittalk`.
@@ -96,11 +96,11 @@ Copy `.env.example` → `.env` at `apps/backend/`.
 | `USER_SERVICE_PORT` | `3001` | user-service |
 | `DATABASE_URL` | `postgresql://pandittalk:pandittalk@localhost:5432/pandittalk` | Prisma |
 | `REDIS_HOST`, `REDIS_PORT` | localhost / 6379 | Cache + queue |
-| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` | local / ap-south-1 | DynamoDB |
+| `MONGODB_URI`, `MONGODB_DATABASE` | local MongoDB / `pandittalk` | Chat messages |
 | `WEBRTC_STUN_URLS` | `stun:stun.l.google.com:19302,...` | Default ICE discovery for browser/native WebRTC |
 | `WEBRTC_TURN_URL`, `WEBRTC_TURN_USERNAME`, `WEBRTC_TURN_CREDENTIAL` | — | Optional coturn relay credentials |
-| `DYNAMODB_ENDPOINT` | `http://localhost:8000` | Local DynamoDB |
-| `DYNAMODB_TABLE_CHAT` | `pandittalk-chat-messages` | Chat messages |
+| `MONGODB_URI` | `mongodb://localhost:27017` | Local MongoDB |
+| `MONGODB_COLLECTION_CHAT` | `chat_messages` | Chat messages |
 | `CHAT_WAITING_TIMEOUT_MS` | `600000` (10 min) | Pandit join timeout before refund |
 | `JWT_SECRET`, `JWT_EXPIRES_IN` | — / `7d` | Auth |
 | `RAZORPAY_*` | — | Payments |
@@ -132,7 +132,7 @@ Copy `.env.example` → `.env` at `apps/backend/`.
 
 ### Chat (not in Prisma)
 
-DynamoDB table `pandittalk-chat-messages`: `sessionId`, `timestamp`, `senderId`, `senderRole`, `message`.
+MongoDB collection `chat_messages`: `sessionId`, `timestamp`, `senderId`, `senderRole`, `message`.
 
 ### Migrations (11 applied)
 
@@ -276,7 +276,7 @@ Supported birth cities: Delhi, Mumbai, Pune, Jaipur, Ludhiana, Chennai, Kolkata,
 - Pandit must join within `CHAT_WAITING_TIMEOUT_MS` or user refunded
 - 1s timer emits `timeRemaining`; 5-min warning before end
 - Pandit disconnect: 60s reconnect grace
-- Messages persisted to DynamoDB; history returned on `sessionJoined`
+- Messages persisted to MongoDB; history returned on `sessionJoined`
 
 ### 7.11 Audio sessions — WebRTC (`/sessions/audio`) — JWT
 
@@ -468,7 +468,7 @@ DELETE /sessions/video/:bookingId
 - [ ] Protect `PATCH /experts/:id/presence`
 
 ### Bookings & sessions
-- [x] Live text chat (WebSocket + DynamoDB)
+- [x] Live text chat (WebSocket + MongoDB)
 - [x] Chat Now instant booking
 - [x] Pandit busy queue (Redis)
 - [x] **Live audio** (WebRTC + WebSocket/Redis signaling)
@@ -523,7 +523,7 @@ DELETE /sessions/video/:bookingId
 | 1–7 | NestJS monorepo, Docker, Prisma, auth, profile, JWT |
 | 8–12 | Experts DB, bookings, availability refactor, wallet/Razorpay |
 | 13–16 | Tools (Prokerala + OpenAI), premium debits, zodiac sign |
-| 17 | Live chat: ChatGateway, DynamoDB, mobile + dashboard clients |
+| 17 | Live chat: ChatGateway, MongoDB, mobile + dashboard clients |
 | 18 | Chat Now + Redis pandit queue; `GET /experts/me`; monorepo consolidation |
 | 19 | Live audio: WebRtcModule, `/sessions/audio/*`, audio WebSocket handlers |
 | 20 | Live video: VideoSessionController, `/sessions/video/*`, video WebSocket handlers |

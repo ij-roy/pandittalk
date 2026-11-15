@@ -50,7 +50,7 @@ signaling and API traffic.
 | Time | Speaker | Content | Evidence |
 | --- | --- | --- | --- |
 | 0:00–1:30 | User | Problem, users, and the four clients | Website, dashboard, mobile, backend folder layout |
-| 1:30–4:00 | Aman Singh | System design and why local-first | PostgreSQL source of truth, Redis shared state, DynamoDB Local compatibility, Caddy front door, optional TURN |
+| 1:30–4:00 | Aman Singh | System design and why local-first | PostgreSQL source of truth, Redis shared state, MongoDB Local compatibility, Caddy front door, optional TURN |
 | 4:00–6:00 | User | Docker and stateless scaling | `docker compose ps`, private dependency ports, `--scale api=2`, health endpoint |
 | 6:00–8:00 | Aman Singh | CI/CD and repository discipline | GitHub Actions push/PR checks, branch/PR history, secret hygiene, Docker build |
 | 8:00–11:30 | User | Live application demonstration | Website route, Admin `/admin` route, Pandit `/dashboard` route, mobile route, text chat, responsive layout, error handling |
@@ -90,8 +90,7 @@ sessions. Do not run `docker compose down` during the presentation.
 - PostgreSQL stores durable users, bookings, and application data.
 - Redis stores ephemeral state, rate limits, Socket.IO fan-out, and distributed
   locks so any API replica can handle the next request.
-- DynamoDB Local is retained for the current chat-history adapter and can be
-  replaced by the managed AWS service later.
+- MongoDB Local is the chat-history fallback; production uses MongoDB Atlas.
 - Caddy is the only exposed local service; it upgrades WebSockets and balances
   API replicas.
 - Admin authorization is enforced in the API guard and reloaded from

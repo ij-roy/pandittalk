@@ -145,7 +145,7 @@ login (+91) → request-otp → verify-otp → JWT in secure store
 
 - `joinSession` → messages, typing, timer, waiting-for-pandit
 - Entry: Chat Now, booking confirmation (chat format)
-- Messages are **not** stored on device; server persists to DynamoDB
+- Messages are **not** stored on device; server persists to MongoDB
 
 ---
 
@@ -326,7 +326,7 @@ Backend on port **3001**. Physical device: `EXPO_PUBLIC_API_BASE=http://<LAN-IP>
 
 **Planned microservices (future):** user-service (monolith today), pandit-service scaffold, booking-service, chat-video-service, payment-service, notification-service.
 
-**Planned AWS production:** ECS Fargate, RDS, ElastiCache, DynamoDB, S3, API Gateway, Cognito, managed TURN or another media relay only if needed, CloudFront, SNS, SQS, etc.
+**Historical AWS alternative:** ECS Fargate, RDS, ElastiCache, DynamoDB, S3, API Gateway, Cognito, managed TURN or another media relay only if needed, CloudFront, SNS, SQS, etc. The current deployment direction uses Supabase, Redis Cloud, MongoDB Atlas, Cloudinary, and a Cloudflare Worker front door.
 
 **App store:** EAS Build, privacy policy URLs, real SMS OTP before submission.
 

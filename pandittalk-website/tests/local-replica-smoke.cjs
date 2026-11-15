@@ -124,7 +124,7 @@ async function main() {
       Array.isArray(history.messages) &&
       history.messages.some((message) => message.message === 'replica-chat-proof');
     if (!historyHasMessage) {
-      throw new Error('Reconnect did not return the DynamoDB chat history');
+      throw new Error('Reconnect did not return the MongoDB chat history');
     }
 
     console.log(JSON.stringify({
