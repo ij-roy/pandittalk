@@ -6,7 +6,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-16-first-impression-homepage-design.md`
 
-**Architecture:** Keep the existing Next.js page, shared header/footer, icons, FAQ component, and notification form. Recompose the homepage and its scoped CSS. Remove the homepage dependency on `ExpertDirectory`; the directory remains unchanged on `/pandits`. Add two small client wrappers adapted from React Bits interaction patterns rather than installing a large animation system.
+**Architecture:** Keep the existing Next.js page, shared header/footer, icons, FAQ component, and notification form. Recompose the homepage and its scoped CSS. Remove the homepage dependency on `ExpertDirectory`; the directory remains unchanged on `/pandits`. Add small locally owned components adapted from React Bits interaction patterns rather than installing a large animation system.
 
 **Tech stack:** Next.js 15, React 19, TypeScript, CSS, Playwright, axe-core.
 
@@ -57,7 +57,7 @@
 5. Replace the homepage `ExpertDirectory` with an honest profile-exploration section that links to `/pandits` without fake data.
 6. Keep the journal/tools pair, reduce FAQ items, remove the repeated closing CTA, and add one dedicated update panel at the end.
 7. Correct `.notify-open-row .field input` so its flex basis cannot become vertical height.
-8. Add restrained React Bits-inspired reveal and spotlight wrappers plus a lightweight hero line-art asset. Keep all content static for reduced-motion users.
+8. Add restrained React Bits-inspired reveal and spotlight wrappers, a lightweight CSS hero aurora, and a hero line-art asset. Keep all content static for reduced-motion users.
 9. Run the focused Playwright tests until green.
 
 **Expected:** Focused homepage tests pass at 390px and 1440px, with a compact email field and no live directory skeleton.

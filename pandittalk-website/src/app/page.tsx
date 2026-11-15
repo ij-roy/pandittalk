@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { availabilityCopy } from '@/content/availability';
 import { FocusOnHash } from '@/components/site/FocusOnHash';
+import { HeroAurora } from '@/components/site/HeroAurora';
 import { HomeFaq } from '@/components/site/HomeFaq';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
@@ -94,6 +95,7 @@ export default function Home() {
     <FocusOnHash hash="#booking-availability" targetId="booking-availability" />
 
     <section className="hero" aria-labelledby="home-title">
+      <HeroAurora />
       <div className="hero-copy">
         <p className="eyebrow">Traditional wisdom · Real people · Your pace</p>
         <h1 id="home-title">Find a calmer next step for the question on your mind.</h1>

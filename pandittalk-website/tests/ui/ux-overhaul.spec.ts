@@ -58,6 +58,33 @@ test('homepage enhancement remains decorative and motion-aware', async ({ page }
   expect(motion).toBe('none');
 });
 
+test('homepage hero uses a calm decorative aurora with a reduced-motion fallback', async ({ page }) => {
+  await page.goto('/');
+
+  const aurora = page.locator('.hero-aurora');
+  await expect(aurora).toHaveCount(1);
+  await expect(aurora).toHaveAttribute('aria-hidden', 'true');
+  await expect(aurora.locator('.hero-aurora-glow')).toHaveCount(3);
+  expect(await aurora.locator('.hero-aurora-glow').first().evaluate(element => getComputedStyle(element).animationName)).not.toBe('none');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
+  expect(await page.locator('.hero-aurora-glow').first().evaluate(element => getComputedStyle(element).animationName)).toBe('none');
+});
+
+test('eyebrow labels use a compact brand marker instead of repeated divider lines', async ({ page }) => {
+  await page.goto('/');
+
+  const marker = page.locator('.eyebrow').first().evaluate(element => {
+    const style = getComputedStyle(element, '::before');
+    return { width: parseFloat(style.width), height: parseFloat(style.height), radius: style.borderRadius };
+  });
+
+  expect((await marker).width).toBeLessThanOrEqual(8);
+  expect((await marker).height).toBeLessThanOrEqual(8);
+  expect((await marker).radius).toBe('50%');
+});
+
 test('homepage reveal content cannot remain hidden indefinitely', async ({ page }) => {
   await page.goto('/');
   await page.waitForTimeout(2200);

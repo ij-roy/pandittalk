@@ -29,8 +29,9 @@ Use a trust-first, editorial marketplace layout with the existing visual languag
 
 - Use a restrained, locally owned adaptation of React Bits’ Fade Content pattern for below-fold section reveals. Content must remain available without JavaScript and become fully static under `prefers-reduced-motion`.
 - Use a locally owned adaptation of React Bits’ Spotlight Card pattern on a small number of trust/discovery cards. The spotlight may respond to a fine pointer but must not be required to understand or operate a card.
+- Use a lightweight CSS adaptation of React Bits’ Aurora pattern behind the hero only. Keep it low-contrast, decorative, pointer-transparent, less intense on mobile, and static under `prefers-reduced-motion`.
 - Add a lightweight SVG/CSS line-art motif to the hero guide card. Animate only decorative rings/gradient drift, never text or controls.
-- Do not use WebGL backgrounds, typewriter effects, text scrambling, autoplay carousels, or continuous cursor trails. They are visually louder, more expensive, and less appropriate for a calm, trust-sensitive service.
+- Do not use WebGL backgrounds, typewriter effects, text scrambling, autoplay carousels, or continuous cursor trails. The hero aurora should preserve the calm visual idea without the continuous WebGL renderer.
 
 ### 1. Hero
 
@@ -40,6 +41,7 @@ Use a trust-first, editorial marketplace layout with the existing visual languag
 - Replace the decorative Hindi card with a practical “A thoughtful way to begin” guide containing three short steps.
 - Add compact, truthful trust points: real Pandit profiles, private preparation, free exploration, and no charge today.
 - Show booking status as a short text link, not a form and not timer language.
+- Use a small ochre dot for eyebrow labels instead of repeating a long horizontal divider before every label.
 
 ### 2. Starting topics
 
