@@ -57,6 +57,8 @@ export class WebRtcService {
       });
     }
 
-    return servers.length > 0 ? servers : [{ urls: 'stun:stun.l.google.com:19302' }];
+    return servers.length > 0
+      ? servers
+      : [{ urls: 'stun:stun.l.google.com:19302' }];
   }
 }
