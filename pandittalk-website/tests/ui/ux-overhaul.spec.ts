@@ -427,27 +427,29 @@ test('login keeps social sign-in copy and brand marks consistent', async ({ page
 });
 
 test('login keeps provider buttons visually matched after consent', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/login');
-  await page.locator('.auth-panel input[type="checkbox"]').check();
+  for (const width of [390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/login');
+    await page.locator('.auth-panel input[type="checkbox"]').check();
 
-  const google = page.locator('.social-google-widget [role="button"]');
-  await expect(page.getByRole('button', { name: 'Sign in with Apple', exact: true })).toBeVisible();
-  await expect(google).toBeVisible();
+    const google = page.locator('.social-google-widget [role="button"]');
+    await expect(page.getByRole('button', { name: 'Sign in with Apple', exact: true })).toBeVisible();
+    await expect(google).toBeVisible();
 
-  const styles = await page.evaluate(() => {
-    const apple = document.querySelector<HTMLButtonElement>('[data-provider="apple"].social-provider-button');
-    const googleButton = document.querySelector<HTMLElement>('.social-google-widget [role="button"]');
-    if (!apple || !googleButton) throw new Error('Provider buttons did not render.');
-    const read = (node: HTMLElement) => {
-      const rect = node.getBoundingClientRect();
-      const computed = getComputedStyle(node);
-      return { width: Math.round(rect.width), height: Math.round(rect.height), background: computed.backgroundColor, borderRadius: computed.borderRadius };
-    };
-    return { apple: read(apple), google: read(googleButton) };
-  });
+    const styles = await page.evaluate(() => {
+      const apple = document.querySelector<HTMLButtonElement>('[data-provider="apple"].social-provider-button');
+      const googleButton = document.querySelector<HTMLElement>('.social-google-widget [role="button"]');
+      if (!apple || !googleButton) throw new Error('Provider buttons did not render.');
+      const read = (node: HTMLElement) => {
+        const rect = node.getBoundingClientRect();
+        const computed = getComputedStyle(node);
+        return { width: Math.round(rect.width), height: Math.round(rect.height), background: computed.backgroundColor, borderRadius: computed.borderRadius };
+      };
+      return { apple: read(apple), google: read(googleButton) };
+    });
 
-  expect(styles.apple).toEqual(styles.google);
+    expect(styles.apple).toEqual(styles.google);
+  }
 });
 
 test('download waitlist links never render separators as standalone rows', async ({ page }) => {
