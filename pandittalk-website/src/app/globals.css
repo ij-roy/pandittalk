@@ -662,7 +662,7 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
 .hero-trust-list li { display:flex; align-items:center; gap:8px; min-height:40px; padding:8px 10px; border:1px solid rgba(255,255,255,.8); border-radius:12px; background:rgba(255,255,250,.62); color:#555e4f; font-size:.75rem; line-height:1.35 }
 .hero-trust-list svg { color:var(--ochre); flex-shrink:0 }
 
-.hero-orbit-art { position:absolute; top:-42px; right:-34px; width:255px; height:255px; color:#a8733e; opacity:.62; pointer-events:none }
+.hero-orbit-art { position:absolute; top:-42px; right:0; width:255px; height:255px; color:#a8733e; opacity:.62; pointer-events:none }
 .hero-orbit-art svg { position:absolute; inset:69px; width:118px; height:94px; filter:drop-shadow(0 12px 20px rgba(112,77,37,.12)); animation:hero-lotus-float 6s ease-in-out infinite }
 .hero-orbit-ring { position:absolute; inset:0; border:1px solid rgba(167,116,63,.23); border-radius:50%; animation:hero-orbit-spin 24s linear infinite }
 .hero-orbit-ring::before,.hero-orbit-ring::after { content:''; position:absolute; border-radius:50%; background:#b17a43; box-shadow:0 0 0 6px rgba(177,122,67,.08) }
@@ -742,7 +742,7 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
   .hero-guide-card { min-height:0; padding:34px; border-radius:30px }
   .hero-guide-card h2 { max-width:16ch }
   .hero-guide-content { max-width:650px }
-  .hero-orbit-art { top:-75px; right:-20px }
+  .hero-orbit-art { top:-75px; right:0 }
   .home-topics-section .topic-links { grid-template-columns:repeat(4,minmax(0,1fr)) }
   .trust-card-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px }
   .trust-card { min-height:0; padding:22px }
@@ -768,7 +768,7 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
   .hero-guide-steps li { grid-template-columns:31px minmax(0,1fr); gap:10px; padding:12px 0 }
   .hero-trust-list { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin-top:16px }
   .hero-trust-list li { padding:7px 8px; font-size:.7rem }
-  .hero-orbit-art { width:190px; height:190px; top:-55px; right:-47px; opacity:.45 }
+  .hero-orbit-art { width:190px; height:190px; top:-55px; right:0; opacity:.45 }
   .hero-orbit-art svg { inset:49px; width:90px; height:70px }
   .home-topics-section .topic-links { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px }
   .home-topics-section .topic-links a { min-height:60px; padding:12px 11px; font-size:.84rem; gap:8px }

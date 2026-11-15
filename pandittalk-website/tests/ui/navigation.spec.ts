@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
 
+test('site icon loads without a conflicting route', async ({ request }) => {
+  const response = await request.get('/favicon.ico');
+  expect(response.status()).toBeLessThan(400);
+});
+
 test('mobile navigation closes with Escape and returns focus', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
