@@ -1,4 +1,4 @@
-export const newBookingBlock = 'New consultations are not available to book yet. The no-timer price, scope, cancellation terms and capacity policy must be approved and supported by the booking service first. Opening this page does not create a booking. No coins will be charged.';
+export const newBookingBlock = 'New conversations are not available to book yet. Pricing, scope, cancellation terms and capacity policy must be approved and supported by the booking service first. Opening this page does not create a booking. No coins will be charged.';
 export type Format = 'chat' | 'audio' | 'video';
 export type BookingStatus = 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
 export type Booking = { id: string; panditId: string; panditName?: string; pandit?: {name: string}; area: string; format: Format; status: BookingStatus; startTime: string; endTime?: string; durationMinutes: number; coinsDeducted: number; totalPrice: number; notes: string|null; review: {id: string;rating:number;comment:string|null}|null };

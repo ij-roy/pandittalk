@@ -6,10 +6,11 @@ import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { areas, emptyDraft, readDraft, saveGuidanceDraft, clearGuidanceDraft } from './state';
 import { newBookingBlock } from '@/features/bookings/types';
 import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
+import { availabilityCopy } from '@/content/availability';
 
 type Expert = { id: string; name?: string; firstName?: string; lastName?: string };
 const expertName = (expert?: Expert) => expert?.name || [expert?.firstName, expert?.lastName].filter(Boolean).join(' ') || 'Pandit profile';
-const labels = ['Your area', 'Your question', 'No Timer status', 'Format', 'Your Pandit', 'Saved draft'];
+const labels = ['Your area', 'Your question', 'What to expect', 'Format', 'Your Pandit', 'Review draft'];
 const formats = { chat: 'Chat', audio: 'Audio call', video: 'Video call' } as const;
 
 export default function GuidanceFlow() {
@@ -51,7 +52,7 @@ export default function GuidanceFlow() {
     if (format && next.format) notes.push(`Preferred format set to ${formats[next.format]} — preference only, not a live session`);
     if (format && !next.area && next.format) notes.push('Choose an area next — your preferred format stays selected');
     if (expertId && next.panditId) notes.push('A Pandit was pre-selected from the link — drafts do not notify them');
-    if (notes.length) setDeepLinkNote(`${notes.join('. ')}. You can change any choice while this draft is saved. New No Timer bookings stay closed.`);
+    if (notes.length) setDeepLinkNote(`${notes.join('. ')}. You can change any choice while this draft is saved. ${availabilityCopy.publicStatus}`);
     setReady(true);
   }, []);
 
@@ -121,9 +122,9 @@ export default function GuidanceFlow() {
     <div inert={confirmClear ? true : undefined}>
     <p className="eyebrow">A little preparation. A more useful conversation.</p>
     <h1>What is on your mind?</h1>
-    <p className="lede">You can take your time putting it into words. Preparing a draft does not make a booking and never charges coins.</p>
+    <p className="lede">You can take your time putting it into words. This private draft stays in your browser, does not make a booking, and never charges coins.</p>
     <aside className="notice" role="status" aria-label="Booking availability">
-      <p><strong>New No Timer bookings are not open yet.</strong> Finish a draft now, explore Pandits, or leave your email for a note when conversations can begin.</p>
+      <p><strong>{availabilityCopy.publicStatus}</strong> {availabilityCopy.publicDetail} Preparing a draft does not create a booking or charge.</p>
       <div className="notify-inline stack">
         <NotifyOpenForm source="website_guidance_start" />
         <p className="sr-only" id="guidance-start-actions-hint">Arrow keys move between Explore Pandits, free tools, stay on draft and booking updates. Escape blurs the focused control. NotifyOpenForm still requires source. Skip remains site-content.</p>
@@ -199,11 +200,11 @@ export default function GuidanceFlow() {
             setDraft({ ...draft, notes: '' });
           }} /></label>
           <small id="guidance-notes-count" aria-live="polite">{draft.notes.length}/200 characters{draft.notes ? ' · Escape clears notes' : ''}</small>
-          <p id="guidance-notes-privacy" className="expert-meta">Draft notes stay in this browser tab. Preparing a draft does not share them with a Pandit. Review any text brought from a tool before continuing.</p>
+          <p id="guidance-notes-privacy" className="expert-meta">Draft notes stay in this browser. Preparing a draft does not share them with a Pandit. Review any text brought from a tool before continuing.</p>
         </>}
         {step === 2 && <>
-          <h3>What No Timer means</h3>
-          <p><strong>No Timer</strong> is the future Pandit Talk conversation offer — room to be heard, clarify your question, and agree on a next step. It is not a countdown, and it does not guarantee a life outcome.</p>
+          <h3>What to expect</h3>
+          <p>{availabilityCopy.noTimerExplanation}</p>
           <p className="notice" role="status">{newBookingBlock}</p>
           <p>Your draft has no selected paid scope or hidden premium upgrade.</p>
         </>}
@@ -279,7 +280,7 @@ export default function GuidanceFlow() {
           <p id="guidance-date-help" className="expert-meta">Your date is a preference in Indian Standard Time. It does not reserve a time or confirm availability.{draft.date ? ' Press Escape to clear.' : ''}</p>
           <p className="notice" role="status" id="booking-block">{newBookingBlock}</p>
           <div className="notify-inline stack" aria-describedby="booking-block">
-            <p className="expert-meta">Your draft is saved in this browser. Leave your email for a note when No Timer opens — exploring Pandits does not start a booking.</p>
+            <p className="expert-meta">Your draft is saved in this browser. Leave your email for a note when conversations open — exploring Pandits does not start a booking.</p>
             <NotifyOpenForm source="website_guidance_review" />
           </div>
           <p className="sr-only" id="guidance-review-hint">Arrow keys move between guidance review next steps. Escape blurs the focused link. Skip remains site-content. NotifyOpenForm still requires source.</p>

@@ -6,11 +6,11 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Find guidance',
-  description: 'Choose a life area — career, love, family, marriage, education, health, business or finance — and prepare a private draft. New No Timer bookings stay paused.',
+  description: 'Choose a life area — career, love, family, marriage, education, health, business or finance — and prepare a private draft. New conversations are opening soon.',
   alternates: { canonical: '/guidance' },
   openGraph: {
     title: 'Find guidance · Pandit Talk',
-    description: 'Choose a life area and prepare a private draft while No Timer bookings stay paused.',
+    description: 'Choose a life area and prepare a private draft while new conversations are opening soon.',
     url: '/guidance',
   },
 };
@@ -20,7 +20,7 @@ export default function Page() {
     <main id="main-content" className="page stack">
       <p className="eyebrow">Space for what matters</p>
       <h1>You do not need a perfect question to begin.</h1>
-      <p className="lede">Traditional wisdom can offer a way to reflect on the decisions, relationships and responsibilities in front of you. Begin with the area that feels closest — preparing here never opens a booking or charges coins while No Timer stays closed.</p>
+      <p className="lede">Traditional wisdom can offer a way to reflect on the decisions, relationships and responsibilities in front of you. Begin with the area that feels closest — preparing here never opens a booking or charges coins.</p>
       <OfferNotice compact source="website_guidance_index" />
       <p className="sr-only" id="guidance-index-next-hint">Arrow keys move between Prepare, Browse Pandits, free tools and draft help. Escape blurs. OfferNotice still requires source.</p>
       <LinkKeyboardGroup className="actions" aria-label="Guidance index next steps" aria-describedby="guidance-index-next-hint">
@@ -42,7 +42,7 @@ export default function Page() {
       <section className="panel stack">
         <h2>A conversation with room to think</h2>
         <p>Bring your own beliefs and decide what is useful to you. Guidance should leave you with clearer questions and an actionable next step, not fear or a guaranteed prediction.</p>
-        <p className="expert-meta">New No Timer booking is awaiting approved service terms. Existing bookings remain accessible under their original terms.</p>
+        <p className="expert-meta">New conversations are opening soon. Existing bookings remain accessible under their original terms.</p>
         <p className="sr-only" id="guidance-booking-hint">Arrow keys move between sign-in and booking-update links. Escape blurs the focused link.</p>
         <LinkKeyboardGroup as="p" aria-label="Guidance index booking links" aria-describedby="guidance-booking-hint">
           <Link className="text-link" href="/login?returnTo=%2Fbookings&reason=auth">Sign in to view bookings</Link>

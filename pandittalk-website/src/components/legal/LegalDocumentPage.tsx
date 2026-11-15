@@ -5,6 +5,7 @@ import { grievanceEmail, supportEmail } from "@/content/siteIdentity";
 import { FocusOnHash } from "@/components/site/FocusOnHash";
 import { LinkKeyboardGroup } from "@/components/site/LinkKeyboardGroup";
 import { NotifyOpenForm } from "@/components/site/NotifyOpenForm";
+import { availabilityCopy } from "@/content/availability";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -356,7 +357,7 @@ export default function LegalDocumentPage({
           </LinkKeyboardGroup>
           <aside className="notice offer-notice" role="status" aria-label="Booking availability" style={{ marginTop: 18 }}>
             <p>
-              <strong>Want a note when No Timer opens?</strong> This waitlist is separate from legal or privacy questions.{' '}
+              <strong>{availabilityCopy.headerLink}?</strong> {availabilityCopy.publicStatus} This waitlist is separate from legal or privacy questions.{' '}
               <span className="sr-only" id="legal-footer-notify-hint">Arrow keys move between how booking works, free tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span>
               <LinkKeyboardGroup as="span" aria-label="Legal footer booking updates" aria-describedby="legal-footer-notify-hint">
                 <Link href="/how-it-works#booking-availability-how">How booking will work</Link>

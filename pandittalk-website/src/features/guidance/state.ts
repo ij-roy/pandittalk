@@ -3,9 +3,13 @@ export type GuidanceDraft = { area: string; notes: string; format: '' | 'chat' |
 export const draftKey = 'pandittalk.guidance.draft';
 export const emptyDraft: GuidanceDraft = { area: '', notes: '', format: '', panditId: '', date: '' };
 
+function draftStorage(): Storage {
+  return window.localStorage;
+}
+
 export function readDraft(): GuidanceDraft {
   try {
-    const value = JSON.parse(sessionStorage.getItem(draftKey) || 'null');
+    const value = JSON.parse(draftStorage().getItem(draftKey) || 'null');
     if (!value) return { ...emptyDraft };
     const area = areas.includes(value.area) ? value.area : '';
     const format = ['chat', 'audio', 'video'].includes(value.format) ? value.format : '';
@@ -21,7 +25,7 @@ export function readDraft(): GuidanceDraft {
 
 export function saveGuidanceDraft(draft: Partial<GuidanceDraft>): boolean {
   try {
-    sessionStorage.setItem(draftKey, JSON.stringify({ ...readDraft(), ...draft, notes: (draft.notes ?? readDraft().notes).slice(0, 200) }));
+    draftStorage().setItem(draftKey, JSON.stringify({ ...readDraft(), ...draft, notes: (draft.notes ?? readDraft().notes).slice(0, 200) }));
     return true;
   } catch {
     return false;
@@ -29,5 +33,5 @@ export function saveGuidanceDraft(draft: Partial<GuidanceDraft>): boolean {
 }
 
 export function clearGuidanceDraft() {
-  try { sessionStorage.removeItem(draftKey); } catch { /* ignore */ }
+  try { draftStorage().removeItem(draftKey); } catch { /* ignore */ }
 }

@@ -31,7 +31,7 @@ export default function LegalShell({ children }: { children: ReactNode }) {
     <div className="legal-root">
       <nav className="legal-nav" aria-label="Policies and your rights" aria-describedby="legal-tabs-hint">
         <span className="legal-nav__label">Policies & your rights</span>
-        <p className="legal-nav__hint" id="legal-tabs-hint">Swipe sideways on small screens to see every policy. Arrow keys move between policies; Home and End jump to the first or last; Escape returns to the current policy or blurs. Skip to content still targets site-content. The current policy stays scrolled into view.</p>
+        <p className="sr-only" id="legal-tabs-hint">Use the policy links to move between documents. The selected policy is marked current.</p>
         <div
           className="legal-tabs"
           ref={tabsRef}

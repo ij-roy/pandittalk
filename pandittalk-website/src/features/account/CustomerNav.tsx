@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { useApi } from '@/lib/api/client';
+import { availabilityCopy } from '@/content/availability';
 import styles from './customer.module.css';
 
 const links = [
@@ -103,7 +104,7 @@ export default function CustomerNav() {
         {liveUnread}
       </p>
       <p className={styles.pauseNote} role="status">
-        New bookings and recharge stay paused.{' '}
+        <strong>{availabilityCopy.publicStatus}</strong> Existing bookings and account records stay available.{' '}
         <span className="sr-only" id="customer-nav-pause-hint">Arrow keys move between booking updates, draft and free tools. Escape blurs. Skip remains site-content.</span>
         <LinkKeyboardGroup as="span" aria-label="Customer nav pause links" aria-describedby="customer-nav-pause-hint">
           <Link href="/how-it-works#booking-availability-how">Get a note when they open</Link>

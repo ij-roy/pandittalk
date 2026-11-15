@@ -36,6 +36,7 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
   const [language, setLanguage] = useState('');
   const [sort, setSort] = useState('rating');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [loadingSlow, setLoadingSlow] = useState(false);
   const filterToggleRef = useRef<HTMLButtonElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -78,6 +79,15 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
   const hasFilters = !!search || !!area || !!language || sort !== 'rating';
   const activeFilterCount = [search, area, language, sort !== 'rating' ? sort : ''].filter(Boolean).length;
   const showLoadError = Boolean(error && displayRows.length === 0);
+
+  useEffect(() => {
+    if (!searching) {
+      setLoadingSlow(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setLoadingSlow(true), 1200);
+    return () => window.clearTimeout(timer);
+  }, [searching]);
 
   useEffect(() => {
     if (!showLoadError) return;
@@ -173,6 +183,13 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
       {updating && <p role="status" className="expert-meta">Updating results…</p>}
       {searching ? <>
         <p id={resultsId} role="status" className="expert-meta">Finding Pandits…</p>
+        {loadingSlow && <div className="expert-loading-help" role="status">
+          <p>Still loading? You can use free tools or prepare a draft while profiles load.</p>
+          <div className="actions" style={{ marginTop: 10 }}>
+            <Link className="button secondary" href="/tools">Try free tools</Link>
+            <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
+          </div>
+        </div>}
         <p className="sr-only" id="directory-searching-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft while results load. NotifyOpenForm still requires source.</p>
         <LinkKeyboardGroup className="actions" aria-label="While Pandit results load" aria-describedby="directory-searching-hint">
           <Link className="button secondary" href="/tools">Try free tools</Link>

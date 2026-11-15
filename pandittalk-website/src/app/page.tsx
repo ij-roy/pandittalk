@@ -8,14 +8,15 @@ import { SiteIcon, type SiteIconName } from '@/components/site/SiteIcon';
 import { ExpertDirectory } from '@/features/experts/ExpertDirectory';
 import { SITE_URL } from '@/lib/articles/site';
 import type { Metadata } from 'next';
+import { availabilityCopy } from '@/content/availability';
 
 export const metadata: Metadata = {
   title: { absolute: 'Pandit Talk — You Talk. We Stay.' },
-  description: 'Traditional wisdom, real Pandits and modern technology for thoughtful conversations with room to explain. New No Timer bookings are not open yet.',
+  description: 'Traditional wisdom, real Pandits and modern technology for thoughtful conversations with room to explain. New conversations are opening soon.',
   alternates: { canonical: '/' },
   openGraph: {
     title: 'Pandit Talk — You Talk. We Stay.',
-    description: 'Traditional wisdom, real Pandits and modern technology for thoughtful conversations with room to explain. New No Timer bookings are not open yet.',
+    description: 'Traditional wisdom, real Pandits and modern technology for thoughtful conversations with room to explain. New conversations are opening soon.',
     url: '/',
   },
 };
@@ -46,19 +47,19 @@ function EditorialArt() {
 const homeFaqs = [
   {
     q: 'What should I bring to a conversation?',
-    a: 'You do not need a perfect question. Bring the topic that feels closest, and only the details you are comfortable sharing. New No Timer bookings are not open yet — you can prepare a private draft now without creating a charge.',
+    a: 'You do not need a perfect question. Bring the topic that feels closest, and only the details you are comfortable sharing. New conversations are opening soon — you can prepare a private draft now without creating a charge.',
     linkHref: '/help/first-consultation',
     linkLabel: 'Preparing while bookings stay closed →',
   },
   {
     q: 'How do coins and pricing work?',
-    a: 'Coins and INR are separate units. New purchases are paused until No Timer terms are finalized. Existing bookings keep their agreed terms.',
+    a: 'Coins and INR are separate units. New purchases are paused while service terms are finalized. Existing bookings keep their agreed terms.',
     linkHref: '/pricing',
     linkLabel: 'See pricing details →',
   },
   {
     q: 'Are astrology tools the same as talking to a Pandit?',
-    a: 'No. Tools are automated and labelled as such. A live conversation is with a person — and new No Timer bookings are not open yet.',
+    a: 'No. Tools are automated and labelled as such. A live conversation is with a person — and new conversations are opening soon.',
     linkHref: '/tools',
     linkLabel: 'Explore labelled tools →',
   },
@@ -76,7 +77,7 @@ const homeFaqs = [
   },
   {
     q: 'Can I book a conversation right now?',
-    a: 'New No Timer bookings are not open yet. You can explore Pandits, try tools, prepare a draft, and leave your email for updates.',
+    a: `${availabilityCopy.publicStatus} You can explore Pandits, try tools, prepare a draft, and leave your email for updates.`,
     linkHref: '/how-it-works#booking-availability-how',
     linkLabel: 'Get notified →',
   },
@@ -107,13 +108,13 @@ export default function Home() {
       <div>
         <p className="eyebrow">Traditional wisdom · Real Pandits · Modern technology</p>
         <p className="hero-brand">Pandit Talk</p>
-        <h1 id="home-title">No Timer isn&apos;t open yet.<br />Prepare with room.</h1>
-        <p className="supporting">A meaningful conversation shouldn&apos;t feel like a race against a clock. Explore real Pandit profiles and prepare your questions now — browsing, drafts and free tools never charge coins. New bookings stay closed until No Timer terms are ready.</p>
+        <h1 id="home-title">Find a calmer next step for the question on your mind.</h1>
+        <p className="supporting">Real Pandits, free reflection tools, and a private place to prepare. Explore the people and topics that feel relevant now; new conversations are opening soon.</p>
         <p className="sr-only" id="home-hero-hint">Arrow keys move between hero actions. Escape blurs the focused link. Skip remains site-content. NotifyOpenForm still requires source.</p>
         <LinkKeyboardGroup className="actions" aria-label="Home hero actions" aria-describedby="home-hero-hint">
           <Link className="button" href="/pandits">Explore Pandits<SiteIcon name="right" size={18} /></Link>
-          <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
-          <Link className="hero-secondary" href="#booking-availability">Get booking updates<SiteIcon name="right" size={17} /></Link>
+          <Link className="button secondary" href="/tools">Try a free tool</Link>
+          <Link className="hero-secondary" href="/guidance/start">Prepare a private draft<SiteIcon name="right" size={17} /></Link>
         </LinkKeyboardGroup>
         <EscapeBlurNotice
           className="hero-availability"
@@ -121,8 +122,8 @@ export default function Home() {
           role="region"
           aria-label="Booking availability"
         >
-          <p><strong>New No Timer bookings aren&apos;t open yet.</strong> You can still explore Pandit profiles, try tools, and prepare a private draft. Existing bookings keep their agreed terms. Press Escape to leave this region.</p>
-          <NotifyOpenForm source="website_home_hero" />
+          <p><strong>{availabilityCopy.publicStatus}</strong> {availabilityCopy.publicDetail} {availabilityCopy.noTimerExplanation}</p>
+          <NotifyOpenForm source="website_home_hero" submitLabel="Get one email" fieldLabel={availabilityCopy.waitlistLabel} helpText={availabilityCopy.waitlistHelp} />
         </EscapeBlurNotice>
       </div>
       <aside className="editorial-mark" aria-label="The Pandit Talk philosophy">
@@ -224,13 +225,13 @@ export default function Home() {
       <div className="closing-note">
         <div>
           <h3>Start with a little curiosity.</h3>
-          <p>Explore Pandits, try a tool, and prepare your questions. New bookings stay closed until No Timer terms are ready — nothing here creates a charge.</p>
+          <p>Explore Pandits, try a tool, and prepare your questions. New conversations are opening soon — nothing here creates a charge.</p>
         </div>
         <p className="sr-only" id="home-closing-hint">Arrow keys move between closing actions. Escape blurs the focused link. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="Home closing actions" style={{ margin: 0 }} aria-describedby="home-closing-hint">
           <Link className="button" href="/pandits">Explore Pandits<SiteIcon name="right" size={18} /></Link>
-          <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
-          <Link className="button secondary" href="/tools">Try free tools</Link>
+          <Link className="button secondary" href="/tools">Try a free tool</Link>
+          <Link className="button secondary" href="/guidance/start">Prepare a private draft</Link>
           <Link className="text-link" href="/how-it-works#booking-availability-how">Booking updates →</Link>
         </LinkKeyboardGroup>
       </div>

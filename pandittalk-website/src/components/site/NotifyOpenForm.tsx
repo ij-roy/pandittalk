@@ -4,6 +4,7 @@ import { FormEvent, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { supportEmail } from '@/content/siteIdentity';
+import { availabilityCopy } from '@/content/availability';
 
 /** Production waitlist endpoint — used when NEXT_PUBLIC_NOTIFY_SHEET_URL is unset so prod builds still accept signups. */
 const DEFAULT_NOTIFY_SHEET_URL =
@@ -22,7 +23,7 @@ function emailFieldLabel(source: string) {
   if (source.includes('paid_tool') || source.includes('tools_index_paid')) return 'Email for paid-report updates';
   if (source.includes('pricing')) return 'Email for pricing and booking updates';
   if (source.includes('for_pandits') || source.includes('for-pandits')) return 'Email for practitioner updates';
-  return 'Email for No Timer availability updates';
+  return availabilityCopy.waitlistLabel;
 }
 
 function successCopy(source: string, duplicate = false) {
@@ -130,11 +131,13 @@ export function NotifyOpenForm({
   source,
   submitLabel,
   helpText,
+  fieldLabel,
 }: {
   /** Placement id for waitlist attribution — required so sources stay consistent. */
   source: string;
   submitLabel?: string;
   helpText?: string;
+  fieldLabel?: string;
 }) {
   const fieldId = useId();
   const helpId = useId();
@@ -220,7 +223,7 @@ export function NotifyOpenForm({
     <form className="notify-open-form" onSubmit={onSubmit} noValidate aria-busy={busy || undefined}>
       <div className="notify-open-row">
         <label className="field" htmlFor={fieldId}>
-          {emailFieldLabel(placement)}
+          {fieldLabel || emailFieldLabel(placement)}
           <input
           ref={emailRef}
           id={fieldId}

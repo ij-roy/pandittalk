@@ -87,6 +87,8 @@ async function compressPalmDataUrl(dataUrl: string, maxBytes: number): Promise<s
 
 export default function ToolForm({ kind }: { kind: ToolKind }) {
   const [result, setResult] = useState<Record<string, unknown>>();
+  const [savedCopy, setSavedCopy] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('');
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [palms, setPalms] = useState<Record<string, string>>({});
@@ -103,6 +105,21 @@ export default function ToolForm({ kind }: { kind: ToolKind }) {
   const printNoteRef = useRef<HTMLParagraphElement>(null);
   const readingImages = Object.values(imageLoading).some(Boolean);
   const palmMissing = kind === "palm-reading" && (!palms.left || !palms.right);
+  const savedReadingKey = `pandittalk.reading.${kind}`;
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(savedReadingKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { data?: unknown };
+      if (!parsed.data || typeof parsed.data !== 'object') throw new Error('invalid saved reading');
+      setResult(validateResult(kind, parsed.data));
+      setSavedCopy(true);
+      setSaveStatus('Saved reading restored from this browser.');
+    } catch {
+      try { localStorage.removeItem(savedReadingKey); } catch { /* ignore unavailable storage */ }
+    }
+  }, [kind, savedReadingKey]);
 
   useEffect(() => {
     if (kind !== "horoscope") return;
@@ -231,6 +248,23 @@ export default function ToolForm({ kind }: { kind: ToolKind }) {
     requestAnimationFrame(() => palmInputs.current[side]?.focus());
   }
 
+  function saveReadingToDevice() {
+    if (!result) return;
+    try {
+      localStorage.setItem(savedReadingKey, JSON.stringify({ data: result }));
+      setSavedCopy(true);
+      setSaveStatus('Saved on this browser. Only this device can access this copy until you remove it.');
+    } catch {
+      setSaveStatus('This browser could not save a copy. You can still print or save a PDF instead.');
+    }
+  }
+
+  function removeSavedReading() {
+    try { localStorage.removeItem(savedReadingKey); } catch { /* ignore unavailable storage */ }
+    setSavedCopy(false);
+    setSaveStatus('Saved copy removed from this browser.');
+  }
+
   const formFields = <>
     <fieldset className="stack" disabled={busy || readingImages}>
       <legend className="sr-only">Prepare your reading</legend>
@@ -313,7 +347,7 @@ export default function ToolForm({ kind }: { kind: ToolKind }) {
         <p className="notice" id="palm-photo-help">Both photos are sent for AI image processing when you request a reading. Clear palm photos work best (JPEG, PNG or WebP). Large phone photos are compressed automatically before upload. No medical or lifespan prediction is offered. Press Escape on a chosen photo to clear it.</p>
         <div className="grid">
           {["left", "right"].map(side => <div className="panel stack" key={side}>
-            <label className="field">{side === "left" ? "Left" : "Right"} palm photo<input ref={node => { palmInputs.current[side] = node; }} type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" aria-describedby={error.includes("palm") ? "palm-photo-help tool-form-error" : "palm-photo-help"} aria-invalid={error.toLowerCase().includes(side) || (error.includes("palm") && !palms[side]) ? true : undefined} onChange={event => imageFile(side, event)} onKeyDown={event => {
+            <label className="field">{side === "left" ? "Left" : "Right"} palm photo<input ref={node => { palmInputs.current[side] = node; }} type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" capture="environment" aria-describedby={error.includes("palm") ? "palm-photo-help tool-form-error" : "palm-photo-help"} aria-invalid={error.toLowerCase().includes(side) || (error.includes("palm") && !palms[side]) ? true : undefined} onChange={event => imageFile(side, event)} onKeyDown={event => {
               if (event.key !== 'Escape' || (!palms[side] && !event.currentTarget.value)) return;
               event.preventDefault();
               clearPalm(side);
@@ -422,11 +456,29 @@ export default function ToolForm({ kind }: { kind: ToolKind }) {
     <p className="eyebrow">A moment for reflection · Free tool</p>
     <h1>{titles[kind]}</h1>
     <p className="lede">An automated interpretation, labelled separately from a live Pandit conversation. Use it as a starting point for your own judgement.</p>
+    <aside className="notice tool-privacy" aria-label="Before you start">
+      <p><strong>Before you start</strong></p>
+      <p>{kind === "palm-reading" ? "Palm photos are sent for automated image processing when you request a reading — choosing a photo does not upload it." : "Your details stay in this form until you request a reading. The tool is separate from bookings and does not charge coins."}</p>
+      <p>This page does not save a copy on your device unless you choose to.</p>
+      <p><Link className="text-link" href="/privacy">Privacy policy</Link> · <Link className="text-link" href="/help/tools-and-readings">Tools help</Link></p>
+    </aside>
     {result ? (
       <>
         <section className="stack" aria-labelledby="reading-heading">
           <h2 id="reading-heading" tabIndex={-1} ref={resultHeading}>Your reading</h2>
           <Reading data={result} />
+          <aside className="notice stack" aria-label="Keep this reading">
+            <div>
+              <h3>Keep this reading?</h3>
+              <p>Save a copy only on this browser so you can return to it later. It will stay here until you remove it.</p>
+              {saveStatus && <p role="status" aria-live="polite">{saveStatus}</p>}
+            </div>
+            <div className="actions" style={{ margin: 0 }}>
+              {!savedCopy
+                ? <button type="button" className="button secondary" onClick={saveReadingToDevice}>Save this reading on this browser</button>
+                : <button type="button" className="button secondary" onClick={removeSavedReading}>Remove saved copy</button>}
+            </div>
+          </aside>
           <aside className="panel stack">
             <h3>Bookings paused — prepare a draft next</h3>
             <p>Automated tools offer reflection. When you want a human conversation, prepare a private draft. New No Timer bookings are not open yet — preparing a draft does not create a charge.</p>

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { SiteIcon } from './SiteIcon';
+import { availabilityCopy } from '@/content/availability';
 
 const links = [['/pandits', 'Pandits'], ['/guidance', 'Find guidance'], ['/tools', 'Tools'], ['/articles', 'Journal'], ['/our-approach', 'Our approach']] as const;
 const accountLinks = [['/home', 'My home'], ['/account', 'Account'], ['/bookings', 'Bookings'], ['/wallet', 'Wallet'], ['/notifications', 'Notifications'], ['/help', 'Help centre']] as const;
@@ -202,10 +203,8 @@ export function SiteHeader() {
       </nav>
       <div className="header-account" aria-busy={signedIn === null ? true : undefined} aria-describedby="header-account-hint">
         <p id="header-account-hint" className="sr-only">Arrow keys move between account links. Escape blurs the focused link. Skip to content still targets site-content.</p>
-        {signedIn === null ? (
-          <span className="expert-meta" role="status" aria-live="polite">Checking session…</span>
-        ) : signedIn ? <>
-          <Link href="/how-it-works#booking-availability-how" title="New No Timer bookings and recharge stay paused — leave your email for updates">Bookings paused</Link>
+        {signedIn ? <>
+          <Link href="/how-it-works#booking-availability-how" title={availabilityCopy.publicStatus}>{availabilityCopy.headerLink}</Link>
           <Link href="/notifications" aria-label={unread > 0 ? `Updates, ${unread} unread` : 'Updates'}>
             <SiteIcon name="bell" size={17} />
             {unread > 0 ? `Updates (${unread})` : 'Updates'}
@@ -213,7 +212,7 @@ export function SiteHeader() {
           <Link href="/account"><SiteIcon name="user" size={17} />Account</Link>
           <Link className="button" href="/home">My home<SiteIcon name="right" size={16} /></Link>
         </> : <>
-          <Link href="/how-it-works#booking-availability-how" title="New No Timer bookings are not open yet">Bookings paused</Link>
+          <Link href="/how-it-works#booking-availability-how" title={availabilityCopy.publicStatus}>{availabilityCopy.headerLink}</Link>
           <Link href="/help"><SiteIcon name="info" size={17} />Help</Link>
           <Link className="button" href="/login">Sign in<SiteIcon name="right" size={16} /></Link>
         </>}
@@ -223,10 +222,8 @@ export function SiteHeader() {
         <nav id="mobile-navigation" aria-label="Mobile navigation" role={menuOpen ? 'dialog' : undefined} aria-modal={menuOpen || undefined} aria-labelledby={menuOpen ? 'mobile-menu-title' : undefined} aria-hidden={menuOpen ? undefined : true} inert={menuOpen ? undefined : true}>
           {menuOpen && <p id="mobile-menu-title" className="sr-only">Site menu. Press Escape to close.</p>}
           {links.map(([href, label]) => <Link href={href} key={href} aria-current={current(href) ? 'page' : undefined} onClick={closeMenu}>{label}</Link>)}
-          <span className="mobile-nav-label">{signedIn === null ? 'Account' : signedIn ? 'Your space' : 'Sign in'}</span>
-          {signedIn === null
-            ? <p className="expert-meta">Checking your session…</p>
-            : signedIn
+          <span className="mobile-nav-label">{signedIn ? 'Your space' : 'Sign in'}</span>
+          {signedIn
             ? <>
               {accountLinks.map(([href, label]) => {
                 const text = href === '/notifications' && unread > 0 ? `${label} (${unread})` : label;
@@ -249,7 +246,7 @@ export function SiteHeader() {
             </>
             : <>
               <span className="mobile-nav-label">While booking stays paused</span>
-              <Link href="/how-it-works#booking-availability-how" onClick={closeMenu} title="New No Timer bookings are not open yet">Bookings paused</Link>
+              <Link href="/how-it-works#booking-availability-how" onClick={closeMenu} title={availabilityCopy.publicStatus}>{availabilityCopy.headerLink}</Link>
               <Link href="/guidance/start" onClick={closeMenu}>Prepare a draft</Link>
               <Link href="/tools" onClick={closeMenu}>Free tools</Link>
               <Link href="/login" onClick={closeMenu}>Sign in</Link>
@@ -257,10 +254,10 @@ export function SiteHeader() {
               <Link href="/how-it-works" onClick={closeMenu}>How it works</Link>
               <Link href="/pricing" onClick={closeMenu}>Pricing</Link>
             </>}
-          {signedIn !== null && <Link href={signedIn ? '/home' : '/login'} className="button" onClick={closeMenu}>
+          <Link href={signedIn ? '/home' : '/login'} className="button" onClick={closeMenu}>
             {signedIn ? 'My home' : 'Sign in'}
             <SiteIcon name="right" size={16} />
-          </Link>}
+          </Link>
         </nav>
       </details>
     </div>

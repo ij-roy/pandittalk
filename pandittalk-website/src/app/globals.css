@@ -311,6 +311,8 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
 /* Neutral presence while website bookings are paused — green read as live bookability. */
 .presence.is-online::before { background:#6b655c; box-shadow:none }
 .expert-loading { display:flex; flex-direction:column; gap:0 }
+.expert-loading-help { margin:16px 0; padding:14px 16px; border:1px solid var(--glass-border); border-radius:14px; background:var(--surface); }
+.expert-loading-help p { margin:0; color:var(--ink-soft); }
 .expert-row-skeleton { pointer-events:none }
 .skeleton-block,.skeleton-line { display:block; background:linear-gradient(90deg,#ebe6da 0%,#f7f3ea 50%,#ebe6da 100%); background-size:200% 100%; animation:skeleton-shimmer 1.4s ease-in-out infinite; border-radius:10px }
 .skeleton-copy { display:flex; flex-direction:column; gap:10px }

@@ -21,25 +21,27 @@ test('guidance keeps the chosen Pandit and restores draft notes', async ({ page 
   await page.getByLabel('Where would you like guidance?').selectOption('career');
   await page.getByRole('button', { name: '2. Your question', exact: true }).click();
   await page.getByLabel('Your question or context (optional)').fill('Considering a change at work.');
-  await page.getByRole('button', { name: '3. No Timer status', exact: true }).click();
+  await page.getByRole('button', { name: '3. What to expect', exact: true }).click();
   await page.getByRole('button', { name: '4. Format', exact: true }).click();
   await page.getByLabel('Chat', { exact: true }).check();
   await page.getByRole('button', { name: '5. Your Pandit', exact: true }).click();
   await expect(page.getByLabel('Optional Pandit preference (not a booking)')).toHaveValue('expert-a');
   await page.reload();
-  await page.getByRole('button', { name: '6. Saved draft', exact: true }).click();
+  await page.getByRole('button', { name: '6. Review draft', exact: true }).click();
   await expect(page.locator('dd', { hasText: 'Pandita Meera Sharma' })).toBeVisible();
   await expect(page.locator('dd', { hasText: 'Considering a change at work.' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Saved draft', exact: true })).toBeFocused();
+  await expect(page.getByRole('heading', { name: 'Review draft', exact: true })).toBeFocused();
 });
 
 test('guidance start fresh works when draft storage is unavailable', async ({ page }) => {
   await page.addInitScript(() => {
-    Object.defineProperty(window, 'sessionStorage', { value: {
+    const unavailable = {
       getItem: () => null,
       setItem: () => { throw new Error('Storage unavailable'); },
       removeItem: () => { throw new Error('Storage unavailable'); },
-    } });
+    };
+    Object.defineProperty(window, 'sessionStorage', { value: unavailable });
+    Object.defineProperty(window, 'localStorage', { value: unavailable });
   });
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));

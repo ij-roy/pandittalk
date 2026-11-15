@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { LinkKeyboardGroup } from './LinkKeyboardGroup';
 import { NotifyOpenForm } from './NotifyOpenForm';
 import { SiteIcon } from './SiteIcon';
+import { availabilityCopy } from '@/content/availability';
 
 export function OfferNotice({
   compact = false,
@@ -20,7 +21,7 @@ export function OfferNotice({
       <SiteIcon name="info" size={19} />
       <div className="offer-notice-body">
         <p>
-          <strong>While No Timer stays closed.</strong> New bookings are not open yet. You can explore Pandit profiles and prepare your questions — browsing here never charges coins. Existing bookings keep their agreed terms.
+          <strong>{availabilityCopy.publicStatus}</strong> {availabilityCopy.publicDetail} {availabilityCopy.existingBooking}
           {' '}
           <span className="sr-only" id={hintId}>Arrow keys move between pricing when shown, how booking works, free tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span>
           <LinkKeyboardGroup as="span" aria-label="Offer notice next steps" aria-describedby={hintId}>

@@ -61,7 +61,6 @@
 @media (max-width: 520px) {
   .legal-nav { padding: 22px 20px 0; }
   .legal-nav__label { font-size: .68rem; }
-  .legal-nav__hint { display: block; }
   .legal-tabs { gap: 6px; scroll-padding-inline: 12px; }
   .legal-tab { font-size: .76rem; padding: 7px 11px; }
   .legal-main { padding: 32px 16px 56px; }

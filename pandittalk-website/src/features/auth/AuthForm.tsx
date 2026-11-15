@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { normalizePhone, safeReturnTo } from '@/lib/api/security';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { availabilityCopy } from '@/content/availability';
 import { SocialSignIn } from './SocialSignIn';
 
 type AuthResult = { needsPhone?: boolean; pendingToken?: string; hasProfile?: boolean };
@@ -152,13 +153,8 @@ export function AuthForm() {
 
   return <main id="main-content" className="page auth-page" aria-busy={busy || undefined}>
     <div className="eyebrow">Your private Pandit Talk space</div>
-    <h1>{pending ? 'One more step.' : sent ? 'Enter your code.' : 'Welcome to Pandit Talk.'}</h1>
-    <p className="lede">{pending ? 'Link your Indian mobile number to keep your wallet, bookings and reports together.' : sent ? 'We sent a four-digit code to your phone. It usually arrives within a minute and expires after a few minutes — use Resend if it stops working.' : 'Use the same account as the app. Your profile, wallet and reports stay together. Signing in does not open a new No Timer booking — those stay closed until terms are ready.'}</p>
-    <aside className="notice" role="status">
-      <p>{sent || pending
-        ? <>Verifying still does not open No Timer or recharge — signing in only unlocks your existing private space.</>
-        : <>Signing in opens your private bookings, wallet and reports. <strong>New No Timer bookings and recharge stay paused</strong> — signing in does not create a charge or unlock a new consultation.</>} <span className="sr-only" id="auth-pause-hint">Arrow keys move between free tools, draft and booking updates. Escape blurs. Consent never blocks Send code.</span> <LinkKeyboardGroup as="span" aria-label="Sign-in pause alternatives" aria-describedby="auth-pause-hint"><Link href="/tools">Try free tools</Link> · <Link href="/guidance/start">Prepare a draft</Link> · <Link href="/how-it-works#booking-availability-how">Get booking updates</Link></LinkKeyboardGroup>.</p>
-    </aside>
+    <h1>{pending ? 'One more step.' : sent ? 'Enter your code.' : 'Sign in to your private space.'}</h1>
+    <p className="lede">{pending ? 'Link your Indian mobile number to keep your wallet, bookings and reports together.' : sent ? 'We sent a four-digit code to your phone. It usually arrives within a minute and expires after a few minutes — use Resend if it stops working.' : 'Use the same account as the app. Your profile, wallet and reports stay together.'}</p>
     {destination !== '/home' && (
       <p className="notice" role="status" tabIndex={-1} onKeyDown={event => {
         if (event.key !== 'Escape') return;
@@ -244,6 +240,10 @@ export function AuthForm() {
         <SocialSignIn consent={consent} disabled={busy} onResult={finish} />
       </>}
     </div>
+    <aside className="notice auth-availability" role="status">
+      <p><strong>{availabilityCopy.publicStatus}</strong> Signing in opens your existing private space; it does not create a booking or charge.</p>
+      <p className="expert-meta">While you wait: <Link href="/tools">try free tools</Link> · <Link href="/guidance/start">prepare a draft</Link> · <Link href="/how-it-works#booking-availability-how">get booking updates</Link>.</p>
+    </aside>
     <p className="sr-only" id="auth-help-hint">Arrow keys move between account help, tools, draft, support, booking updates and delete-account. Escape blurs. Consent never blocks Send code. Skip link remains site-content.</p>
     <LinkKeyboardGroup className="auth-help-links" aria-label="Sign-in help links" as="p" aria-describedby="auth-help-hint">
       Need help with access? <Link href="/help/account-access">Get account help</Link> · <Link href="/tools">Try free tools</Link> · <Link href="/guidance/start">Prepare a draft</Link> · <Link href="/contact">Contact support</Link> · <Link href="/how-it-works#booking-availability-how">Booking updates</Link> · <Link href="/delete-account">Delete account</Link>.

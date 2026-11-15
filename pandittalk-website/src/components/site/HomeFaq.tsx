@@ -14,7 +14,7 @@ export type HomeFaqItem = {
 export function HomeFaq({ items }: { items: readonly HomeFaqItem[] }) {
   return (
     <>
-      <p className="expert-meta" id="home-faq-hint">You can open more than one answer. Arrow keys move between questions; Escape closes the focused item, returns from an answer link to its question, or moves to the next when already closed; Home and End jump to the first or last question. Skip to content still targets site-content.</p>
+      <p className="sr-only" id="home-faq-hint">You can open more than one answer. Arrow keys move between questions; Escape closes the focused item, returns from an answer link to its question, or moves to the next when already closed; Home and End jump to the first or last question. Skip to content still targets site-content.</p>
       <div
         className="home-faq"
         role="group"
