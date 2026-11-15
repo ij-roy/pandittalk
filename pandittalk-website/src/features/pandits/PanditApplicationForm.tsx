@@ -141,8 +141,9 @@ export default function PanditApplicationForm() {
           e.preventDefault();
           setPhone('');
           if (fieldErrors.phone) setFieldErrors(prev => ({ ...prev, phone: false }));
-        }} aria-describedby={fieldErrors.phone ? 'application-phone application-status' : 'application-phone'} aria-invalid={fieldErrors.phone ? true : undefined} /></div></label>
-        <small id="application-phone">Enter your 10-digit number. Country code is filled for you. Press Escape to clear.</small>
+        }} aria-describedby={fieldErrors.phone ? 'application-phone application-phone-keyboard-hint application-status' : 'application-phone application-phone-keyboard-hint'} aria-invalid={fieldErrors.phone ? true : undefined} /></div></label>
+        <small id="application-phone">Enter your 10-digit number. Country code is filled for you.</small>
+        <span className="sr-only" id="application-phone-keyboard-hint">Press Escape to clear the number.</span>
         <label className="field">Email (optional)<input name="email" type="email" autoComplete="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={254} placeholder="you@email.com" onKeyDown={e => {
           if (e.key !== 'Escape' || !e.currentTarget.value) return;
           e.preventDefault();
@@ -160,13 +161,15 @@ export default function PanditApplicationForm() {
           e.currentTarget.value = '';
           if (fieldErrors.languages) setFieldErrors(prev => ({ ...prev, languages: false }));
         }} /></label>
-        <small id="application-languages">Separate each language with a comma. Press Escape to clear a field.</small>
-        <label className="field">Anything else (optional)<textarea name="message" rows={4} maxLength={2000} enterKeyHint="done" placeholder="Years of practice, regions you serve, or how you prefer to consult…" aria-describedby="application-message-help" onKeyDown={e => {
+        <small id="application-languages">Separate each language with a comma.</small>
+        <span className="sr-only" id="application-languages-keyboard-hint">Press Escape to clear the languages field.</span>
+        <label className="field">Anything else (optional)<textarea name="message" rows={4} maxLength={2000} enterKeyHint="done" placeholder="Years of practice, regions you serve, or how you prefer to consult…" aria-describedby="application-message-help application-message-help-keyboard-hint" onKeyDown={e => {
           if (e.key !== 'Escape' || !e.currentTarget.value) return;
           e.preventDefault();
           e.currentTarget.value = '';
         }} /></label>
-        <small id="application-message-help">Optional. Escape clears this note.</small>
+        <small id="application-message-help">Optional. Add any useful context about your practice.</small>
+        <span className="sr-only" id="application-message-help-keyboard-hint">Press Escape to clear this note.</span>
         <input className="sr-only" name="company" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" defaultValue="" />
         <label className="check"><input name="consent" type="checkbox" required aria-invalid={fieldErrors.consent ? true : undefined} aria-describedby={fieldErrors.consent ? 'application-status' : undefined} /><span>I consent to Pandit Talk reviewing this application and contacting me about next steps. See the <span className="sr-only" id="application-privacy-hint">Arrow keys move between Privacy and Terms. Escape blurs.</span><LinkKeyboardGroup as="span" aria-label="Application legal links" aria-describedby="application-privacy-hint"><Link href="/privacy">Privacy Policy</Link> and <Link href="/terms-and-conditions">Terms &amp; Conditions</Link></LinkKeyboardGroup>.</span></label>
       </fieldset>

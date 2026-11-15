@@ -369,3 +369,13 @@ test('private guidance draft opens at its introduction before focusing the first
   await expect(page.locator('h1')).toBeVisible();
   await expect(page.locator('#guidance-step-title')).not.toBeFocused();
 });
+
+test('practitioner application keeps keyboard shortcuts out of visible field guidance', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/for-pandits');
+
+  for (const id of ['application-phone', 'application-languages', 'application-message-help']) {
+    await expect(page.locator(`#${id}`)).not.toContainText('Press Escape');
+    await expect(page.locator(`#${id}-keyboard-hint`)).toHaveClass(/sr-only/);
+  }
+});
