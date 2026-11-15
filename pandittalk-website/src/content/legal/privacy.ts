@@ -102,7 +102,7 @@ export const privacyDocument: LegalDocument = {
                 "Booking details (pandit, format chat/audio/video, timing, price in coins, status)",
                 "Chat messages for consultation sessions (stored in our chat database)",
                 "In-app notification records (booking / session / message related)",
-                "We do not record or store voice/video call media in the product today (live sessions use a third-party meeting service)",
+                "We do not record or store voice/video call media in the product today (live sessions use browser or native WebRTC)",
               ],
             },
           ],
@@ -222,7 +222,7 @@ export const privacyDocument: LegalDocument = {
             ],
             [
               "AWS",
-              "Hosting, database, file storage, chat storage, audio/video meeting infrastructure",
+              "Hosting, database, file storage, chat storage, and live-session connectivity infrastructure",
               "Account/profile data, chat messages, avatars, live session connectivity",
             ],
             [

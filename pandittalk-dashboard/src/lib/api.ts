@@ -235,27 +235,17 @@ export async function getSharedContextForBooking(
   return data;
 }
 
-export interface ChimeMeeting {
-  MeetingId?: string;
-  ExternalMeetingId?: string;
-  MediaRegion?: string;
-  MediaPlacement?: {
-    AudioHostUrl?: string;
-    AudioFallbackUrl?: string;
-    SignalingUrl?: string;
-    TurnControlUrl?: string;
-  };
-}
-
-export interface ChimeAttendee {
-  AttendeeId?: string;
-  ExternalUserId?: string;
-  JoinToken?: string;
+export interface WebRtcIceServer {
+  urls: string | string[];
+  username?: string;
+  credential?: string;
 }
 
 export interface JoinAudioSessionResponse {
-  meeting: ChimeMeeting;
-  attendee: ChimeAttendee;
+  provider: 'webrtc';
+  bookingId: string;
+  format: 'audio' | 'video';
+  iceServers: WebRtcIceServer[];
 }
 
 export async function joinAudioSession(

@@ -261,8 +261,8 @@ export class BookingsService {
 
     platform: ClientPlatform = 'unknown',
   ): Promise<CreatedBookingResponse> {
-    // App Store Option C: reopen scheduled bookings. iOS clients may only
-    // create chat-format bookings (A/V gated until Chime iOS ships).
+    // App Store Option C: reopen scheduled bookings. Browser-native WebRTC
+    // supports the same audio/video booking contract on web and native clients.
     const newBookingsEnabled = true;
     if (!newBookingsEnabled) {
       throw new ServiceUnavailableException(

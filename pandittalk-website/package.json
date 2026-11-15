@@ -13,7 +13,6 @@
     "test:local-replica": "node tests/local-replica-smoke.cjs"
   },
   "dependencies": {
-    "amazon-chime-sdk-js": "3.32.0",
     "framer-motion": "^12.43.0",
     "next": "15.5.25",
     "ogl": "^1.0.11",

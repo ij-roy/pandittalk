@@ -5,7 +5,7 @@ import { join } from 'path';
 import { ArticlesModule } from './articles/articles.module';
 import { AuthModule } from './auth/auth.module';
 import { BookingsModule } from './bookings/bookings.module';
-import { ChimeModule } from './chime/chime.module';
+import { WebRtcModule } from './webrtc/webrtc.module';
 import { ChatModule } from './chat/chat.module';
 import { ExpertsModule } from './experts/experts.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -42,7 +42,7 @@ import { AdminModule } from './admin/admin.module';
     WalletModule,
     ToolsModule,
     RedisModule,
-    ChimeModule,
+    WebRtcModule,
     ChatModule,
     AvatarModule,
     CustomerContractsModule,

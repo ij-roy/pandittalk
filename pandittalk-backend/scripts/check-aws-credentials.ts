@@ -53,19 +53,8 @@ function main(): void {
     process.env.AWS_ACCESS_KEY_ID,
     process.env.AWS_SECRET_ACCESS_KEY,
   );
-  checkSts(
-    '.env AWS_CHIME_ACCESS_KEY_ID',
-    process.env.AWS_CHIME_ACCESS_KEY_ID,
-    process.env.AWS_CHIME_SECRET_ACCESS_KEY,
-  );
-
   const primaryPrefix = process.env.AWS_ACCESS_KEY_ID?.slice(0, 4) ?? '';
-  const chimePrefix = process.env.AWS_CHIME_ACCESS_KEY_ID?.slice(0, 4) ?? '';
-  console.log(
-    `\nKey prefix match (AWS_ACCESS_KEY_ID vs AWS_CHIME): ${
-      primaryPrefix && primaryPrefix === chimePrefix ? 'yes' : 'no'
-    }`,
-  );
+  console.log(`\nPrimary AWS key prefix: ${primaryPrefix || '(none)'}`);
 
   console.log('\n=== Media env ===');
   for (const key of [
@@ -82,11 +71,10 @@ function main(): void {
     process.env.S3_MEDIA_BUCKET &&
     process.env.S3_MEDIA_REGION &&
     process.env.MEDIA_CDN_URL &&
-    ((process.env.AWS_ACCESS_KEY_ID !== 'local' &&
-      process.env.AWS_ACCESS_KEY_ID?.trim()) ||
-      process.env.AWS_CHIME_ACCESS_KEY_ID?.trim());
+    (process.env.AWS_ACCESS_KEY_ID !== 'local' &&
+      process.env.AWS_ACCESS_KEY_ID?.trim());
 
-  console.log(`\nUpload script can proceed: ${uploadReady ? 'yes (via Chime fallback if needed)' : 'no'}`);
+  console.log(`\nUpload script can proceed: ${uploadReady ? 'yes' : 'no'}`);
 }
 
 main();

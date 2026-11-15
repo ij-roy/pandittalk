@@ -18,5 +18,5 @@ Programmatic exits (End button, auto-end, errors) call `allowNextRemove()` first
 ## Verify
 
 - Active audio/video/chat → swipe from left edge → confirm Stay / Leave
-- Leave → Chime/socket teardown still runs
+- Leave → WebRTC/socket teardown still runs
 - Ended session → back navigates without prompt

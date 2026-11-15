@@ -212,7 +212,7 @@ export const termsDocument: LegalDocument = {
           items: [
             "Be on time. Late join may reduce remaining session time.",
             "If you miss a session without a policy-covered cancel, coins may not be restored.",
-            "Audio/video uses a third-party meeting service; connectivity issues on either side can affect quality.",
+            "Audio/video uses browser or native WebRTC; connectivity, device permissions, and network conditions on either side can affect quality.",
             "We may cancel/reschedule in exceptional cases and handle coin credit per policy.",
           ],
         },

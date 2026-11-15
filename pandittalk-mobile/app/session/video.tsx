@@ -38,7 +38,7 @@ import { WaitingForPanditStatus } from '@/components/session/WaitingForPanditSta
 import { formatApiConnectionError, getApiBase } from '@/lib/authApi';
 import { useSessionLeaveGuard } from '@/hooks/useSessionLeaveGuard';
 import { chatSocket } from '@/lib/chatSocket';
-import { chimeVideo, VideoSurface } from '@/lib/chimeVideo';
+import { webrtcVideo, VideoSurface } from '@/lib/webrtcVideo';
 import { leaveCallPrompt } from '@/lib/sessionLeaveCopy';
 import { remoteVideoPlaceholder } from '@/lib/remoteVideoPlaceholder';
 import { videoFeedLabels } from '@/lib/videoFeedLabels';
@@ -241,21 +241,21 @@ export default function VideoSessionScreen() {
         clearStartCountdownInterval();
         clearGraceInterval();
         clearNavigateTimeout();
-        chimeVideo.setTilesChangedHandler(null);
-        chimeVideo.setErrorHandler(null);
+        webrtcVideo.setTilesChangedHandler(null);
+        webrtcVideo.setErrorHandler(null);
         mediaLockedRef.current = false;
         if (bookingId && !sessionEndedRef.current) {
           chatSocket.leaveVideoSession(bookingId);
         }
         chatSocket.removeAllListeners();
-        await chimeVideo.stopVideoSession();
+        await webrtcVideo.stopVideoSession();
         if (disconnectSocket) {
           chatSocket.disconnect();
         }
       } catch {
         // Never reject during teardown — unhandled rejections can white-screen RN.
         try {
-          await chimeVideo.stopVideoSession();
+          await webrtcVideo.stopVideoSession();
         } catch {
           // ignore
         }
@@ -364,18 +364,18 @@ export default function VideoSessionScreen() {
       clearGraceInterval();
       clearNavigateTimeout();
       mediaLockedRef.current = false;
-      chimeVideo.setTilesChangedHandler(null);
-      chimeVideo.setErrorHandler(null);
+      webrtcVideo.setTilesChangedHandler(null);
+      webrtcVideo.setErrorHandler(null);
       if (bookingId) {
         chatSocket.leaveVideoSession(bookingId);
       }
       chatSocket.removeAllListeners();
-      await chimeVideo.stopVideoSession();
+      await webrtcVideo.stopVideoSession();
       chatSocket.disconnect();
       setSessionEnded(true);
     } catch {
       try {
-        await chimeVideo.stopVideoSession();
+        await webrtcVideo.stopVideoSession();
       } catch {
         // ignore
       }
@@ -408,12 +408,12 @@ export default function VideoSessionScreen() {
     if (!sessionMediaActive) return;
     setIsMuted((prev) => {
       const next = !prev;
-      return chimeVideo.toggleMute(next) ? next : prev;
+      return webrtcVideo.toggleMute(next) ? next : prev;
     });
   }, [sessionMediaActive]);
 
   const toggleCamera = useCallback(() => {
-    const next = chimeVideo.toggleCamera();
+    const next = webrtcVideo.toggleCamera();
     setIsCameraOn(next);
     if (bookingId) {
       chatSocket.emitVideoCameraState(bookingId, next);
@@ -421,7 +421,7 @@ export default function VideoSessionScreen() {
   }, [bookingId]);
 
   const handleFlipCamera = useCallback(() => {
-    chimeVideo.flipCamera();
+    webrtcVideo.flipCamera();
   }, []);
 
   const toggleFocusedView = useCallback(() => {
@@ -556,14 +556,14 @@ export default function VideoSessionScreen() {
 
     let cancelled = false;
 
-    chimeVideo.setTilesChangedHandler(({ localTileId: local, remoteTileId: remote }) => {
+    webrtcVideo.setTilesChangedHandler(({ localTileId: local, remoteTileId: remote }) => {
       if (!cancelled) {
         setLocalTileId(local);
         setRemoteTileId(remote);
       }
     });
 
-    chimeVideo.setErrorHandler((message) => {
+    webrtcVideo.setErrorHandler((message) => {
       if (cancelled) return;
       setInitError(message);
     });
@@ -582,11 +582,14 @@ export default function VideoSessionScreen() {
         );
 
         if (cancelled) return;
-        await chimeVideo.startVideoSession(res.data.meeting, res.data.attendee);
+        await webrtcVideo.startVideoSession(res.data);
         if (cancelled) return;
 
         setIsInitializing(false);
-        setIsCameraOn(chimeVideo.isCameraOn());
+        setIsCameraOn(webrtcVideo.isCameraOn());
+        webrtcVideo.setSignalSender((signal) =>
+          chatSocket.sendMediaSignal(bookingId, 'video', signal),
+        );
         setIsMuted(true);
 
         chatSocket.connect(accessToken);
@@ -605,7 +608,7 @@ export default function VideoSessionScreen() {
             startTimeMsRef.current = null;
             clearStartCountdownIntervalRef.current();
             setConnectionStatusSafeRef.current('Waiting for pandit to join…');
-            chimeVideo.enterWaitingRoomMode();
+            webrtcVideo.enterWaitingRoomMode();
           },
           ({ startsAt: startsAtIso }) => {
             if (mediaLockedRef.current) return;
@@ -619,7 +622,7 @@ export default function VideoSessionScreen() {
             setWaitingForStart(true);
             setStartsAt(startsAtIso);
             setConnectionStatusSafeRef.current('Pandit is ready — waiting for start time');
-            chimeVideo.enterWaitingRoomMode();
+            webrtcVideo.enterWaitingRoomMode();
             setStartCountdownSeconds(
               startTimeMsRef.current === null
                 ? 0
@@ -653,8 +656,8 @@ export default function VideoSessionScreen() {
                   : Date.now();
             sessionStartedAtRef.current = Number.isNaN(startedMs) ? Date.now() : startedMs;
             setConnectionStatusSafeRef.current('Connected');
-            chimeVideo.enableSessionMedia();
-            setIsMuted(!chimeVideo.toggleMute(false));
+            webrtcVideo.enableSessionMedia();
+            setIsMuted(!webrtcVideo.toggleMute(false));
             startGraceIntervalRef.current();
           },
           (seconds) => {
@@ -688,7 +691,7 @@ export default function VideoSessionScreen() {
             }
             setWaitingForPandit(true);
             setConnectionStatusSafeRef.current('Waiting for pandit to join…');
-            chimeVideo.enterWaitingRoomMode();
+            webrtcVideo.enterWaitingRoomMode();
           },
           () => {
             setConnectionStatusSafeRef.current('Connected');
@@ -706,6 +709,12 @@ export default function VideoSessionScreen() {
           },
           (cameraOn) => {
             setPanditCameraOn(cameraOn);
+          },
+          (initiator) => {
+            void webrtcVideo.handlePeerReady(initiator);
+          },
+          (signal) => {
+            void webrtcVideo.handleSignal(signal);
           },
         );
       } catch (err) {
@@ -734,8 +743,8 @@ export default function VideoSessionScreen() {
 
     return () => {
       cancelled = true;
-      chimeVideo.setTilesChangedHandler(null);
-      chimeVideo.setErrorHandler(null);
+      webrtcVideo.setTilesChangedHandler(null);
+      webrtcVideo.setErrorHandler(null);
       if (bookingId && !sessionEndedRef.current) {
         try {
           chatSocket.leaveVideoSession(bookingId);
@@ -748,7 +757,7 @@ export default function VideoSessionScreen() {
       } catch {
         // ignore
       }
-      void chimeVideo.stopVideoSession().catch(() => {});
+      void webrtcVideo.stopVideoSession().catch(() => {});
     };
   }, [accessToken, allowNextRemove, authHydrated, bookingId, router]);
 

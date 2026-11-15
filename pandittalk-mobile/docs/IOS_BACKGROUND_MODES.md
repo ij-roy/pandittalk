@@ -4,12 +4,12 @@
 
 `apps/mobile/app.json` → `ios.infoPlist.UIBackgroundModes`:
 
-- `audio` — keep Chime media alive when locked / backgrounded
+- `audio` — keep native WebRTC audio alive when locked / backgrounded
 - `remote-notification` — APNs / silent push readiness (see also #65 / #316)
 
 Mirrored in generated `apps/mobile/ios/PanditTalk/Info.plist`.
 
-**Not** declaring `voip` — that requires PushKit; consultations use standard WebRTC/Chime audio session + `audio` background mode.
+**Not** declaring `voip` — that requires PushKit; consultations use the standard WebRTC audio session + `audio` background mode.
 
 ## Verify
 

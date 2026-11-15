@@ -47,7 +47,7 @@ Measure completed consultations, connection success, repeat voluntary use, repor
 ## Architecture approaches considered
 
 - **Recommended: extend the current Next.js website with the existing backend.** Preserves content/SEO work and supports public rendering plus browser sessions. Requires browser auth, payment and media adapters.
-- **Expo web export.** May reuse visual code, but native auth, Razorpay and Chime modules still need replacements; existing article/legal architecture would become harder to unify.
+- **Expo web export.** May reuse visual code, but native auth, Razorpay and native WebRTC modules still need browser-safe boundaries; existing article/legal architecture would become harder to unify.
 - **Separate marketing and customer websites.** Can isolate deployments, but adds navigation, identity, cookie and SEO coordination. No demonstrated need for that complexity in this brief.
 
 ## Opportunities beyond parity

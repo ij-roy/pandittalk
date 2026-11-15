@@ -10,6 +10,8 @@
 const base = process.env.LOCAL_API_BASE || 'http://localhost:3001';
 const demoPanditId = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a001';
 const demoBookingId = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a002';
+const demoAudioBookingId = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a003';
+const demoVideoBookingId = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a004';
 
 async function verify(phone, intent) {
   const response = await fetch(`${base}/auth/verify-otp`, {
@@ -55,6 +57,23 @@ async function patchJson(name, path, token, body, expected = 200) {
     throw new Error(`${name} returned HTTP ${response.status}, expected ${expected}`);
   }
   return response.json();
+}
+
+async function verifyWebRtcConfig(name, path, token, bookingId, format) {
+  const response = await fetch(`${base}${path}`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ bookingId }),
+  });
+  if (!response.ok) throw new Error(`${name} returned HTTP ${response.status}`);
+  const payload = await response.json();
+  if (payload.provider !== 'webrtc' || payload.format !== format || !Array.isArray(payload.iceServers) || payload.iceServers.length === 0) {
+    throw new Error(`${name} returned an invalid WebRTC session config`);
+  }
+  return name;
 }
 
 async function verifyLocalAvatar(customerToken) {
@@ -135,6 +154,20 @@ async function main() {
   await expectStatus('customer-admin-forbidden', '/admin/overview', 403, {
     headers: { authorization: `Bearer ${customerToken}` },
   });
+  await verifyWebRtcConfig(
+    'audio-webrtc-config',
+    '/sessions/audio/join',
+    customerToken,
+    demoAudioBookingId,
+    'audio',
+  );
+  await verifyWebRtcConfig(
+    'video-webrtc-config',
+    '/sessions/video/join',
+    customerToken,
+    demoVideoBookingId,
+    'video',
+  );
   const updatedBooking = await patchJson(
     'admin-booking-status-update',
     `/admin/bookings/${demoBookingId}/status`,
@@ -145,7 +178,7 @@ async function main() {
     throw new Error('admin-booking-status-update did not preserve confirmed status');
   }
   await verifyLocalAvatar(customerToken);
-  console.log(JSON.stringify({ ok: true, checks: checks.length + 5, base }, null, 2));
+  console.log(JSON.stringify({ ok: true, checks: checks.length + 7, base }, null, 2));
 }
 
 main().catch((error) => {

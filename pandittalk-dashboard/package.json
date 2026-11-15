@@ -17,7 +17,6 @@
     "@tiptap/pm": "^3.31.3",
     "@tiptap/react": "^3.31.3",
     "@tiptap/starter-kit": "^3.31.3",
-    "amazon-chime-sdk-js": "^3.31.0",
     "axios": "^1.18.0",
     "marked": "^18.0.12",
     "react": "^19.2.6",

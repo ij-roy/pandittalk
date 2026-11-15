@@ -11,7 +11,7 @@
 
 **PanditTalk** is a mobile-first astrology / spiritual guidance app (India market). Users authenticate with phone OTP, complete an astrological profile, browse experts (pandits), book paid guidance sessions, recharge coins via Razorpay, use astrology tools, and join **live text chat** and **live audio calls** with pandits.
 
-**Current maturity:** Auth, profile, home, experts, guidance flow, booking, wallet, tools, session history/reviews, Chat Now, **live chat**, **live audio**, **live video** (native Chime), **articles/blog**, **in-app + local notifications**, **settings**. No global auth guard on tabs. App version **1.0.0**.
+**Current maturity:** Auth, profile, home, experts, guidance flow, booking, wallet, tools, session history/reviews, Chat Now, **live chat**, **live audio**, **live video** (native WebRTC custom dev client), **articles/blog**, **in-app + local notifications**, **settings**. No global auth guard on tabs. App version **1.0.0**.
 
 ---
 
@@ -26,7 +26,7 @@
 | HTTP | **Axios 1.16** | Bearer passed manually |
 | Real-time | **socket.io-client** | `lib/chatSocket.ts` |
 | Local notifications | **expo-notifications** | Session reminders via `localNotificationScheduler.ts` |
-| Audio/video calls | **expo-pandit-chime** | Custom Expo module → Amazon Chime Android SDK |
+| Audio/video calls | **react-native-webrtc** | Native WebRTC through the Expo config plugin; custom dev client required |
 | Secure storage | **expo-secure-store** | Web: sessionStorage fallback |
 | Payments | **react-native-razorpay ^3** | Requires dev client, not Expo Go |
 | Images | **expo-image** | |
@@ -49,7 +49,7 @@ apps/mobile/
 │   ├── booking/select-slot.tsx, confirmation.tsx
 │   ├── bookings/history.tsx, review.tsx
 │   ├── session/chat.tsx     # Live chat screen
-│   ├── session/audio.tsx    # Live audio (native Chime)
+│   ├── session/audio.tsx    # Live audio (native WebRTC)
 │   ├── session/video.tsx    # Live video (PiP, waiting-room mode)
 │   ├── articles/            # Blog list + detail
 │   ├── notifications/index.tsx
@@ -59,11 +59,10 @@ apps/mobile/
 │   ├── experts/[id].tsx     # API expert detail + Chat Now
 │   └── expert/[id].tsx      # Legacy mock — remove
 ├── modules/
-│   └── expo-pandit-chime/   # Custom native Chime module (Android)
 ├── lib/
 │   ├── authApi.ts, authSecureStorage.ts
-│   ├── chimeAudio.ts        # JS wrapper for native audio
-│   ├── chimeVideo.ts        # JS wrapper for native video (waiting-room API)
+│   ├── webrtcAudio.ts       # Native WebRTC audio adapter
+│   ├── webrtcVideo.ts       # Native WebRTC video adapter (waiting-room API)
 │   ├── articlesApi.ts
 │   ├── notificationApi.ts, notificationPreferences.ts, localNotificationScheduler.ts
 │   ├── expertsApi.ts, bookingApi.ts, bookingPricing.ts
@@ -91,8 +90,8 @@ apps/mobile/
 | `booking/select-slot`, `confirmation` | Scheduled booking | ✅ |
 | `bookings/history`, `review` | Sessions | ✅ |
 | `session/chat` | **Live chat** | ✅ (file-based route; not in explicit Stack.Screen list) |
-| `session/audio` | **Live audio** | ✅ Native Chime via `expo-pandit-chime` |
-| `session/video` | **Live video** | ✅ Native Chime video + PiP, camera flip/mute |
+| `session/audio` | **Live audio** | ✅ Native WebRTC via the custom dev client |
+| `session/video` | **Live video** | ✅ Native WebRTC video + PiP, camera flip/mute |
 | `wallet/index`, `recharge` | Coin wallet | ✅ |
 | `articles/*` | Blog hub + detail | ✅ API-backed |
 | `notifications/index` | Notification inbox | ✅ |
@@ -211,14 +210,16 @@ Experts list or detail → Chat Now → `POST /bookings/chat-now` (or queue if b
 
 ## 7b. Live audio (`app/session/audio.tsx`)
 
-**Requires dev client:** `npx expo run:android` (not Expo Go). Native module `expo-pandit-chime` is not available in Expo Go.
+> **Current implementation note:** The historical paid-meeting-SDK details below are superseded. The active implementation uses `lib/webrtcAudio.ts`, `lib/webrtcVideo.ts`, Socket.IO signaling, free STUN by default, and optional coturn.
 
-**Client:** `lib/chimeAudio.ts` wraps native module; `lib/chatSocket.ts` handles `joinAudioSession` / `endAudioSession`.
+**Requires dev client:** `npx expo run:android` (not Expo Go). `react-native-webrtc` is a native module and is not available in Expo Go.
+
+**Client:** `lib/webrtcAudio.ts` wraps native WebRTC; `lib/chatSocket.ts` handles `joinAudioSession` / `endAudioSession`.
 
 **Flow:**
 1. `POST /sessions/audio/create` with `{ bookingId }` → `{ meeting, attendee }`
 2. Request runtime `RECORD_AUDIO` permission only
-3. `chimeAudio.startSession(meeting, attendee)` → native `startMeeting`
+3. `webrtcAudio.startSession(config)` → native WebRTC peer connection
 4. `setSpeakerOn(true)`; subscribe to `onRemoteVolumeChanged` for pandit audio UI
 5. `chatSocket.joinAudioSession` → waiting states → `audioSessionStarted` → server `timeRemaining`
 6. On leave: `endAudioSession` + `DELETE /sessions/audio/:bookingId` + `stopMeeting`
@@ -229,16 +230,14 @@ Experts list or detail → Chat Now → `POST /bookings/chat-now` (or queue if b
 - `RECORD_AUDIO` — requested at runtime via `PermissionsAndroid.request()`
 - `MODIFY_AUDIO_SETTINGS` — **manifest only**; do NOT pass to `requestMultiple()` (causes crash: `permission cannot be null or empty`)
 
-**Native SDK versions** (`modules/expo-pandit-chime/android/build.gradle`):
-- `amazon-chime-sdk:0.25.3`
-- `amazon-chime-sdk-media-no-video-codecs:0.25.2`
+**Native media:** `react-native-webrtc:124.0.6` with `@config-plugins/react-native-webrtc:13.0.0`.
 
 **Entry points:**
 - `booking/confirmation.tsx` — "Join Audio Call" for `format: 'audio'`
 - `bookings/history.tsx` — rejoin audio bookings
 - `lib/callBookingStatus.ts` — routes active audio bookings to `/session/audio`
 
-**Removed:** `react-native-incall-manager` (replaced by native Chime device routing).
+**Removed:** the paid meeting SDK and its native bridge; device routing is handled by WebRTC.
 
 **Audio WebSocket events:** `audioWaitingForOther`, `audioWaitingForStart`, `audioSessionStarted`, `timeRemaining`, `warningFiveMinutes`, `audioSessionTimeUp`, `audioSessionEnded`.
 
@@ -246,11 +245,11 @@ Experts list or detail → Chat Now → `POST /bookings/chat-now` (or queue if b
 
 ## 7c. Live video (`app/session/video.tsx`)
 
-**Client:** `lib/chimeVideo.ts` + `lib/chatSocket.ts` (`joinVideoSession` / `endVideoSession`).
+**Client:** `lib/webrtcVideo.ts` + `lib/chatSocket.ts` (`joinVideoSession` / `endVideoSession`).
 
 **Flow:** `POST /sessions/video/create` → `RECORD_AUDIO` + `CAMERA` permissions → `startVideoSession` → `joinVideoSession` → on `videoSessionStarted` call `enableSessionMedia()` (exits waiting-room). Native: `VideoSurface`, flip camera, mute, speaker, draggable PiP.
 
-**Waiting-room mode:** After Chime connect, `enterWaitingRoomMode()` keeps mic muted and remote A/V off until session officially starts — user sees local camera preview only.
+**Waiting-room mode:** After WebRTC setup, `enterWaitingRoomMode()` keeps mic muted and remote A/V off until session officially starts — user sees local camera preview only.
 
 **Entry:** `booking/confirmation` ("Join Video Call"), `bookings/history`, `callBookingStatus.ts` → `/session/video`.
 
@@ -384,7 +383,7 @@ Experts list or detail → Chat Now → `POST /bookings/chat-now` (or queue if b
 | Select slot / confirm | ✅ | ✅ | IST slots |
 | Session history / review | ✅ | ✅ | |
 | **Live chat** | ✅ | ✅ | Socket.IO |
-| **Live audio** | ✅ | ✅ | Native Chime + Socket.IO signaling |
+| **Live audio** | ✅ | ✅ | Native WebRTC + Socket.IO signaling |
 | **Live video** | ✅ | ✅ | Waiting-room + PiP UI |
 | **Chat Now** | ✅ | ✅ | Queue when busy |
 | Wallet / recharge | ✅ | ✅ | Dev client required |
@@ -406,7 +405,7 @@ Legend: ✅ done · 🟡 partial · ❌ not started
 4. **Tools polish** — Home tile deep links; monthly horoscope link; result history
 5. **Cleanup** — Remove `app/expert/[id].tsx` mock route
 6. **Production config** — Env-based API URLs (replace hardcoded ngrok)
-7. **iOS video** — Native Chime video module Android-only today
+7. **iOS video** — Native WebRTC device proof remains to be run on a physical device
 8. **Remote push** — Firebase FCM/APNs not integrated (local notifications only)
 
 ---
@@ -418,7 +417,7 @@ cd apps/mobile
 npm install
 cp .env.example .env
 npx expo start
-# Razorpay + native Chime module require dev client:
+# Razorpay + native WebRTC require a custom dev client:
 npx expo run:android   # or run:ios
 npx expo start --dev-client
 ```
@@ -443,9 +442,9 @@ npx expo run:android
 | Live chat screen | `app/session/chat.tsx` |
 | Live audio screen | `app/session/audio.tsx` |
 | Live video screen | `app/session/video.tsx` |
-| Chime audio wrapper | `lib/chimeAudio.ts` |
-| Chime video wrapper | `lib/chimeVideo.ts` |
-| Native Chime module | `modules/expo-pandit-chime/` |
+| WebRTC audio wrapper | `lib/webrtcAudio.ts` |
+| WebRTC video wrapper | `lib/webrtcVideo.ts` |
+| Native WebRTC package | `react-native-webrtc` |
 | Chat socket client | `lib/chatSocket.ts` |
 | Booking API + Chat Now | `lib/bookingApi.ts` |
 | Auth | `lib/authApi.ts`, `store/useAuthStore.ts` |

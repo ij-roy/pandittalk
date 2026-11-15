@@ -56,13 +56,13 @@ Include persisted history, message send/receive, typing, connection state, serve
 
 ## P09 — Audio session
 
-Source: `app/session/audio.tsx`, native Chime module, backend `chime/chime.controller.ts`, audio socket events.
+Source: `app/session/audio.tsx`, native WebRTC adapter, backend `webrtc/audio-session.controller.ts`, audio socket events.
 
-Web: `/sessions/[bookingId]/audio`. Browser microphone permission, device check, waiting room, join, mute, participant presence, no-timer lifecycle, reconnect, leave/rejoin, end, grace refund, completed review. Implement browser Chime integration; native-module imports cannot ship to web. Release browser tracks and subscriptions on exit.
+Web: `/sessions/[bookingId]/audio`. Browser microphone permission, device check, waiting room, join, mute, participant presence, no-timer lifecycle, reconnect, leave/rejoin, end, grace refund, completed review. Implement browser WebRTC with Socket.IO signaling; native-module imports cannot ship to web. Release browser tracks and subscriptions on exit.
 
 ## P10 — Video session
 
-Source: `app/session/video.tsx`, backend `chime/video-chime.controller.ts`, video socket events.
+Source: `app/session/video.tsx`, backend `webrtc/video-session.controller.ts`, video socket events.
 
 Web: `/sessions/[bookingId]/video`. Audio requirements plus camera permission/preview, camera toggle/device choice, local/remote tile, camera-off state and camera-state signaling. Test camera refusal while microphone works. Do not silently change the charged format when permissions fail. Provide recovery or policy-backed cancellation.
 

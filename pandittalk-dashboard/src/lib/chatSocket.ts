@@ -19,6 +19,16 @@ type SessionListener = {
   handler: (...args: unknown[]) => void;
 };
 
+export type WebRtcSignal =
+  | { type: 'offer' | 'answer'; sdp: string }
+  | { type: 'ice-candidate'; candidate: Record<string, unknown> | null };
+
+export interface MediaPeerReadyPayload {
+  bookingId: string;
+  format: 'audio' | 'video';
+  initiator: boolean;
+}
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -503,6 +513,8 @@ export const chatSocket = {
       onSessionEnded: () => void;
       onParticipantLeft?: () => void;
       onParticipantRejoined?: () => void;
+      onMediaPeerReady?: (payload: MediaPeerReadyPayload) => void;
+      onMediaSignal?: (signal: WebRtcSignal) => void;
       onSessionGraceEnded?: (payload: { bookingId: string; message: string }) => void;
       onError: (message: string) => void;
     },
@@ -575,6 +587,25 @@ export const chatSocket = {
       handlers.onParticipantRejoined?.();
     };
 
+    const handleMediaPeerReady = (payload: unknown) => {
+      const record = asRecord(payload);
+      if (!record || typeof record.initiator !== 'boolean') return;
+      handlers.onMediaPeerReady?.({
+        bookingId,
+        format: 'audio',
+        initiator: record.initiator,
+      });
+    };
+
+    const handleMediaSignal = (payload: unknown) => {
+      const record = asRecord(payload);
+      const signal = asRecord(record?.signal);
+      if (!signal || (signal.type !== 'offer' && signal.type !== 'answer' && signal.type !== 'ice-candidate')) return;
+      if ((signal.type === 'offer' || signal.type === 'answer') && typeof signal.sdp !== 'string') return;
+      if (signal.type === 'ice-candidate' && signal.candidate !== null && !asRecord(signal.candidate)) return;
+      handlers.onMediaSignal?.(signal as WebRtcSignal);
+    };
+
     const handleSessionGraceEnded = (payload: unknown) => {
       const record = asRecord(payload);
       if (!record) return;
@@ -601,6 +632,8 @@ export const chatSocket = {
       addSessionListener('audioSessionEnded', handleSessionEnded);
       addSessionListener('audioParticipantLeft', handleParticipantLeft);
       addSessionListener('audioParticipantRejoined', handleParticipantRejoined);
+      addSessionListener('mediaPeerReady', handleMediaPeerReady);
+      addSessionListener('mediaSignal', handleMediaSignal);
       addSessionListener('sessionGraceEnded', handleSessionGraceEnded);
       addSessionListener('error', handleError);
       activeSocket.emit('joinAudioSession', { bookingId, token });
@@ -636,6 +669,8 @@ export const chatSocket = {
       onSessionEnded: () => void;
       onParticipantLeft?: () => void;
       onParticipantRejoined?: () => void;
+      onMediaPeerReady?: (payload: MediaPeerReadyPayload) => void;
+      onMediaSignal?: (signal: WebRtcSignal) => void;
       onSessionGraceEnded?: (payload: { bookingId: string; message: string }) => void;
       onVideoCameraState?: (payload: {
         bookingId: string;
@@ -713,6 +748,25 @@ export const chatSocket = {
       handlers.onParticipantRejoined?.();
     };
 
+    const handleMediaPeerReady = (payload: unknown) => {
+      const record = asRecord(payload);
+      if (!record || typeof record.initiator !== 'boolean') return;
+      handlers.onMediaPeerReady?.({
+        bookingId,
+        format: 'video',
+        initiator: record.initiator,
+      });
+    };
+
+    const handleMediaSignal = (payload: unknown) => {
+      const record = asRecord(payload);
+      const signal = asRecord(record?.signal);
+      if (!signal || (signal.type !== 'offer' && signal.type !== 'answer' && signal.type !== 'ice-candidate')) return;
+      if ((signal.type === 'offer' || signal.type === 'answer') && typeof signal.sdp !== 'string') return;
+      if (signal.type === 'ice-candidate' && signal.candidate !== null && !asRecord(signal.candidate)) return;
+      handlers.onMediaSignal?.(signal as WebRtcSignal);
+    };
+
     const handleSessionGraceEnded = (payload: unknown) => {
       const record = asRecord(payload);
       if (!record) return;
@@ -755,6 +809,8 @@ export const chatSocket = {
       addSessionListener('videoSessionEnded', handleSessionEnded);
       addSessionListener('videoParticipantLeft', handleParticipantLeft);
       addSessionListener('videoParticipantRejoined', handleParticipantRejoined);
+      addSessionListener('mediaPeerReady', handleMediaPeerReady);
+      addSessionListener('mediaSignal', handleMediaSignal);
       addSessionListener('sessionGraceEnded', handleSessionGraceEnded);
       addSessionListener('videoCameraState', handleVideoCameraState);
       addSessionListener('error', handleError);
@@ -780,6 +836,14 @@ export const chatSocket = {
 
   emitVideoCameraState(bookingId: string, cameraOn: boolean): void {
     socket?.emit('videoCameraState', { bookingId, cameraOn });
+  },
+
+  sendMediaSignal(
+    bookingId: string,
+    format: 'audio' | 'video',
+    signal: WebRtcSignal,
+  ): void {
+    socket?.emit('mediaSignal', { bookingId, format, signal });
   },
 
   removeAllListeners(): void {

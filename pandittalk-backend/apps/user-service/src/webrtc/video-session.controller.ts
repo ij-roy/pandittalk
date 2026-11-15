@@ -1,4 +1,3 @@
-import type { Attendee, Meeting } from '@aws-sdk/client-chime-sdk-meetings';
 import {
   BadRequestException,
   Body,
@@ -14,8 +13,11 @@ import type { Booking } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
-import { ChimeService } from './chime.service';
-import { AudioSessionDto } from './dto/audio-session.dto';
+import { VideoSessionDto } from './dto/video-session.dto';
+import {
+  WebRtcService,
+  type WebRtcSessionConfig,
+} from '../webrtc/webrtc.service';
 
 type BookingWithPanditUser = Booking & {
   pandit: { userId: string | null };
@@ -23,62 +25,44 @@ type BookingWithPanditUser = Booking & {
 
 const PRE_START_WINDOW_MS = 15 * 60 * 1000;
 
-@Controller('sessions/audio')
+@Controller('sessions/video')
 @UseGuards(JwtAuthGuard)
-export class ChimeController {
+export class VideoSessionController {
   constructor(
-    private readonly chimeService: ChimeService,
     private readonly prisma: PrismaService,
+    private readonly webRtcService: WebRtcService,
   ) {}
 
   @Post('create')
   async create(
     @CurrentUser('sub') userId: string,
-    @Body() dto: AudioSessionDto,
-  ): Promise<{ meeting: Meeting; attendee: Attendee }> {
+    @Body() dto: VideoSessionDto,
+  ): Promise<WebRtcSessionConfig> {
     const booking = await this.assertBookingOwner(userId, dto.bookingId);
     this.assertWithinSessionWindow(booking);
-    const meeting = await this.chimeService.ensureMeeting(
-      dto.bookingId,
-      booking.durationMinutes,
-    );
-    const attendee = await this.chimeService.createAttendee(
-      dto.bookingId,
-      userId,
-      booking.durationMinutes,
-    );
-    return { meeting, attendee };
+    return this.webRtcService.getSessionConfig(dto.bookingId, 'video');
   }
 
   @Post('join')
   async join(
     @CurrentUser('sub') userId: string,
-    @Body() dto: AudioSessionDto,
-  ): Promise<{ meeting: Meeting; attendee: Attendee }> {
-    const booking = await this.assertAudioBookingParticipant(
+    @Body() dto: VideoSessionDto,
+  ): Promise<WebRtcSessionConfig> {
+    const booking = await this.assertVideoBookingParticipant(
       userId,
       dto.bookingId,
     );
     this.assertWithinSessionWindow(booking);
-    const meeting = await this.chimeService.ensureMeeting(
-      dto.bookingId,
-      booking.durationMinutes,
-    );
-    const attendee = await this.chimeService.createAttendee(
-      dto.bookingId,
-      userId,
-      booking.durationMinutes,
-    );
-    return { meeting, attendee };
+    return this.webRtcService.getSessionConfig(dto.bookingId, 'video');
   }
 
   @Get(':bookingId')
   async getSession(
     @CurrentUser('sub') userId: string,
     @Param('bookingId') bookingId: string,
-  ): Promise<{ meeting: Meeting; attendees: Record<string, Attendee> }> {
+  ): Promise<WebRtcSessionConfig> {
     await this.assertBookingParticipant(userId, bookingId);
-    return this.chimeService.getMeeting(bookingId);
+    return this.webRtcService.getSessionConfig(bookingId, 'video');
   }
 
   @Delete(':bookingId')
@@ -87,7 +71,6 @@ export class ChimeController {
     @Param('bookingId') bookingId: string,
   ): Promise<{ success: true }> {
     await this.assertBookingParticipant(userId, bookingId);
-    await this.chimeService.endMeeting(bookingId);
     await this.prisma.booking.update({
       where: { id: bookingId },
       data: { status: 'completed' },
@@ -108,14 +91,14 @@ export class ChimeController {
     }
   }
 
-  private async assertAudioBookingParticipant(
+  private async assertVideoBookingParticipant(
     userId: string,
     bookingId: string,
   ): Promise<BookingWithPanditUser> {
     const booking = await this.assertBookingParticipant(userId, bookingId);
 
-    if (booking.format !== 'audio') {
-      throw new BadRequestException('Booking format must be audio');
+    if (booking.format !== 'video') {
+      throw new BadRequestException('Booking format must be video');
     }
 
     if (booking.status !== 'confirmed') {
@@ -137,8 +120,8 @@ export class ChimeController {
       throw new NotFoundException(`Booking with id "${bookingId}" not found`);
     }
 
-    if (booking.format !== 'audio') {
-      throw new BadRequestException('Booking format must be audio');
+    if (booking.format !== 'video') {
+      throw new BadRequestException('Booking format must be video');
     }
 
     if (booking.status !== 'confirmed') {

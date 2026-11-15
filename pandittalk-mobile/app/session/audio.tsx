@@ -34,7 +34,7 @@ import { WaitingForPanditStatus } from '@/components/session/WaitingForPanditSta
 import { formatApiConnectionError, getApiBase } from '@/lib/authApi';
 import { useSessionLeaveGuard } from '@/hooks/useSessionLeaveGuard';
 import { chatSocket } from '@/lib/chatSocket';
-import { chimeAudio } from '@/lib/chimeAudio';
+import { webrtcAudio } from '@/lib/webrtcAudio';
 import { shouldKeepScreenAwake } from '@/lib/screenAwake';
 import { leaveCallPrompt } from '@/lib/sessionLeaveCopy';
 import { remoteAudioStatus } from '@/lib/remoteAudioStatus';
@@ -196,20 +196,20 @@ export default function AudioSessionScreen() {
         clearStartCountdownInterval();
         clearGraceInterval();
         clearNavigateTimeout();
-        chimeAudio.setRemoteVolumeHandler(null);
+        webrtcAudio.setRemoteVolumeHandler(null);
         mediaLockedRef.current = false;
         if (bookingId && !sessionEndedRef.current) {
           chatSocket.leaveAudioSession(bookingId);
         }
         chatSocket.removeAllListeners();
-        await chimeAudio.stopSession();
+        await webrtcAudio.stopSession();
         if (disconnectSocket) {
           chatSocket.disconnect();
         }
       } catch {
         // Never reject during teardown — unhandled rejections can white-screen RN.
         try {
-          await chimeAudio.stopSession();
+          await webrtcAudio.stopSession();
         } catch {
           // ignore
         }
@@ -339,14 +339,14 @@ export default function AudioSessionScreen() {
     if (!sessionMediaActive) return;
     setIsMuted((prev) => {
       const next = !prev;
-      return chimeAudio.setMuted(next) ? next : prev;
+      return webrtcAudio.setMuted(next) ? next : prev;
     });
   }, [sessionMediaActive]);
 
   const toggleSpeaker = useCallback(() => {
     setIsSpeakerOn((prev) => {
       const next = !prev;
-      chimeAudio.setSpeakerOn(next);
+      webrtcAudio.setSpeakerOn(next);
       return next;
     });
   }, []);
@@ -430,17 +430,20 @@ export default function AudioSessionScreen() {
 
         if (cancelled) return;
 
-        chimeAudio.setRemoteVolumeHandler(({ volume, muted }) => {
+        webrtcAudio.setRemoteVolumeHandler(({ volume, muted }) => {
           if (!cancelled && sessionActiveRef.current) {
             setReceivingPanditAudio(!muted && volume > 0);
           }
         });
 
-        await chimeAudio.startSession(res.data.meeting, res.data.attendee);
+        await webrtcAudio.startSession(res.data);
         if (cancelled) return;
 
         setIsInitializing(false);
         setIsMuted(true);
+        webrtcAudio.setSignalSender((signal) =>
+          chatSocket.sendMediaSignal(bookingId, 'audio', signal),
+        );
 
         chatSocket.connect(accessToken);
         chatSocket.joinAudioSession(
@@ -460,7 +463,7 @@ export default function AudioSessionScreen() {
             clearStartCountdownIntervalRef.current();
             setConnectionStatusSafeRef.current('Waiting for pandit to join…');
             setReceivingPanditAudio(false);
-            chimeAudio.enterWaitingRoomMode();
+            webrtcAudio.enterWaitingRoomMode();
           },
           ({ startsAt: startsAtIso }) => {
             if (mediaLockedRef.current) return;
@@ -476,7 +479,7 @@ export default function AudioSessionScreen() {
             endTimeRef.current = null;
             setConnectionStatusSafeRef.current('Pandit is ready — waiting for start time');
             setReceivingPanditAudio(false);
-            chimeAudio.enterWaitingRoomMode();
+            webrtcAudio.enterWaitingRoomMode();
             setStartCountdownSeconds(
               startTimeMsRef.current === null
                 ? 0
@@ -511,8 +514,8 @@ export default function AudioSessionScreen() {
                   : Date.now();
             sessionStartedAtRef.current = Number.isNaN(startedMs) ? Date.now() : startedMs;
             setConnectionStatusSafeRef.current('Connected');
-            chimeAudio.enableSessionMedia();
-            setIsMuted(!chimeAudio.setMuted(false));
+            webrtcAudio.enableSessionMedia();
+            setIsMuted(!webrtcAudio.setMuted(false));
             startGraceIntervalRef.current();
           },
           (seconds) => {
@@ -545,7 +548,7 @@ export default function AudioSessionScreen() {
             }
             setWaitingForPandit(true);
             setConnectionStatusSafeRef.current('Waiting for pandit to join…');
-            chimeAudio.enterWaitingRoomMode();
+            webrtcAudio.enterWaitingRoomMode();
           },
           () => {
             setConnectionStatusSafeRef.current('Connected');
@@ -560,6 +563,12 @@ export default function AudioSessionScreen() {
           },
           (message) => {
             Alert.alert('Session error', message);
+          },
+          (initiator) => {
+            void webrtcAudio.handlePeerReady(initiator);
+          },
+          (signal) => {
+            void webrtcAudio.handleSignal(signal);
           },
         );
       } catch (err) {
@@ -588,7 +597,8 @@ export default function AudioSessionScreen() {
 
     return () => {
       cancelled = true;
-      chimeAudio.setRemoteVolumeHandler(null);
+      webrtcAudio.setRemoteVolumeHandler(null);
+      webrtcAudio.setSignalSender(null);
       if (bookingId && !sessionEndedRef.current) {
         try {
           chatSocket.leaveAudioSession(bookingId);
@@ -601,7 +611,7 @@ export default function AudioSessionScreen() {
       } catch {
         // ignore
       }
-      void chimeAudio.stopSession().catch(() => {});
+      void webrtcAudio.stopSession().catch(() => {});
     };
   }, [accessToken, allowNextRemove, authHydrated, bookingId, router]);
 

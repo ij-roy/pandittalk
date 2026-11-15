@@ -2,7 +2,6 @@ import { forwardRef, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { BookingsModule } from '../bookings/bookings.module';
-import { ChimeModule } from '../chime/chime.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { RedisModule } from '../redis/redis.module';
@@ -13,7 +12,6 @@ import { DynamoService } from './dynamo.service';
   imports: [
     PrismaModule,
     RedisModule,
-    ChimeModule,
     forwardRef(() => BookingsModule),
     forwardRef(() => NotificationsModule),
     JwtModule.registerAsync({

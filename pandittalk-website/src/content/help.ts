@@ -262,7 +262,7 @@ export const helpTopicIndex = Object.entries(helpArticles).map(([slug, article])
 
     'booking-cancellation': 'cancel refund booking status',
 
-    'joining-audio-video': 'mic camera join video audio chime',
+    'joining-audio-video': 'mic camera join video audio webrtc',
 
     'chat-reconnect': 'disconnect reconnect chat message draft',
 

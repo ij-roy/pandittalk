@@ -19,7 +19,6 @@ import type { JwtPayload } from '../auth/types/jwt-payload';
 import { BookingsService } from '../bookings/bookings.service';
 import { PanditAvailabilityService } from '../bookings/pandit-availability.service';
 import { PanditQueueService } from '../bookings/pandit-queue.service';
-import { ChimeService } from '../chime/chime.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import type { NotificationPayload } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -38,6 +37,8 @@ import type {
   JoinSessionPayload,
   JoinPanditDashboardPayload,
   JoinVideoSessionPayload,
+  MediaPeerReadyPayload,
+  MediaSignalPayload,
   NewBookingCreatedPayload,
   PanditBusyPayload,
   QueueExpiredPayload,
@@ -112,7 +113,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly bookingsService: BookingsService,
     private readonly panditAvailability: PanditAvailabilityService,
     private readonly panditQueue: PanditQueueService,
-    private readonly chimeService: ChimeService,
     private readonly configService: ConfigService,
     private readonly redisClient: RedisClientService,
     @Inject(forwardRef(() => NotificationsService))
@@ -487,6 +487,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (sessionStarted) {
         this.clearAvDisconnectGraceTimeout('audio', data.bookingId, userId);
 
+        const participantCount = await this.getAudioRoomParticipantCount(
+          data.bookingId,
+        );
+        if (participantCount >= 2) {
+          this.emitMediaPeerReady(client, room, data.bookingId, 'audio');
+        }
+
         const startedAt = await this.cacheManager.get<number>(
           this.audioStartKey(data.bookingId),
         );
@@ -525,6 +532,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.emit('audioWaitingForOther', payload);
         return;
       }
+
+      this.emitMediaPeerReady(client, room, data.bookingId, 'audio');
 
       const now = new Date();
       const startTime = booking.startTime;
@@ -693,6 +702,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (sessionStarted) {
         this.clearAvDisconnectGraceTimeout('video', data.bookingId, userId);
 
+        const participantCount = await this.getVideoRoomParticipantCount(
+          data.bookingId,
+        );
+        if (participantCount >= 2) {
+          this.emitMediaPeerReady(client, room, data.bookingId, 'video');
+        }
+
         const startedAt = await this.cacheManager.get<number>(
           this.videoStartKey(data.bookingId),
         );
@@ -731,6 +747,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.emit('videoWaitingForOther', payload);
         return;
       }
+
+      this.emitMediaPeerReady(client, room, data.bookingId, 'video');
 
       const now = new Date();
       const startTime = booking.startTime;
@@ -787,6 +805,42 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         );
         await this.notifySessionStarted(data.bookingId);
       }
+    } catch (error: unknown) {
+      this.emitError(client, error);
+    }
+  }
+
+  @SubscribeMessage('mediaSignal')
+  async handleMediaSignal(
+    @ConnectedSocket() client: ChatSocket,
+    @MessageBody() data: MediaSignalPayload,
+  ): Promise<void> {
+    try {
+      const userId = await this.requireAuthenticatedUser(client);
+      const booking = await this.loadBookingForParticipant(
+        data.bookingId,
+        userId,
+      );
+
+      if (data.format !== 'audio' && data.format !== 'video') {
+        throw new Error('Unsupported media format');
+      }
+      if (booking.format !== data.format) {
+        throw new Error(`Booking format must be ${data.format}`);
+      }
+      if (!this.isWebRtcSignal(data.signal)) {
+        throw new Error('Invalid WebRTC signal');
+      }
+
+      const room =
+        data.format === 'audio'
+          ? this.audioRoom(data.bookingId)
+          : this.videoRoom(data.bookingId);
+      client.to(room).emit('mediaSignal', {
+        bookingId: data.bookingId,
+        format: data.format,
+        signal: data.signal,
+      } satisfies MediaSignalPayload);
     } catch (error: unknown) {
       this.emitError(client, error);
     }
@@ -1442,6 +1496,40 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return `pandit:${panditId}`;
   }
 
+  private emitMediaPeerReady(
+    client: ChatSocket,
+    room: string,
+    bookingId: string,
+    format: 'audio' | 'video',
+  ): void {
+    const readyForJoiner: MediaPeerReadyPayload = {
+      bookingId,
+      format,
+      initiator: true,
+    };
+    const readyForExistingParticipant: MediaPeerReadyPayload = {
+      bookingId,
+      format,
+      initiator: false,
+    };
+    client.emit('mediaPeerReady', readyForJoiner);
+    client.to(room).emit('mediaPeerReady', readyForExistingParticipant);
+  }
+
+  private isWebRtcSignal(
+    signal: unknown,
+  ): signal is MediaSignalPayload['signal'] {
+    if (!signal || typeof signal !== 'object') return false;
+    const record = signal as Record<string, unknown>;
+    if (record.type === 'offer' || record.type === 'answer') {
+      return typeof record.sdp === 'string' && record.sdp.length > 0;
+    }
+    return (
+      record.type === 'ice-candidate' &&
+      (record.candidate === null || typeof record.candidate === 'object')
+    );
+  }
+
   private sessionStartKey(bookingId: string): string {
     return `session:start:${bookingId}`;
   }
@@ -1604,14 +1692,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private async finalizeAudioSession(bookingId: string): Promise<void> {
     await this.notifySessionEnded(bookingId);
-
-    try {
-      await this.chimeService.endMeeting(bookingId);
-    } catch (error: unknown) {
-      this.logger.warn(
-        `Failed to end Chime audio meeting for ${bookingId}: ${String(error)}`,
-      );
-    }
 
     try {
       await this.prisma.booking.update({
@@ -1804,14 +1884,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private async finalizeVideoSession(bookingId: string): Promise<void> {
     await this.notifySessionEnded(bookingId);
-
-    try {
-      await this.chimeService.endMeeting(bookingId);
-    } catch (error: unknown) {
-      this.logger.warn(
-        `Failed to end Chime video meeting for ${bookingId}: ${String(error)}`,
-      );
-    }
 
     try {
       await this.prisma.booking.update({
@@ -2163,13 +2235,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       emitRefund(room);
       emitGraceEnded(room);
       this.server.to(room).emit('audioSessionEnded', { bookingId });
-      try {
-        await this.chimeService.endMeeting(bookingId);
-      } catch (error: unknown) {
-        this.logger.warn(
-          `Failed to end Chime audio meeting for grace refund ${bookingId}: ${String(error)}`,
-        );
-      }
       await this.clearAudioSessionRedisKeys(bookingId);
       await this.panditAvailability.clearPanditActive(booking.panditId);
       return;
@@ -2182,13 +2247,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       emitRefund(room);
       emitGraceEnded(room);
       this.server.to(room).emit('videoSessionEnded', { bookingId });
-      try {
-        await this.chimeService.endMeeting(bookingId);
-      } catch (error: unknown) {
-        this.logger.warn(
-          `Failed to end Chime video meeting for grace refund ${bookingId}: ${String(error)}`,
-        );
-      }
       await this.clearVideoSessionRedisKeys(bookingId);
       await this.panditAvailability.clearPanditActive(booking.panditId);
     }

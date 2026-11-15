@@ -118,6 +118,22 @@ export interface JoinVideoSessionPayload {
   token?: string;
 }
 
+export type WebRtcSignal =
+  | { type: 'offer' | 'answer'; sdp: string }
+  | { type: 'ice-candidate'; candidate: Record<string, unknown> | null };
+
+export interface MediaSignalPayload {
+  bookingId: string;
+  format: 'audio' | 'video';
+  signal: WebRtcSignal;
+}
+
+export interface MediaPeerReadyPayload {
+  bookingId: string;
+  format: 'audio' | 'video';
+  initiator: boolean;
+}
+
 export interface VideoSessionStartedPayload {
   startedAt: number;
   endTime: number;

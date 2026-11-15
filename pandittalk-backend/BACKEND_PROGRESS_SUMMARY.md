@@ -12,7 +12,9 @@
 
 **PanditTalk** is a mobile + web platform backend connecting users with pandits (spiritual/astrology experts). The backend is a **NestJS monorepo** designed for growth into real-time chat, caching, and async messaging.
 
-**Current maturity:** **user-service** (port 3001) — users, pandits, bookings, wallet/Razorpay, astrology tools, live text chat (Socket.IO + DynamoDB), **live audio + video** (AWS Chime + Socket.IO signaling), Chat Now, Redis pandit queues, **articles/blog**, **in-app notifications**, account soft-delete. **pandit-service** (3002) = health scaffold only.
+**Current maturity:** **user-service** (port 3001) — users, pandits, bookings, wallet/Razorpay, astrology tools, live text chat (Socket.IO + DynamoDB), **live audio + video** (WebRTC media + Socket.IO/Redis signaling), Chat Now, Redis pandit queues, **articles/blog**, **in-app notifications**, account soft-delete. **pandit-service** (3002) = health scaffold only.
+
+> **Local-first media note:** The old paid-meeting design notes later in this historical handoff are superseded. The active runtime returns provider-neutral WebRTC session configuration, uses free STUN by default, and supports optional coturn when a relay is needed.
 
 ---
 
@@ -29,7 +31,7 @@
 | Real-time | Socket.IO | `@nestjs/platform-socket.io` — namespace `/chat` |
 | Cache / Queue | Redis 7 | `cache-manager-redis-yet` — **wired** (queue + cache) |
 | Chat storage | DynamoDB | `@aws-sdk/client-dynamodb` — local via DynamoDB Local |
-| Audio meetings | AWS Chime SDK Meetings | `@aws-sdk/client-chime-sdk-meetings` — `ap-south-1` |
+| Audio/video media | WebRTC | Browser/native peer connection; Socket.IO/Redis signaling |
 | Payments | Razorpay Node SDK | ^2.9.6 |
 | Astrology | Prokerala REST API | OAuth2 client credentials |
 | AI | OpenAI GPT-4o | `openai` ^6.42.0 |
@@ -56,7 +58,7 @@ apps/backend/
 │   │       ├── auth/
 │   │       ├── bookings/        # + chat-now, pandit queue, pandit endpoints
 │   │       ├── chat/            # WebSocket gateway + DynamoDB + notification emit
-│   │       ├── chime/           # /sessions/audio + /sessions/video REST
+│   │       ├── webrtc/          # Provider-neutral audio/video session config
 │   │       ├── experts/         # + GET /experts/me, ?search, ?area
 │   │       ├── notifications/   # In-app notification CRUD
 │   │       ├── tools/
@@ -95,7 +97,8 @@ Copy `.env.example` → `.env` at `apps/backend/`.
 | `DATABASE_URL` | `postgresql://pandittalk:pandittalk@localhost:5432/pandittalk` | Prisma |
 | `REDIS_HOST`, `REDIS_PORT` | localhost / 6379 | Cache + queue |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` | local / ap-south-1 | DynamoDB |
-| `AWS_CHIME_ACCESS_KEY_ID`, `AWS_CHIME_SECRET_ACCESS_KEY` | — | Chime SDK Meetings (real IAM credentials required) |
+| `WEBRTC_STUN_URLS` | `stun:stun.l.google.com:19302,...` | Default ICE discovery for browser/native WebRTC |
+| `WEBRTC_TURN_URL`, `WEBRTC_TURN_USERNAME`, `WEBRTC_TURN_CREDENTIAL` | — | Optional coturn relay credentials |
 | `DYNAMODB_ENDPOINT` | `http://localhost:8000` | Local DynamoDB |
 | `DYNAMODB_TABLE_CHAT` | `pandittalk-chat-messages` | Chat messages |
 | `CHAT_WAITING_TIMEOUT_MS` | `600000` (10 min) | Pandit join timeout before refund |
@@ -275,26 +278,23 @@ Supported birth cities: Delhi, Mumbai, Pune, Jaipur, Ludhiana, Chennai, Kolkata,
 - Pandit disconnect: 60s reconnect grace
 - Messages persisted to DynamoDB; history returned on `sessionJoined`
 
-### 7.11 Audio sessions — Chime (`/sessions/audio`) — JWT
+### 7.11 Audio sessions — WebRTC (`/sessions/audio`) — JWT
 
-**Module:** `apps/user-service/src/chime/` — `ChimeService`, `ChimeController`.
+**Module:** `apps/user-service/src/webrtc/` — `WebRtcService` plus the audio session controller.
 
 | Method | Path | Auth | Behavior |
 |--------|------|------|----------|
-| `POST` | `/sessions/audio/create` | JWT (booking owner) | Ensure/create Chime meeting; create attendee |
-| `POST` | `/sessions/audio/join` | JWT (participant) | Join existing meeting; create attendee |
-| `GET` | `/sessions/audio/:bookingId` | JWT | `{ meeting, attendees }` |
-| `DELETE` | `/sessions/audio/:bookingId` | JWT | Delete Chime meeting; set booking `completed` |
+| `POST` | `/sessions/audio/create` | JWT (booking owner) | Return a WebRTC ICE-server config |
+| `POST` | `/sessions/audio/join` | JWT (participant) | Return the same provider-neutral config |
+| `GET` | `/sessions/audio/:bookingId` | JWT | Return the WebRTC session config |
+| `DELETE` | `/sessions/audio/:bookingId` | JWT | Set booking `completed` |
 
 **Guards:** `format === 'audio'`, `status === 'confirmed'`, within session window (15 min before start → end).
 
-**ChimeService:**
-- `CreateMeeting` / `CreateAttendee` / `DeleteMeeting` via AWS SDK in `ap-south-1`
-- Redis cache: `chime:meeting:{bookingId}` → `{ meeting, attendees, ttlMs }`
-- `ensureMeeting()` creates on first join if missing
-- Invalid credentials → `503 Service Unavailable` with helpful message
-
-**IAM permissions needed:** `chime:CreateMeeting`, `chime:CreateAttendee`, `chime:DeleteMeeting` in `ap-south-1`.
+**WebRtcService:**
+- Returns `provider: "webrtc"`, booking/format, default free STUN URLs, and optional TURN credentials.
+- No media vendor credentials are required for the local-first path.
+- Media itself is peer-to-peer; Socket.IO carries only signaling messages.
 
 ### 7.12 Audio WebSocket (`/chat` namespace)
 
@@ -315,18 +315,18 @@ Supported birth cities: Delhi, Mumbai, Pune, Jaipur, Ludhiana, Chennai, Kolkata,
 - Socket room: `audio:{bookingId}`; participant list in Redis `audio:room:{bookingId}`
 - Start/end timestamps: Redis `audio:start:{bookingId}`, `audio:end:{bookingId}`
 - 1s interval timer per booking; cleanup on end or time-up
-- Both clients join Chime via REST **before** socket signaling; WebSocket coordinates UI timer only
+- Both clients obtain the WebRTC config via REST, then use Socket.IO signaling; media does not pass through the API.
 
-### 7.13 Video sessions — Chime (`/sessions/video`) — JWT
+### 7.13 Video sessions — WebRTC (`/sessions/video`) — JWT
 
-**Module:** `chime/video-chime.controller.ts` — same `ChimeService` as audio.
+**Module:** the same WebRTC session controller/service boundary as audio.
 
 | Method | Path | Behavior |
 |--------|------|----------|
-| `POST` | `/sessions/video/create` | User creates meeting + attendee (`format: 'video'`) |
-| `POST` | `/sessions/video/join` | Pandit/user joins; create attendee |
-| `GET` | `/sessions/video/:bookingId` | Meeting + attendees |
-| `DELETE` | `/sessions/video/:bookingId` | End meeting; booking `completed` |
+| `POST` | `/sessions/video/create` | Return a WebRTC ICE-server config (`format: 'video'`) |
+| `POST` | `/sessions/video/join` | Return the same provider-neutral config |
+| `GET` | `/sessions/video/:bookingId` | Return the WebRTC session config |
+| `DELETE` | `/sessions/video/:bookingId` | End the session; booking `completed` |
 
 **WebSocket:** `joinVideoSession` / `endVideoSession` → `videoWaitingForOther`, `videoWaitingForStart`, `videoSessionStarted`, `timeRemaining`, `warningFiveMinutes`, `videoSessionTimeUp`, `videoSessionEnded`. Redis keys: `video:room:`, `video:start:`, `video:end:`.
 
@@ -471,9 +471,9 @@ DELETE /sessions/video/:bookingId
 - [x] Live text chat (WebSocket + DynamoDB)
 - [x] Chat Now instant booking
 - [x] Pandit busy queue (Redis)
-- [x] **Live audio** (AWS Chime SDK Meetings + WebSocket signaling)
+- [x] **Live audio** (WebRTC + WebSocket/Redis signaling)
 - [ ] Auto-complete bookings after session end
-- [x] **Live video** (AWS Chime — waiting-room pattern on mobile)
+- [x] **Live video** (WebRTC — waiting-room pattern on mobile)
 - [x] **In-app notifications** (Prisma + Socket.IO)
 - [x] **Articles / blog** (API + optional Blogger sync)
 - [ ] Pandit accept/decline flow
@@ -525,8 +525,8 @@ DELETE /sessions/video/:bookingId
 | 13–16 | Tools (Prokerala + OpenAI), premium debits, zodiac sign |
 | 17 | Live chat: ChatGateway, DynamoDB, mobile + dashboard clients |
 | 18 | Chat Now + Redis pandit queue; `GET /experts/me`; monorepo consolidation |
-| 19 | Live audio: ChimeModule, `/sessions/audio/*`, audio WebSocket handlers |
-| 20 | Live video: `VideoChimeController`, `/sessions/video/*`, video WebSocket handlers |
+| 19 | Live audio: WebRtcModule, `/sessions/audio/*`, audio WebSocket handlers |
+| 20 | Live video: VideoSessionController, `/sessions/video/*`, video WebSocket handlers |
 | 21 | VERSION 1.0.0: Articles, Notifications, account soft-delete, expert search/area filter, session reminder notifications |
 
 ---

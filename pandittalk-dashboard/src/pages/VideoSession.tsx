@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getErrorMessage, getUserDetailsForBooking, joinVideoSession } from '../lib/api';
 import { chatSocket } from '../lib/chatSocket';
-import { chimeVideo } from '../lib/chimeVideo';
+import { webrtcVideo } from '../lib/webrtcVideo';
 import { formatTimer } from '../lib/format';
 import { usePanditStore } from '../store/usePanditStore';
 import styles from './VideoSession.module.css';
@@ -120,7 +120,7 @@ export function VideoSession() {
       if (sessionEndedRef.current) return;
       sessionEndedRef.current = true;
       window.alert(message);
-      void chimeVideo.stopSession();
+      void webrtcVideo.stopSession();
       chatSocket.removeAllListeners();
       navigate('/dashboard', { replace: true });
     },
@@ -132,7 +132,7 @@ export function VideoSession() {
     sessionEndedRef.current = true;
     setConnectionStatusSafe('Session ended');
     window.alert('Session ended');
-    await chimeVideo.stopSession();
+    await webrtcVideo.stopSession();
     chatSocket.removeAllListeners();
     navigate('/dashboard?sessionCompleted=1', { replace: true });
   }, [navigate, setConnectionStatusSafe]);
@@ -141,7 +141,7 @@ export function VideoSession() {
     if (!bookingId || sessionEndedRef.current) return;
     if (!window.confirm('Leave this session? The seeker stays. Only they can end it.')) return;
     chatSocket.leaveVideoSession(bookingId);
-    await chimeVideo.stopSession();
+    await webrtcVideo.stopSession();
     chatSocket.removeAllListeners();
     navigate('/dashboard', { replace: true });
   }, [bookingId, navigate]);
@@ -150,7 +150,7 @@ export function VideoSession() {
     if (!sessionMediaActive) return;
     setIsMuted((prev) => {
       const next = !prev;
-      chimeVideo.setMuted(next);
+      webrtcVideo.setMuted(next);
       return next;
     });
   }, [sessionMediaActive]);
@@ -161,7 +161,7 @@ export function VideoSession() {
     setIsCameraOn((prev) => {
       const next = !prev;
       isCameraOnRef.current = next;
-      chimeVideo.setCameraEnabled(next);
+      webrtcVideo.setCameraEnabled(next);
       if (bookingId) chatSocket.emitVideoCameraState(bookingId, next);
       return next;
     });
@@ -265,7 +265,7 @@ export function VideoSession() {
   useEffect(() => {
     const pollRemote = window.setInterval(() => {
       if (!sessionMediaActive) return;
-      const remoteVideo = chimeVideo.hasRemoteVideo();
+      const remoteVideo = webrtcVideo.hasRemoteVideo();
       setHasRemoteVideo(remoteVideo);
       updateActiveConnectionStatus(
         participantInCallRef.current,
@@ -306,13 +306,16 @@ export function VideoSession() {
           throw new Error('Video elements not ready');
         }
 
-        const { meeting, attendee } = await joinVideoSession(bookingId);
+        const session = await joinVideoSession(bookingId);
         if (cancelled) return;
 
-        await chimeVideo.startSession(meeting, attendee, {
+        await webrtcVideo.startSession(session, {
           localVideo: localEl,
           remoteVideo: remoteEl,
         });
+        webrtcVideo.setSignalSender((signal) =>
+          chatSocket.sendMediaSignal(bookingId, 'video', signal),
+        );
         if (cancelled) return;
 
         setIsInitializing(false);
@@ -333,7 +336,7 @@ export function VideoSession() {
             setConnectionStatus('Waiting for user');
             setTimerLabel('--:--');
             setHasRemoteVideo(false);
-            chimeVideo.enterWaitingRoomMode();
+            webrtcVideo.enterWaitingRoomMode();
           },
           onWaitingForStart: ({ startsAt: startsAtIso }) => {
             const startMs = Date.parse(startsAtIso);
@@ -347,7 +350,7 @@ export function VideoSession() {
             setStartsAt(startsAtIso);
             setConnectionStatus('User is ready — waiting for start time');
             setHasRemoteVideo(false);
-            chimeVideo.enterWaitingRoomMode();
+            webrtcVideo.enterWaitingRoomMode();
             setTimerLabel(
               startTimeMsRef.current === null
                 ? '--:--'
@@ -369,10 +372,10 @@ export function VideoSession() {
             setWaitingForStart(false);
             setStartsAt(null);
             setConnectionStatusSafe('Connected');
-            chimeVideo.enableSessionMedia();
+            webrtcVideo.enableSessionMedia();
             if (bookingId) chatSocket.emitVideoCameraState(bookingId, isCameraOnRef.current);
             setIsMuted(false);
-            chimeVideo.setMuted(false);
+            webrtcVideo.setMuted(false);
             setTimerLabel(
               formatTimer(Math.max(0, Math.floor((endTime - Date.now()) / 1000))),
             );
@@ -407,7 +410,7 @@ export function VideoSession() {
             if (bookingId) chatSocket.emitVideoCameraState(bookingId, isCameraOnRef.current);
             if (sessionActiveRef.current) {
               setConnectionStatusSafe('Connected');
-              updateActiveConnectionStatus(true, chimeVideo.hasRemoteVideo(), userCameraOnRef.current);
+              updateActiveConnectionStatus(true, webrtcVideo.hasRemoteVideo(), userCameraOnRef.current);
             }
           },
           onVideoCameraState: ({ cameraOn, senderRole }) => {
@@ -416,7 +419,13 @@ export function VideoSession() {
             setParticipantInCall(true);
             userCameraOnRef.current = cameraOn;
             setUserCameraOn(cameraOn);
-            updateActiveConnectionStatus(true, chimeVideo.hasRemoteVideo(), cameraOn);
+            updateActiveConnectionStatus(true, webrtcVideo.hasRemoteVideo(), cameraOn);
+          },
+          onMediaPeerReady: ({ initiator }) => {
+            void webrtcVideo.handlePeerReady(session, initiator);
+          },
+          onMediaSignal: (signal) => {
+            void webrtcVideo.handleSignal(session, signal);
           },
           onSessionGraceEnded: ({ message }) => {
             handleGraceEnded(message);
@@ -441,7 +450,8 @@ export function VideoSession() {
       if (bookingId && !sessionEndedRef.current) {
         chatSocket.leaveVideoSession(bookingId);
       }
-      void chimeVideo.stopSession();
+      webrtcVideo.setSignalSender(null);
+      void webrtcVideo.stopSession();
       chatSocket.removeAllListeners();
     };
   }, [accessToken, bookingId, handleGraceEnded, handleSessionEnded, navigate, prepDone, setConnectionStatusSafe, updateActiveConnectionStatus]);

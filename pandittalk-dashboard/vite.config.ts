@@ -5,7 +5,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   define: {
-    // Amazon Chime SDK (amazon-chime-sdk-js) expects a Node-style `global`.
     global: 'globalThis',
   },
   optimizeDeps: {

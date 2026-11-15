@@ -29,10 +29,10 @@ being graded.
 
 4. Have the GitHub Actions run open in one browser tab and the Vercel website,
    dashboard, and mobile dev client ready in the others.
-5. If audio/video is part of the live demonstration, configure valid Chime
-   credentials and use a booking that both clients can join. If those
-   credentials are not available, demonstrate the clear unavailable/error state
-   and say so; do not present text chat as proof of media.
+5. If audio/video is part of the live demonstration, use the local WebRTC
+   session with a confirmed booking and grant microphone/camera access in both
+   clients. The default path uses free STUN; start the optional coturn profile
+   only if the network requires relay connectivity.
 
 For the external rehearsal, start a tunnel after Compose is healthy:
 
@@ -100,8 +100,9 @@ sessions. Do not run `docker compose down` during the presentation.
   at `/dashboard`.
 - The tunnel exposes HTTPS/WSS to Vercel and physical devices. Localhost must
   never be placed in a physical mobile build.
-- TURN is optional infrastructure. It does not create signaling or media by
-  itself; the current media clients use the Chime meeting/attendee contract.
+- WebRTC signaling runs through Socket.IO/Redis on the stateless API replicas;
+  media is peer-to-peer where possible. Free public STUN is the default, and
+  coturn is an optional self-hosted relay for restrictive networks.
 - PostgreSQL and named Docker volumes survive a container restart. Use the
   backup command in the root README before destructive maintenance.
 
@@ -111,5 +112,6 @@ On Kali: `git clone <repo>`, copy `.env.example` to `.env`, set the tunnel and
 origins, then run `docker compose up -d --build`. In Vercel, set the website and
 dashboard API variables to the same HTTPS tunnel URL and redeploy. In the Expo
 dev-client/EAS environment, set `EXPO_PUBLIC_API_BASE` to that URL. Finally,
-verify the live health endpoint, Socket.IO handshake, chat, and—only if a media
-provider is configured—audio/video from two clients.
+verify the live health endpoint, Socket.IO handshake, chat, and audio/video from
+two clients. For mobile, use a custom Expo dev client because react-native-webrtc
+is a native module.

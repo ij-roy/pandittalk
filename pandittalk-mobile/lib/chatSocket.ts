@@ -5,6 +5,9 @@ import { getApiBase, isNgrokApiBase } from '@/lib/authApi';
 import { historyHasMore } from '@/lib/chatHistory';
 import { normalizeNotificationPayload } from '@/lib/notificationApi';
 import type { Notification } from '@/store/useNotificationStore';
+import type { WebRtcSignal } from '@/lib/webrtcTypes';
+
+export type { WebRtcSignal };
 
 export type ChatMessage = {
   id: string;
@@ -688,6 +691,8 @@ export const chatSocket = {
     onSessionRefunded?: (payload: SessionRefundedPayload) => void,
     onSessionGraceEnded?: (message: string) => void,
     onError?: (message: string) => void,
+    onMediaPeerReady?: (initiator: boolean) => void,
+    onMediaSignal?: (signal: WebRtcSignal) => void,
   ): void {
     if (!socket && currentToken) {
       ensureSocket(currentToken);
@@ -753,6 +758,20 @@ export const chatSocket = {
       onSessionGraceEnded?.(message);
     };
 
+    const handleMediaPeerReady = (payload: unknown) => {
+      const record = asRecord(payload);
+      if (typeof record?.initiator === 'boolean') onMediaPeerReady?.(record.initiator);
+    };
+
+    const handleMediaSignal = (payload: unknown) => {
+      const record = asRecord(payload);
+      const signal = asRecord(record?.signal);
+      if (!signal || (signal.type !== 'offer' && signal.type !== 'answer' && signal.type !== 'ice-candidate')) return;
+      if ((signal.type === 'offer' || signal.type === 'answer') && typeof signal.sdp !== 'string') return;
+      if (signal.type === 'ice-candidate' && signal.candidate !== null && !asRecord(signal.candidate)) return;
+      onMediaSignal?.(signal as WebRtcSignal);
+    };
+
     const emitJoin = () => {
       if (!socket) return;
       console.log('[ChatSocket] emitting joinAudioSession for bookingId:', bookingId);
@@ -767,6 +786,8 @@ export const chatSocket = {
       addSessionListener('audioParticipantRejoined', handleParticipantRejoined);
       addSessionListener('sessionRefunded', handleSessionRefunded);
       addSessionListener('sessionGraceEnded', handleSessionGraceEnded);
+      addSessionListener('mediaPeerReady', handleMediaPeerReady);
+      addSessionListener('mediaSignal', handleMediaSignal);
       if (onError) {
         addSessionListener('error', (payload: unknown) => {
           const record = asRecord(payload);
@@ -809,6 +830,8 @@ export const chatSocket = {
     onSessionGraceEnded?: (message: string) => void,
     onError?: (message: string) => void,
     onPanditCamera?: (cameraOn: boolean) => void,
+    onMediaPeerReady?: (initiator: boolean) => void,
+    onMediaSignal?: (signal: WebRtcSignal) => void,
   ): void {
     if (!socket && currentToken) {
       ensureSocket(currentToken);
@@ -881,6 +904,20 @@ export const chatSocket = {
       onPanditCamera?.(record.cameraOn);
     };
 
+    const handleMediaPeerReady = (payload: unknown) => {
+      const record = asRecord(payload);
+      if (typeof record?.initiator === 'boolean') onMediaPeerReady?.(record.initiator);
+    };
+
+    const handleMediaSignal = (payload: unknown) => {
+      const record = asRecord(payload);
+      const signal = asRecord(record?.signal);
+      if (!signal || (signal.type !== 'offer' && signal.type !== 'answer' && signal.type !== 'ice-candidate')) return;
+      if ((signal.type === 'offer' || signal.type === 'answer') && typeof signal.sdp !== 'string') return;
+      if (signal.type === 'ice-candidate' && signal.candidate !== null && !asRecord(signal.candidate)) return;
+      onMediaSignal?.(signal as WebRtcSignal);
+    };
+
     const emitJoin = () => {
       if (!socket) return;
       console.log('[ChatSocket] emitting joinVideoSession for bookingId:', bookingId);
@@ -896,6 +933,8 @@ export const chatSocket = {
       addSessionListener('sessionRefunded', handleSessionRefunded);
       addSessionListener('sessionGraceEnded', handleSessionGraceEnded);
       addSessionListener('videoCameraState', handleVideoCameraState);
+      addSessionListener('mediaPeerReady', handleMediaPeerReady);
+      addSessionListener('mediaSignal', handleMediaSignal);
       if (onError) {
         addSessionListener('error', (payload: unknown) => {
           const record = asRecord(payload);
@@ -980,6 +1019,14 @@ export const chatSocket = {
 
   emitVideoCameraState(bookingId: string, cameraOn: boolean): void {
     socket?.emit('videoCameraState', { bookingId, cameraOn });
+  },
+
+  sendMediaSignal(
+    bookingId: string,
+    format: 'audio' | 'video',
+    signal: WebRtcSignal,
+  ): void {
+    socket?.emit('mediaSignal', { bookingId, format, signal });
   },
 
   removeAllListeners(): void {
