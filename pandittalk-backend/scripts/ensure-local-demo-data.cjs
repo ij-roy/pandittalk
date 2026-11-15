@@ -13,6 +13,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const CUSTOMER_PHONE = '+919999999998';
 const PANDIT_PHONE = '+919999999997';
+const ADMIN_PHONE = '+919999999996';
 const PANDIT_ID = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a001';
 const BOOKING_ID = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a002';
 const AUDIO_BOOKING_ID = 'd1d7ccf5-08dc-45ea-9b16-0e7d04d8a003';
@@ -79,6 +80,7 @@ async function main() {
       dob: '1990-01-15',
       profileCompleted: true,
       isActive: true,
+      role: 'CUSTOMER',
     },
     update: {
       firstName: 'Local',
@@ -93,6 +95,7 @@ async function main() {
       dob: '1990-01-15',
       profileCompleted: true,
       isActive: true,
+      role: 'CUSTOMER',
     },
   });
 
@@ -111,6 +114,7 @@ async function main() {
       privacyVersion: '2.0',
       profileCompleted: true,
       isActive: true,
+      role: 'PANDIT',
     },
     update: {
       firstName: 'Local',
@@ -118,6 +122,34 @@ async function main() {
       name: 'Local Demo Pandit',
       isActive: true,
       profileCompleted: true,
+      role: 'PANDIT',
+    },
+  });
+
+  const admin = await prisma.user.upsert({
+    where: { phoneNumber: ADMIN_PHONE },
+    create: {
+      phoneNumber: ADMIN_PHONE,
+      firstName: 'Local',
+      lastName: 'Admin',
+      name: 'Local Demo Admin',
+      walletBalance: 0,
+      acceptedAge18: true,
+      termsAcceptedAt: now,
+      privacyAcceptedAt: now,
+      termsVersion: '2.0',
+      privacyVersion: '2.0',
+      profileCompleted: true,
+      isActive: true,
+      role: 'ADMIN',
+    },
+    update: {
+      firstName: 'Local',
+      lastName: 'Admin',
+      name: 'Local Demo Admin',
+      profileCompleted: true,
+      isActive: true,
+      role: 'ADMIN',
     },
   });
 
@@ -200,6 +232,7 @@ async function main() {
     ok: true,
     customer: { phone: CUSTOMER_PHONE, id: customer.id, otp: '1234' },
     pandit: { phone: PANDIT_PHONE, id: pandit.id, userId: panditUser.id, otp: '1234' },
+    admin: { phone: ADMIN_PHONE, id: admin.id, otp: '1234' },
     booking: { id: booking.id, format: booking.format, status: booking.status },
     mediaBookings: [
       { id: audioBooking.id, format: audioBooking.format, status: audioBooking.status },

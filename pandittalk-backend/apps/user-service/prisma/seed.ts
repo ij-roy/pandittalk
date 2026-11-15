@@ -709,8 +709,8 @@ async function upsertRealPandit(
 
   const user = await prisma.user.upsert({
     where: { phoneNumber: seed.phone },
-    create: { phoneNumber: seed.phone, walletBalance: 0 },
-    update: {},
+    create: { phoneNumber: seed.phone, walletBalance: 0, role: 'PANDIT' },
+    update: { role: 'PANDIT' },
   });
 
   const panditFields = {
@@ -791,6 +791,32 @@ async function seedPandits(): Promise<void> {
   );
 }
 
+async function seedLocalAdmin(): Promise<void> {
+  if (process.env.NODE_ENV !== 'development') return;
+
+  await prisma.user.upsert({
+    where: { phoneNumber: '+919999999996' },
+    create: {
+      phoneNumber: '+919999999996',
+      firstName: 'Local',
+      lastName: 'Admin',
+      name: 'Local Demo Admin',
+      walletBalance: 0,
+      profileCompleted: true,
+      isActive: true,
+      role: 'ADMIN',
+    },
+    update: {
+      firstName: 'Local',
+      lastName: 'Admin',
+      name: 'Local Demo Admin',
+      profileCompleted: true,
+      isActive: true,
+      role: 'ADMIN',
+    },
+  });
+}
+
 async function main(): Promise<void> {
   await seedCoinPackages();
 
@@ -804,6 +830,7 @@ async function main(): Promise<void> {
   }
 
   await seedPandits();
+  await seedLocalAdmin();
 
   await seedArticles();
 }
