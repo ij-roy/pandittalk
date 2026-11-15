@@ -23,7 +23,7 @@ room/session state, rate limits, Socket.IO fan-out, and distributed
 timer/notification locks. The backend does not use sticky sessions. DynamoDB
 Local remains for the current chat-history adapter. Avatar uploads use a named
 Docker volume for local operation. The local Prisma URL limits each API replica
-to ten database connections with a bounded pool wait. AWS Chime, payment, astrology, and AI
+to ten database connections with a bounded pool wait. Payment, astrology, and AI
 providers are optional environment-controlled integrations; no real credentials
 belong in this repository.
 
@@ -53,8 +53,8 @@ confirmed chat, audio, and video bookings. It is not part of application
 startup and is intended only for local verification. The local Admin demo phone
 is `+919999999996` and uses the fixed OTP `1234` only while
 `ALLOW_TEST_OTP=true`. Use the printed media booking IDs to open the real
-audio/video routes; with blank Chime credentials they should show the provider
-unavailable state rather than a fake connected call.
+audio/video routes; the browser and native clients negotiate peer-to-peer
+WebRTC sessions using the configured STUN/TURN servers.
 
 The API is available at `http://localhost:3001`. The Pandit service, Redis,
 PostgreSQL, and DynamoDB Local stay on the private Compose network so they do
@@ -103,7 +103,7 @@ TURN separately when real audio/video is enabled.
 | Dashboard dev server | `http://localhost:5173` | Vercel dashboard origin | `VITE_API_BASE` |
 | Expo web/dev client | `http://localhost:8081` | `https://<tunnel-host>` for a device | `EXPO_PUBLIC_API_BASE` |
 | TURN | `localhost:3478` with the `webrtc` profile | Public UDP/TCP 3478 endpoint | `TURN_REALM`, `TURN_USERNAME`, `TURN_PASSWORD` |
-| Media provider | blank for local non-media smoke tests | AWS Chime region/account | `AWS_CHIME_ACCESS_KEY_ID`, `AWS_CHIME_SECRET_ACCESS_KEY` |
+| Media provider | Browser/native WebRTC with free STUN | Optional coturn or another TURN service | `WEBRTC_STUN_URLS`, `WEBRTC_TURN_URL`, `WEBRTC_TURN_USERNAME`, `WEBRTC_TURN_CREDENTIAL` |
 
 For a physical phone, `localhost` means the phone itself. Use the Kali LAN IP
 for a same-network test or the HTTPS tunnel for an external test. Never commit
@@ -141,14 +141,15 @@ Push-Location pandittalk-mobile; npm ci; npm run start; Pop-Location
 
 Set the mobile `EXPO_PUBLIC_API_BASE` to the tunnel URL for a physical device.
 The native audio/video module requires an Expo development build; Expo Go does
-not contain the custom `expo-pandit-chime` module.
+not include the native `react-native-webrtc` module. Build the client with the
+configured Expo development client before testing calls on a physical phone.
 
 The website, dashboard, and mobile chat clients use the `/chat` Socket.IO
 namespace and the same session/audio/video event contract. Audio/video is real
-Chime media, not a fake preview: the browser and native clients request device
+WebRTC media, not a fake preview: the browser and native clients request device
 permissions and expose mute, camera, reconnect, end-call, and unavailable
-states. A live join still requires valid Chime credentials and a real browser
-or native device; TURN by itself is not a signaling or media provider.
+states. Free STUN is enough for many networks; use the optional coturn profile
+when restrictive NATs require a relay.
 
 ## Verification and CI/CD
 
