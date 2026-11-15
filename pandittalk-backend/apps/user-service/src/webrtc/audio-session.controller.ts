@@ -40,7 +40,7 @@ export class AudioSessionController {
   ): Promise<WebRtcSessionConfig> {
     const booking = await this.assertBookingOwner(userId, dto.bookingId);
     this.assertWithinSessionWindow(booking);
-    return this.webRtcService.getSessionConfig(dto.bookingId, 'audio');
+    return await this.webRtcService.getSessionConfig(dto.bookingId, 'audio');
   }
 
   @Post('join')
@@ -53,7 +53,7 @@ export class AudioSessionController {
       dto.bookingId,
     );
     this.assertWithinSessionWindow(booking);
-    return this.webRtcService.getSessionConfig(dto.bookingId, 'audio');
+    return await this.webRtcService.getSessionConfig(dto.bookingId, 'audio');
   }
 
   @Get(':bookingId')
@@ -61,8 +61,9 @@ export class AudioSessionController {
     @CurrentUser('sub') userId: string,
     @Param('bookingId') bookingId: string,
   ): Promise<WebRtcSessionConfig> {
-    await this.assertBookingParticipant(userId, bookingId);
-    return this.webRtcService.getSessionConfig(bookingId, 'audio');
+    const booking = await this.assertAudioBookingParticipant(userId, bookingId);
+    this.assertWithinSessionWindow(booking);
+    return await this.webRtcService.getSessionConfig(bookingId, 'audio');
   }
 
   @Delete(':bookingId')

@@ -40,7 +40,7 @@ export class VideoSessionController {
   ): Promise<WebRtcSessionConfig> {
     const booking = await this.assertBookingOwner(userId, dto.bookingId);
     this.assertWithinSessionWindow(booking);
-    return this.webRtcService.getSessionConfig(dto.bookingId, 'video');
+    return await this.webRtcService.getSessionConfig(dto.bookingId, 'video');
   }
 
   @Post('join')
@@ -53,7 +53,7 @@ export class VideoSessionController {
       dto.bookingId,
     );
     this.assertWithinSessionWindow(booking);
-    return this.webRtcService.getSessionConfig(dto.bookingId, 'video');
+    return await this.webRtcService.getSessionConfig(dto.bookingId, 'video');
   }
 
   @Get(':bookingId')
@@ -61,8 +61,9 @@ export class VideoSessionController {
     @CurrentUser('sub') userId: string,
     @Param('bookingId') bookingId: string,
   ): Promise<WebRtcSessionConfig> {
-    await this.assertBookingParticipant(userId, bookingId);
-    return this.webRtcService.getSessionConfig(bookingId, 'video');
+    const booking = await this.assertVideoBookingParticipant(userId, bookingId);
+    this.assertWithinSessionWindow(booking);
+    return await this.webRtcService.getSessionConfig(bookingId, 'video');
   }
 
   @Delete(':bookingId')
