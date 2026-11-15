@@ -55,7 +55,7 @@ export function HelpSearch({ topics }: { topics: HelpTopic[] }) {
           autoComplete="off"
           spellCheck={false}
           placeholder="e.g. payment, reconnect, OTP…"
-          aria-describedby={statusId}
+          aria-describedby={`${statusId} help-search-keyboard-hint`}
           aria-controls={listId}
           onChange={event => setQuery(event.target.value)}
           onKeyDown={event => {
@@ -97,9 +97,10 @@ export function HelpSearch({ topics }: { topics: HelpTopic[] }) {
         {hasQuery
           ? filtered.length === 0
             ? 'No matching topics. Try another word, browse all topics below after clearing, or contact support.'
-            : `${filtered.length} topic${filtered.length === 1 ? '' : 's'} match your search. Press Enter or ↓ to jump to the first match, ↑ from the first result returns to search, or Escape to clear.`
-          : `${topics.length} topics · browse or type to filter. Press Escape to clear.`}
+            : `${filtered.length} topic${filtered.length === 1 ? '' : 's'} match your search.`
+          : `${topics.length} topics · browse or type to filter.`}
       </p>
+      <p className="sr-only" id="help-search-keyboard-hint">Press Enter or Arrow Down to jump to the first match. Arrow Up from the first result returns to search. Escape clears the search.</p>
       {filtered.length === 0 ? (
         <div className="panel stack" role="status" id={listId} ref={emptyRef} tabIndex={-1} onKeyDown={event => {
           if (event.key === 'ArrowUp') {
@@ -111,7 +112,7 @@ export function HelpSearch({ topics }: { topics: HelpTopic[] }) {
           event.preventDefault();
           clearSearch();
         }}>
-          <p>Nothing matched “{query.trim()}”. Press Escape to clear the search, or ↑ to return to the search field. Arrow keys move between recovery actions including free tools and draft.</p>
+          <p>Nothing matched “{query.trim()}”. Try another search, browse all topics, or contact support.</p>
           <p className="sr-only" id="help-search-empty-hint">Arrow keys move between recovery actions including free tools and draft. Escape clears the search. Up arrow returns to the search field. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="Help search empty recovery" aria-describedby="help-search-empty-hint">
             <Link className="button secondary" href="/contact">Contact support</Link>

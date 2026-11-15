@@ -31,12 +31,11 @@ export function JournalCategoryNav({ selected }: { selected?: ArticleCategory })
 
   return (
     <>
-      <p className={canScroll ? 'expert-meta' : 'sr-only'} id="journal-category-hint">
-        {canScroll ? 'Swipe sideways for more categories. ' : ''}
-        Arrow keys move between categories. Home and End jump to the first or last.
-        {selected ? ' Escape returns to All.' : ' Escape blurs the focused category.'}
-        {' '}Skip to content still targets site-content.
+      <p className="sr-only" id="journal-category-hint">
+        Use the arrow keys to move between categories. Home and End move to the first and last category.
+        Escape leaves the list or returns to All when a category is selected.
       </p>
+      {canScroll ? <p className="journal-category-scroll-hint" aria-hidden="true">Swipe to explore more categories.</p> : null}
       <nav
         ref={navRef}
         className="journal-filters"

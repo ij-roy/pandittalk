@@ -3,10 +3,10 @@
 .pauseNote { margin: 0 0 10px; font-size: .82rem; color: var(--muted); line-height: 1.45; }
 .pauseNote a { color: inherit; text-underline-offset: 2px; }
 .navHint { display: block; margin: 0 0 8px; font-size: .78rem; color: var(--muted); }
-.navigation { display: flex; flex-wrap: nowrap; gap: 6px; padding: 7px; border: 1px solid var(--line); border-radius: 20px; background: rgba(255, 253, 248, .7); box-shadow: 0 8px 30px rgba(84, 52, 30, .04); backdrop-filter: blur(18px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.navigation { display: flex; flex-wrap: nowrap; gap: 6px; padding: 7px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: 0 8px 30px rgba(75, 53, 25, .08); backdrop-filter: blur(18px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
 .navigation a { display: flex; align-items: center; justify-content: center; flex: 1 0 auto; min-width: 5.5rem; max-width: 100%; min-height: 46px; padding: 10px 10px; border-radius: 13px; text-decoration: none; font-size: .88rem; font-weight: 600; color: var(--muted); white-space: normal; text-align: center; overflow-wrap: anywhere; }
-.navigation a:hover { background: rgba(139, 74, 32, .06); color: var(--ink); }
-.navigation a[aria-current] { background: var(--ink); color: #fffaf0; box-shadow: 0 3px 10px rgba(40, 43, 36, .12); }
+.navigation a:hover { background: var(--brand-gold-soft); color: var(--brand-gold-deep); }
+.navigation a[aria-current] { background: var(--brand-gold); color: var(--ink); box-shadow: 0 3px 12px rgba(120, 83, 18, .2); }
 .shell :global(.page) { padding-top: 36px; }
 .shell :global(.page) > h1 { font-size: clamp(2.2rem, 4.5vw, 3.8rem); max-width: 900px; }
 .shell :global(.panel) { min-width: 0; overflow-wrap: anywhere; }
@@ -43,7 +43,7 @@
 .cardHeader { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
 .cardHeader h2 { margin-bottom: 0; }
 .badge { display: inline-flex; width: fit-content; align-items: center; border: 1px solid var(--line); background: rgba(255, 255, 255, .7); border-radius: 999px; padding: 4px 11px; font-size: .75rem; font-weight: 600; white-space: nowrap; }
-.badge_pending { color: #6a5538; border-color: #d7c4a4; background: #f7f0e4; }
+.badge_pending { color: #695019; border-color: #efd797; background: #fff4d4; }
 .badge_ready { color: #2f5d3a; border-color: #b7d0bb; background: #eef6f0; }
 .badge_live { color: #6b3b12; border-color: #e0b789; background: #fff4e8; }
 .badge_done { color: #3d4a57; border-color: #c5ced6; background: #f2f5f7; }
@@ -57,7 +57,7 @@
 .empty { text-align: center; padding: clamp(28px, 5vw, 52px); }
 .empty :global(.button) { margin-top: 8px; }
 .messageLog { max-height: 55vh; min-height: 220px; overflow-y: auto; overscroll-behavior: contain; }
-.message { max-width: 85%; align-self: flex-start; padding: 16px 18px; background: rgba(139, 74, 32, .06); border-radius: 18px 18px 18px 4px; }
+.message { max-width: 85%; align-self: flex-start; padding: 16px 18px; background: var(--brand-sage-soft); border-radius: 18px 18px 18px 4px; }
 .message[data-sender="user"] { align-self: flex-end; background: rgba(255, 255, 255, .85); border: 1px solid var(--line); border-radius: 18px 18px 4px 18px; }
 .message p { margin-block: 5px; }
 .message small { font-size: .73rem; color: var(--muted); }

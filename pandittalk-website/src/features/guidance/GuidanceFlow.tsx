@@ -67,11 +67,6 @@ export default function GuidanceFlow() {
   }, [deepLinkNote]);
 
   useEffect(() => {
-    if (!ready || deepLinkNote) return;
-    requestAnimationFrame(() => heading.current?.focus());
-  }, [ready, deepLinkNote]);
-
-  useEffect(() => {
     if (step !== 4 || !experts.error) return;
     requestAnimationFrame(() => expertErrorRef.current?.focus());
   }, [step, experts.error]);

@@ -98,12 +98,8 @@ export default function Home() {
       <HeroAurora />
       <div className="hero-copy">
         <h1 id="home-title">Find a calmer next step for the question on your mind.</h1>
-        <p className="supporting">Choose a topic, compare Pandit profiles, and prepare your question privately before you decide whether to talk.</p>
-        <p className="sr-only" id="home-hero-hint">Arrow keys move between the two main choices. Escape blurs the focused link.</p>
-        <LinkKeyboardGroup className="actions" aria-label="Home hero actions" aria-describedby="home-hero-hint">
-          <Link className="button" href="/pandits">Explore Pandits<SiteIcon name="right" size={18} /></Link>
-          <Link className="button secondary" href="/guidance/start">Prepare a private draft</Link>
-        </LinkKeyboardGroup>
+        <p className="supporting">Choose a topic, compare Pandit profiles, and see what feels right before deciding whether to talk.</p>
+        <Link className="button" href="/pandits">Explore Pandits<SiteIcon name="right" size={18} /></Link>
         <p className="hero-status">{availabilityCopy.publicStatus} <Link href="#booking-availability">Get one email when that changes</Link></p>
       </div>
 
@@ -167,6 +163,10 @@ export default function Home() {
           <Link className="text-link" href="/how-it-works">See how it works<SiteIcon name="right" size={17} /></Link>
           <Link className="text-link" href="/trust">Read our trust and care approach<SiteIcon name="right" size={17} /></Link>
         </LinkKeyboardGroup>
+        <div className="home-draft-note">
+          <p className="home-draft-note-label">Prefer to prepare first? <Link className="text-link" href="/guidance/start">Write a private draft<SiteIcon name="right" size={17} /></Link></p>
+          <p className="home-draft-note-copy">It stays in this browser, is not shared with a Pandit, and does not create a booking.</p>
+        </div>
       </section>
     </RevealOnScroll>
 

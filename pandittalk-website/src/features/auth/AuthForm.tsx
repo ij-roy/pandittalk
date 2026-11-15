@@ -178,7 +178,7 @@ export function AuthForm() {
             }} placeholder="98765 43210" maxLength={14} required disabled={busy || sent} readOnly={sent} aria-describedby={failed && !sent && message ? 'phone-help auth-message' : 'phone-help'} aria-invalid={failed && !sent ? true : undefined} />
           </div>
         </label>
-        <small id="phone-help">Enter your 10-digit number. Country code +91 is filled for you. We only use it to send a sign-in code and protect your account — Send code never charges coins. Press Escape to clear the number before sending a code.</small>
+        <small id="phone-help">Enter your 10-digit number. Country code +91 is filled for you. We only use it to send a sign-in code and protect your account — Send code never charges coins. You can clear the number before sending a code.</small>
         {sent && <label className="field">Four-digit code<input ref={otpRef} type="text" name="otp" inputMode="numeric" autoComplete="one-time-code" enterKeyHint="done" pattern="[0-9]{4}" maxLength={4} required disabled={busy} value={otp} onChange={event => setOtp(event.target.value.replace(/\D/g, '').slice(0, 4))} onKeyDown={event => {
           if (event.key !== 'Escape' || busy) return;
           event.preventDefault();
@@ -188,7 +188,7 @@ export function AuthForm() {
           }
           // Empty code + Escape returns to phone entry (Send code still unconstrained by consent).
           resetToPhoneEntry();
-        }} aria-describedby={failed && message ? 'otp-help auth-message' : 'otp-help'} aria-invalid={failed ? true : undefined} /><small id="otp-help">Type the code from your SMS. Codes usually expire in a few minutes — use Resend if yours stops working. Pandit Talk staff will never ask for this code. Escape clears the code, or returns to the phone field when the code is empty.</small></label>}
+        }} aria-describedby={failed && message ? 'otp-help auth-message' : 'otp-help'} aria-invalid={failed ? true : undefined} /><small id="otp-help">Type the code from your SMS. Codes usually expire in a few minutes — use Resend if yours stops working. Pandit Talk staff will never ask for this code.</small></label>}
         {(sent || !!pending) && <label className="check"><input type="checkbox" checked={consent} disabled={busy} onChange={event => setConsent(event.target.checked)} required={action !== 'request-otp'} aria-describedby={!consent ? 'auth-consent-help' : undefined} /><span>I am 18 or older and agree to the <span className="sr-only" id="auth-legal-otp-hint">Arrow keys move between Terms and Privacy. Escape blurs. Consent never blocks Send code.</span><LinkKeyboardGroup as="span" aria-label="Sign-in legal links" aria-describedby="auth-legal-otp-hint"><Link href="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions<span className="sr-only"> (opens in a new tab)</span></Link> and <Link href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy<span className="sr-only"> (opens in a new tab)</span></Link></LinkKeyboardGroup>.</span></label>}
         {(sent || !!pending) && !consent && <p className="expert-meta" id="auth-consent-help">Accept the statement above to verify. Sending or resending a code does not require this yet.</p>}
         {message && <p id="auth-message" ref={messageRef} tabIndex={-1} className={failed ? 'error' : 'notice'} role={failed ? 'alert' : 'status'} aria-live={failed ? 'assertive' : 'polite'} onKeyDown={event => {

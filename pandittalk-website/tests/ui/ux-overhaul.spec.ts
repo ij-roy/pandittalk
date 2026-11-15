@@ -14,9 +14,9 @@ test('homepage hero leads with value, two choices and a useful guide', async ({ 
 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Find a calmer next step for the question on your mind.');
   await expect(page.locator('.hero-brand')).toHaveCount(0);
-  await expect(page.locator('.hero .actions a')).toHaveCount(2);
-  await expect(page.locator('.hero .actions a').first()).toHaveText(/Explore Pandits/);
-  await expect(page.locator('.hero .actions a').nth(1)).toHaveText(/Prepare a private draft/);
+  await expect(page.locator('.hero-copy > .button')).toHaveCount(1);
+  await expect(page.locator('.hero-copy > .button')).toHaveText(/Explore Pandits/);
+  await expect(page.locator('.home-draft-note .text-link')).toHaveText(/Write a private draft/);
   await expect(page.locator('.hero-guide-card')).toBeVisible();
   await expect(page.locator('.hero-trust-list li')).toHaveCount(4);
   await expect(page.locator('.hero .notify-open-form')).toHaveCount(0);
@@ -27,7 +27,8 @@ test('homepage hero leads with value, two choices and a useful guide', async ({ 
 test('homepage explains the first-time visitor path in concrete language', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByText('Choose a topic, compare Pandit profiles, and prepare your question privately before you decide whether to talk.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Choose a topic, compare Pandit profiles, and see what feels right before deciding whether to talk.', { exact: true })).toBeVisible();
+  await expect(page.getByText('It stays in this browser, is not shared with a Pandit, and does not create a booking.', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Start with what feels closest.', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'See who you may speak with.', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Start with a reading or a tool.', exact: true })).toBeVisible();
@@ -93,14 +94,30 @@ test('homepage avoids decorative eyebrow labels that compete with its message', 
   await expect(page.locator('.site-footer .eyebrow')).toHaveCount(0);
 });
 
-test('footer gives first-time visitors one clear next step', async ({ page }) => {
+test('footer introduces Pandit Talk with one clear next step', async ({ page }) => {
   await page.goto('/');
 
   const footer = page.locator('.site-footer');
-  await expect(footer.getByRole('heading', { name: 'Choose where to begin.', exact: true })).toBeVisible();
-  await expect(footer.locator('.footer-top-actions .button')).toHaveCount(2);
-  await expect(footer.locator('.footer-top-actions')).not.toContainText('Booking updates');
-  await expect(footer.getByText('Explore profiles, choose a topic, or prepare a private draft before you decide what comes next.', { exact: true })).toBeVisible();
+  await expect(footer.locator('.footer-brand-link')).toHaveAttribute('aria-label', 'Pandit Talk home');
+  await expect(footer.getByText('Guidance, tools, and Pandit profiles in one calm place.', { exact: true })).toBeVisible();
+  await expect(footer.getByRole('heading', { name: 'Choose where to begin.', exact: true })).toHaveCount(0);
+  await expect(footer.locator('.footer-actions .button')).toHaveCount(1);
+  await expect(footer.getByRole('link', { name: 'Prepare a draft', exact: true })).toHaveCount(0);
+});
+
+test('footer balances legal links and groups utility content', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+
+  const footer = page.locator('.site-footer');
+  const legalColumns = await footer.locator('.footer-nav-group--legal .footer-nav__items').evaluate(element => {
+    return getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length;
+  });
+
+  expect(legalColumns).toBe(2);
+  await expect(footer.locator('.footer-utility-row .footer-copyright')).toBeVisible();
+  await expect(footer.locator('.footer-utility-row .footer-back-top')).toBeVisible();
+  await expect(footer.locator('.footer-policy-row .footer-disclaimer')).toBeVisible();
 });
 
 test('footer navigation collapses into readable groups on mobile', async ({ page }) => {
@@ -115,6 +132,9 @@ test('footer navigation collapses into readable groups on mobile', async ({ page
   await firstGroup.locator('summary').click();
   await expect(firstGroup.locator('nav')).toBeVisible();
   await expect(firstGroup.getByRole('link', { name: 'Explore Pandits', exact: true })).toBeVisible();
+  const linkHeights = await firstGroup.locator('nav a').evaluateAll(elements => elements.map(element => parseFloat(getComputedStyle(element).minHeight)));
+  expect(linkHeights.every(height => height >= 44)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
 });
 
 test('footer navigation remains expanded on desktop', async ({ page }) => {
@@ -219,4 +239,133 @@ test('policy pages keep keyboard guidance out of the visible mobile reading flow
 
   await expect(page.locator('#legal-tabs-hint')).toHaveClass(/sr-only/);
   await expect(page.getByText(/Swipe sideways on small screens to see every policy\./)).toHaveCount(0);
+});
+
+test('shared site palette uses a bright gold-led brand across the shell and discovery choices', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  const colors = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement);
+    const primary = document.querySelector('.hero-copy > .button')!;
+    const topic = document.querySelector('.topic-links a')!;
+    const footer = document.querySelector('.site-footer')!;
+
+    return {
+      gold: root.getPropertyValue('--brand-gold').trim(),
+      goldDeep: root.getPropertyValue('--brand-gold-deep').trim(),
+      olive: root.getPropertyValue('--brand-olive-dark').trim(),
+      primary: getComputedStyle(primary).backgroundColor,
+      topic: getComputedStyle(topic).backgroundColor,
+      footer: getComputedStyle(footer).backgroundColor,
+    };
+  });
+
+  expect(colors).toEqual({
+    gold: '#e7b63f',
+    goldDeep: '#865713',
+    olive: '#43543d',
+    primary: 'rgb(231, 182, 63)',
+    topic: 'rgb(255, 241, 203)',
+    footer: 'rgb(246, 239, 222)',
+  });
+});
+
+test('journal opens at its introduction instead of jumping to the empty result', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/articles');
+  await expect(page.locator('.journal-hero h1')).toBeVisible();
+  await page.waitForTimeout(500);
+
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+});
+
+test('journal touch hint stays concise while keyboard instructions remain screen-reader only', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/articles');
+
+  await expect(page.locator('#journal-category-hint')).toHaveClass(/sr-only/);
+  await expect(page.locator('.journal-category-scroll-hint')).toHaveText('Swipe to explore more categories.');
+});
+
+test('empty journal offers three relevant destinations without keyboard-only copy', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/articles');
+
+  const empty = page.locator('.journal-empty');
+  await expect(empty.getByRole('heading', { name: 'No published articles yet.', exact: true })).toBeVisible();
+  await expect(empty.locator('.actions a')).toHaveText([
+    'Browse guidance topics',
+    'Try a free tool',
+    'Explore Pandits →',
+  ]);
+  await expect(empty.getByText(/Press Escape to leave this notice\./)).toHaveCount(0);
+});
+
+test('homepage ambience fades cleanly at container edges on mobile and desktop', async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+
+    const masks = await page.evaluate(() => ({
+      pageGlow: getComputedStyle(document.querySelector('.home-page')!, '::before').maskImage,
+      heroGlow: getComputedStyle(document.querySelector('.hero-aurora')!).maskImage,
+    }));
+
+    expect(masks.pageGlow).toMatch(/to right/);
+    expect(masks.heroGlow).toMatch(/to right/);
+  }
+});
+
+test('tools page keeps keyboard implementation help out of the visible reading flow', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/tools');
+
+  await expect(page.locator('#free-tools-hint')).toHaveText('Free automated tools. No booking required, and nothing here charges your wallet.');
+  await expect(page.locator('#free-tools-hint')).not.toContainText('Arrow keys');
+  await expect(page.locator('#free-tools-hint')).not.toContainText('Skip remains site-content');
+  await expect(page.locator('#free-tools-keyboard-hint')).toHaveClass(/sr-only/);
+  await expect(page.locator('#paused-tools-hint')).not.toContainText('Arrow keys');
+  await expect(page.locator('#paused-tools-keyboard-hint')).toHaveClass(/sr-only/);
+});
+
+test('directory, help search, and sign-in keep keyboard shortcuts out of visible helper copy', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  await page.goto('/pandits');
+  await expect(page.locator('.filters-toolbar > .expert-meta')).not.toContainText('Press Escape');
+
+  await page.goto('/help');
+  await expect(page.locator('.help-search > p[role="status"]')).toHaveText('9 topics · browse or type to filter.');
+  await expect(page.locator('.help-search > p[role="status"]')).not.toContainText('Press Escape');
+
+  await page.goto('/login');
+  await expect(page.locator('#phone-help')).not.toContainText('Press Escape');
+});
+
+test('help availability notice stacks its email form on small screens', async ({ page }) => {
+  for (const width of [390, 768]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto('/help');
+    await expect(page.locator('.offer-notice')).toBeVisible();
+
+    const widths = await page.locator('.offer-notice').evaluate(node => {
+      const notice = node.getBoundingClientRect();
+      const form = node.querySelector('.notify-open-form')!.getBoundingClientRect();
+      return { notice: notice.width, form: form.width, direction: getComputedStyle(node).flexDirection };
+    });
+
+    expect(widths.direction).toBe('column');
+    expect(widths.form).toBeGreaterThan(widths.notice * 0.75);
+  }
+});
+
+test('private guidance draft opens at its introduction before focusing the first step', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/guidance/start');
+  await page.waitForTimeout(600);
+
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page.locator('h1')).toBeVisible();
+  await expect(page.locator('#guidance-step-title')).not.toBeFocused();
 });

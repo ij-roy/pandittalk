@@ -7,7 +7,7 @@ type SpotlightCardProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 /** A restrained local adaptation of the React Bits Spotlight Card pattern. */
-export function SpotlightCard({ children, className = '', spotlightColor = 'rgba(181, 126, 69, .16)', onPointerMove, ...props }: SpotlightCardProps) {
+export function SpotlightCard({ children, className = '', spotlightColor = 'rgba(231, 182, 63, .18)', onPointerMove, ...props }: SpotlightCardProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   function trackPointer(event: PointerEvent<HTMLDivElement>) {

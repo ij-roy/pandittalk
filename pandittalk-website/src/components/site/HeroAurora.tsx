@@ -62,12 +62,13 @@ const fragmentShader = `
     float secondBand = 1.0 - smoothstep(secondCrest - 0.19, secondCrest + 0.1, uv.y);
     float light = 0.5 + 0.5 * sin((uv.x + uv.y * 0.25) * 4.0 + time);
 
-    vec3 warm = mix(vec3(0.48, 0.22, 0.08), vec3(0.86, 0.61, 0.3), uv.x);
-    vec3 sage = mix(vec3(0.26, 0.39, 0.29), vec3(0.69, 0.79, 0.59), uv.x);
-    vec3 color = mix(warm, sage, smoothstep(0.18, 0.82, uv.x));
-    color += vec3(0.1, 0.08, 0.03) * light * landscape;
+    vec3 gold = mix(vec3(0.76, 0.51, 0.12), vec3(1.0, 0.82, 0.3), uv.x);
+    vec3 olive = mix(vec3(0.37, 0.44, 0.31), vec3(0.64, 0.7, 0.48), uv.x);
+    vec3 color = mix(gold, olive, smoothstep(0.12, 0.82, uv.x));
+    color = mix(color, vec3(0.99, 0.93, 0.75), smoothstep(0.72, 1.0, uv.x) * 0.34);
+    color += vec3(0.06, 0.05, 0.02) * light * landscape;
 
-    float alpha = clamp(firstBand * 0.34 + secondBand * 0.18, 0.0, 0.48);
+    float alpha = clamp(firstBand * 0.38 + secondBand * 0.2, 0.0, 0.54);
     alpha *= 0.9 + 0.1 * min(aspect, 1.8);
     gl_FragColor = vec4(color * alpha, alpha);
   }

@@ -25,7 +25,7 @@ export function FooterNav({
   }, []);
 
   return (
-    <details ref={detailsRef} className="footer-nav-group">
+    <details ref={detailsRef} className={`footer-nav-group${label === 'Legal' ? ' footer-nav-group--legal' : ''}`}>
       <summary>{label}</summary>
       <nav
         aria-label={label}
@@ -52,9 +52,11 @@ export function FooterNav({
       >
         <p className="sr-only" id={hintId}>Arrow keys move between {label} links. Home and End jump to the first or last. Escape blurs the focused link. Skip to content still targets site-content.</p>
         <h3>{label}</h3>
-        {links.map(([href, text]) => (
-          <Link key={`${href}-${text}`} href={href}>{text}</Link>
-        ))}
+        <div className="footer-nav__items">
+          {links.map(([href, text]) => (
+            <Link key={`${href}-${text}`} href={href}>{text}</Link>
+          ))}
+        </div>
       </nav>
     </details>
   );

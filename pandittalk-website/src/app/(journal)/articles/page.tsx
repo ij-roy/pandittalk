@@ -79,9 +79,10 @@ export default async function ArticlesPage({
 
   return (
     <main id="main-content" className="page journal-page">
+      {selected ? <FocusMainHeading id="journal-page-title" /> : null}
       <header className="journal-hero">
         <p className="eyebrow">The Pandit Talk Journal</p>
-        <h1>
+        <h1 id="journal-page-title">
           {selected
             ? <>{CATEGORY_LABELS[selected]}.<br />A thoughtful next step.</>
             : <>A little perspective.<br />A thoughtful next step.</>}
@@ -95,26 +96,19 @@ export default async function ArticlesPage({
       <JournalCategoryNav selected={selected} />
       {articles.length === 0 ? (
         <EscapeBlurNotice className="journal-empty panel stack" aria-label="Empty journal" aria-live="polite">
-          <FocusMainHeading id="journal-empty-title" />
           <h2 id="journal-empty-title" tabIndex={-1}>
             {selected ? 'No articles in this category yet.' : 'No published articles yet.'}
           </h2>
           <p>
             {selected
-              ? `Nothing is published under ${CATEGORY_LABELS[selected] || 'this category'} right now. Browse another topic, try a free tool, or prepare a private draft — new No Timer bookings are not open yet. Press Escape to leave this notice.`
-              : 'The journal has no published pieces yet. You can still explore our approach, try free tools, or prepare a draft. New No Timer bookings remain closed. Press Escape to leave this notice.'}
+              ? `There are no articles in ${CATEGORY_LABELS[selected] || 'this category'} right now. Browse another topic or try a free reflection tool.`
+              : 'There are no published pieces right now. Browse practical guidance or try a free reflection tool instead.'}
           </p>
-          <p className="sr-only" id="journal-empty-hint">Arrow keys move between empty-journal recovery links. Escape blurs. Skip remains site-content.</p>
+          <p className="sr-only" id="journal-empty-hint">Arrow keys move between these suggestions. Escape leaves this notice.</p>
           <LinkKeyboardGroup className="actions" aria-label="Empty journal next steps" aria-describedby="journal-empty-hint">
-            <Link className="button" href={selected ? '/articles' : '/our-approach'}>
-              {selected ? 'View all articles' : 'Explore our approach'}
-            </Link>
-            <Link className="button secondary" href="/guidance">Browse guidance topics</Link>
-            <Link className="button secondary" href="/pandits">Explore Pandits</Link>
+            <Link className="button" href="/guidance">Browse guidance topics</Link>
             <Link className="button secondary" href="/tools">Try a free tool</Link>
-            <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
-            <Link className="text-link" href="/how-it-works#booking-availability-how">Booking updates →</Link>
-            <Link className="text-link" href="/editorial-policy">Editorial policy →</Link>
+            <Link className="text-link" href="/pandits">Explore Pandits →</Link>
           </LinkKeyboardGroup>
         </EscapeBlurNotice>
       ) : (

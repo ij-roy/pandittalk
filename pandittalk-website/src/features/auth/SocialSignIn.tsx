@@ -73,15 +73,6 @@ export function SocialSignIn({ consent, disabled = false, onResult }: {
     }
   }, [consent, failed, message]);
 
-  const prevConsent = useRef(consent);
-  useEffect(() => {
-    const turnedOn = consent && !prevConsent.current;
-    prevConsent.current = consent;
-    if (!turnedOn) return;
-    if (!config?.googleClientId && !(config?.appleClientId && config?.appleRedirectUri)) return;
-    announce('Social sign-in is now available. Phone Send code still works without this checkbox.');
-  }, [consent, config?.googleClientId, config?.appleClientId, config?.appleRedirectUri]);
-
   useEffect(() => {
     if (!consent || disabled || !config?.googleClientId || !googleBox.current) {
       googleBox.current?.replaceChildren();
@@ -145,13 +136,15 @@ export function SocialSignIn({ consent, disabled = false, onResult }: {
   if (!hasGoogle && !hasApple) return message ? <p role={failed ? 'alert' : 'status'} tabIndex={-1} ref={messageRef}>{message}</p> : null;
   return <div className="stack" aria-busy={busy || undefined}>
     <p className="eyebrow">Or continue with</p>
-    {!consent && <p className="expert-meta" id="social-consent-help">Accept the age, terms and privacy statement above to enable Google or Apple. Phone <strong>Send code</strong> works without this checkbox.</p>}
-    <p className="sr-only" id="social-keys-hint">Arrow keys move between Apple sign-in when shown. Escape blurs. Consent never blocks Send code.</p>
-    <LinkKeyboardGroup className="actions" aria-label="Apple sign-in" aria-describedby={[!consent ? 'social-consent-help' : '', 'social-keys-hint'].filter(Boolean).join(' ') || undefined}>
+    <p className="expert-meta" id="social-consent-help" aria-live="polite" aria-atomic="true">{consent ? 'Consent accepted. Google and Apple are enabled. Phone Send code remains available without this checkbox.' : 'Accept the age, terms and privacy statement above to enable Google or Apple. Phone Send code works without this checkbox.'}</p>
+    <p className="sr-only" id="social-keys-hint">Arrow keys move between Google and Apple sign-in when shown. Escape blurs. Consent never blocks Send code.</p>
+    <LinkKeyboardGroup className="actions" aria-label="Social sign-in options" aria-describedby={[!consent ? 'social-consent-help' : '', 'social-keys-hint'].filter(Boolean).join(' ') || undefined}>
       {hasApple && <button type="button" className="button secondary" disabled={busy || disabled || !consent} aria-busy={busy || undefined} aria-describedby={!consent ? 'social-consent-help' : undefined} onClick={() => void start('apple')}>{busy ? 'Continuing with Apple…' : 'Continue with Apple'}</button>}
+      {hasGoogle && <div className="social-google-slot">
+        {(!consent || disabled) && <button type="button" className="button secondary social-google-placeholder" disabled aria-describedby={!consent ? 'social-consent-help' : undefined}>Sign in with Google</button>}
+        <div ref={googleBox} className="social-google-widget" hidden={!consent || disabled} role="group" aria-label="Google sign-in" />
+      </div>}
     </LinkKeyboardGroup>
-    <div ref={googleBox} hidden={!consent || disabled || !hasGoogle} role="group" aria-label="Google sign-in" />
-    {hasGoogle && consent && !disabled && <p className="expert-meta">Use the Google button below after accepting the statement.</p>}
     {message ? (
       <p
         ref={messageRef}

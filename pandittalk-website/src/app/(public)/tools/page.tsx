@@ -41,9 +41,10 @@ export default function Page() {
       <section className="stack" aria-labelledby="free-tools-title">
         <div>
           <h2 id="free-tools-title">Start here</h2>
-          <p className="expert-meta" id="free-tools-hint">Free automated tools. No booking required. Nothing here charges your wallet. Arrow keys move between tools; Escape blurs. Skip remains site-content.</p>
+          <p className="expert-meta" id="free-tools-hint">Free automated tools. No booking required, and nothing here charges your wallet.</p>
+          <p className="sr-only" id="free-tools-keyboard-hint">Arrow keys move between tools. Escape blurs the focused tool. Skip remains site-content.</p>
         </div>
-        <LinkKeyboardGroup className="grid" role="list" aria-label="Free astrology tools" aria-describedby="free-tools-hint">
+        <LinkKeyboardGroup className="grid" role="list" aria-label="Free astrology tools" aria-describedby="free-tools-hint free-tools-keyboard-hint">
           {freeTools.map(([route, title, description]) => (
             <Link className="panel tool-card" role="listitem" key={route} href={'/tools/' + route} aria-label={`${title}: free to try`}>
               <p className="info-label">Free to try</p>
@@ -58,9 +59,10 @@ export default function Page() {
       <section className="stack" aria-labelledby="paused-tools-title">
         <div>
           <h2 id="paused-tools-title">Detailed reports</h2>
-          <p className="expert-meta" id="paused-tools-hint">New purchases are paused. You can still open reports you already own after signing in. Arrow keys move between report cards; Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
+          <p className="expert-meta" id="paused-tools-hint">New purchases are paused. Existing reports remain available after signing in.</p>
+          <p className="sr-only" id="paused-tools-keyboard-hint">Arrow keys move between report cards. Escape blurs the focused report. Skip remains site-content.</p>
         </div>
-        <LinkKeyboardGroup className="grid" role="list" aria-label="Paused detailed reports" aria-describedby="paused-tools-hint">
+        <LinkKeyboardGroup className="grid" role="list" aria-label="Paused detailed reports" aria-describedby="paused-tools-hint paused-tools-keyboard-hint">
           {pausedTools.map(tool => (
             <Link className="panel tool-card tool-card-paused" role="listitem" key={tool.route} href={'/tools/' + tool.route} aria-label={`${tool.title}: new purchases paused`}>
               <p className="info-label">Purchases paused</p>

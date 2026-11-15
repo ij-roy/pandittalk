@@ -166,9 +166,12 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
             ].filter(Boolean).join(' · ')}
           </p>
         )}
-        {!filtersOpen && <p className="expert-meta" id={`${filtersId}-hint`}>Tap Filter &amp; sort to search by name, topic or language. Press Escape in search to clear, Escape on a filter select to reset it, or Escape while filters are open to hide them and return focus to this control.</p>}
+        {!filtersOpen && <>
+          <p className="expert-meta" id={`${filtersId}-hint`}>Use Filter &amp; sort to search by name, topic or language.</p>
+          <p className="sr-only" id={`${filtersId}-hint-keyboard`}>Press Escape in search to clear it, Escape on a filter select to reset it, or Escape while filters are open to hide them and return focus to the filter control.</p>
+        </>}
       </div>
-      <div className={`filters${filtersOpen ? ' is-open' : ''}`} id={filtersId} aria-describedby={!filtersOpen ? `${filtersId}-hint` : undefined}>
+      <div className={`filters${filtersOpen ? ' is-open' : ''}`} id={filtersId} aria-describedby={!filtersOpen ? `${filtersId}-hint ${filtersId}-hint-keyboard` : undefined}>
         {filterControls}
         <p className="sr-only" id="directory-filters-panel-hint">Arrow keys move between Clear filters, free tools and draft. Escape blurs. Skip remains site-content.</p>
         <LinkKeyboardGroup className="filters-actions actions" aria-label="Directory filter panel actions" aria-describedby="directory-filters-panel-hint">

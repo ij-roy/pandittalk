@@ -45,8 +45,8 @@ export default function GlobalError({
 
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif', background: '#f8f5ee', color: '#292e28' }}>
-        <style>{`a:focus-visible,button:focus-visible,h1:focus-visible{outline:3px solid #974923;outline-offset:4px}`}</style>
+      <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif', background: '#fffaf1', color: '#292e28' }}>
+        <style>{`a:focus-visible,button:focus-visible,h1:focus-visible{outline:3px solid #865713;outline-offset:4px}`}</style>
         <main style={{ maxWidth: 560, margin: '0 auto', padding: '48px 24px' }}>
           <p style={{ letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: 12, margin: 0 }}>Something went wrong</p>
           <h1 id="global-error-title" tabIndex={-1} style={{ fontSize: '1.75rem', lineHeight: 1.25, margin: '8px 0 12px' }} onKeyDown={event => {
@@ -100,7 +100,7 @@ export default function GlobalError({
                   setResetting(false);
                 }
               }}
-              style={{ minHeight: 44, padding: '10px 18px', borderRadius: 8, border: 'none', background: '#292e28', color: '#f8f5ee', fontWeight: 600, cursor: resetting ? 'wait' : 'pointer', opacity: resetting ? 0.85 : 1 }}
+              style={{ minHeight: 44, padding: '10px 18px', borderRadius: 8, border: 'none', background: '#e7b63f', color: '#292e28', fontWeight: 600, cursor: resetting ? 'wait' : 'pointer', opacity: resetting ? 0.85 : 1 }}
             >
               {resetting ? 'Retrying…' : 'Try again'}
             </button>
@@ -113,13 +113,13 @@ export default function GlobalError({
                 }
                 window.location.assign('/');
               }}
-              style={{ minHeight: 44, padding: '10px 18px', borderRadius: 8, border: '1px solid #292e28', background: 'transparent', color: '#292e28', fontWeight: 600, cursor: 'pointer' }}
+              style={{ minHeight: 44, padding: '10px 18px', borderRadius: 8, border: '1px solid #43543d', background: 'transparent', color: '#43543d', fontWeight: 600, cursor: 'pointer' }}
             >
               {hasHistory ? 'Previous page' : 'Go home'}
             </button>
             <a
               href="/"
-              style={{ minHeight: 44, padding: '10px 18px', borderRadius: 8, border: '1px solid #292e28', color: '#292e28', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', fontWeight: 600 }}
+              style={{ minHeight: 44, padding: '10px 18px', borderRadius: 8, border: '1px solid #43543d', color: '#43543d', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', fontWeight: 600 }}
             >
               Go to home
             </a>
