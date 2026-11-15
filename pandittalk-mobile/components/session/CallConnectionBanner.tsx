@@ -2,61 +2,18 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { GOLD, SESSION_RED, WHITE } from '@/constants/Colors';
-import { addLocalSignalListener, type LocalSignalLevel } from 'expo-pandit-chime';
-
-type ShownLevel = LocalSignalLevel | 'unknown';
-
-function signalCopy(level: LocalSignalLevel): { title: string; detail: string | null } {
-  if (level === 'high') {
-    return { title: 'Your connection is good', detail: null };
-  }
-  if (level === 'low') {
-    return {
-      title: 'Your connection is weak',
-      detail: 'Audio may cut out because of your network, not the pandit.',
-    };
-  }
-  return {
-    title: 'Your connection dropped',
-    detail: 'This is your network. The pandit is not the cause.',
-  };
-}
-
-/** Chime's local signal, shown only while the call media is up. */
+/** Browser/native WebRTC connection status, shown only while call media is up. */
 export function CallConnectionBanner({ active }: { active: boolean }) {
-  const [level, setLevel] = useState<ShownLevel>('unknown');
-
-  useEffect(() => {
-    if (!active) {
-      setLevel('unknown');
-      return;
-    }
-    let subscription: { remove: () => void } | null = null;
-    try {
-      subscription = addLocalSignalListener((payload) => {
-        if (payload.level === 'high' || payload.level === 'low' || payload.level === 'none') {
-          setLevel(payload.level);
-        }
-      });
-    } catch {
-      setLevel('unknown');
-    }
-    return () => subscription?.remove();
-  }, [active]);
-
-  if (!active || level === 'unknown') return null;
-
-  const copy = signalCopy(level);
-  const weak = level !== 'high';
+  if (!active) return null;
 
   return (
     <View
-      style={[styles.banner, weak ? styles.bannerWeak : styles.bannerGood]}
+      style={[styles.banner, styles.bannerGood]}
       accessibilityRole="text"
       accessibilityLiveRegion="polite"
     >
-      <Text style={[styles.title, weak ? styles.titleWeak : styles.titleGood]}>{copy.title}</Text>
-      {copy.detail ? <Text style={styles.detail}>{copy.detail}</Text> : null}
+      <Text style={[styles.title, styles.titleGood]}>WebRTC media is active</Text>
+      <Text style={styles.detail}>Audio and video use the direct peer connection.</Text>
     </View>
   );
 }

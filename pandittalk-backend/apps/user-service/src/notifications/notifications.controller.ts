@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { IsIn, IsString, MaxLength, MinLength } from 'class-validator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -35,9 +45,7 @@ export class NotificationsController {
   ) {}
 
   @Get()
-  findAll(
-    @CurrentUser('sub') userId: string,
-  ): Promise<NotificationPayload[]> {
+  findAll(@CurrentUser('sub') userId: string): Promise<NotificationPayload[]> {
     return this.notificationsService.findAllForUser(userId);
   }
 

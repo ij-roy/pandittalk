@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getErrorMessage, getUserDetailsForBooking, joinAudioSession } from '../lib/api';
 import { chatSocket } from '../lib/chatSocket';
-import { chimeAudio } from '../lib/chimeAudio';
+import { webrtcAudio } from '../lib/webrtcAudio';
 import { formatTimer } from '../lib/format';
 import { usePanditStore } from '../store/usePanditStore';
 import styles from './AudioSession.module.css';
@@ -64,7 +64,7 @@ export function AudioSession() {
     sessionEndedRef.current = true;
     setConnectionStatusSafe('Session ended');
     window.alert('Session ended');
-    await chimeAudio.stopSession();
+    await webrtcAudio.stopSession();
     chatSocket.removeAllListeners();
     navigate('/dashboard?sessionCompleted=1', { replace: true });
   }, [navigate, setConnectionStatusSafe]);
@@ -74,7 +74,7 @@ export function AudioSession() {
       if (sessionEndedRef.current) return;
       sessionEndedRef.current = true;
       window.alert(message);
-      void chimeAudio.stopSession();
+      void webrtcAudio.stopSession();
       chatSocket.removeAllListeners();
       navigate('/dashboard', { replace: true });
     },
@@ -85,7 +85,7 @@ export function AudioSession() {
     if (!bookingId || sessionEndedRef.current) return;
     if (!window.confirm('Leave this session? The seeker stays. Only they can end it.')) return;
     chatSocket.leaveAudioSession(bookingId);
-    await chimeAudio.stopSession();
+    await webrtcAudio.stopSession();
     chatSocket.removeAllListeners();
     navigate('/dashboard', { replace: true });
   }, [bookingId, navigate]);
@@ -97,7 +97,7 @@ export function AudioSession() {
     micWarningTimeoutRef.current = window.setTimeout(() => {
       if (micEverActiveRef.current || isMutedRef.current || !sessionMediaActiveRef.current) return;
       setMicStatus('error');
-      setMicStatusMessage('Chime is not sending audio — check mic selection in browser settings');
+      setMicStatusMessage('WebRTC is not sending audio — check microphone permissions');
     }, 5000);
   }, []);
 
@@ -106,7 +106,7 @@ export function AudioSession() {
     setIsMuted((prev) => {
       const next = !prev;
       isMutedRef.current = next;
-      chimeAudio.setMuted(next);
+      webrtcAudio.setMuted(next);
       if (next) {
         setMicStatus('connected');
         setMicStatusMessage('Microphone muted');
@@ -126,7 +126,7 @@ export function AudioSession() {
   }, [sessionMediaActive]);
 
   useEffect(() => {
-    chimeAudio.setMicActivityHandler((active) => {
+    webrtcAudio.setMicActivityHandler((active) => {
       if (isMutedRef.current || !sessionMediaActiveRef.current) return;
       if (active) {
         micEverActiveRef.current = true;
@@ -150,7 +150,7 @@ export function AudioSession() {
       });
     });
     return () => {
-      chimeAudio.setMicActivityHandler(null);
+      webrtcAudio.setMicActivityHandler(null);
       if (micActivityRafRef.current !== null) {
         window.cancelAnimationFrame(micActivityRafRef.current);
         micActivityRafRef.current = null;
@@ -208,10 +208,13 @@ export function AudioSession() {
           setUserName(details.userName?.trim() || 'User');
         }
 
-        const { meeting, attendee } = await joinAudioSession(bookingId);
+        const session = await joinAudioSession(bookingId);
         if (cancelled) return;
 
-        await chimeAudio.startSession(meeting, attendee);
+        await webrtcAudio.startSession(session);
+        webrtcAudio.setSignalSender((signal) =>
+          chatSocket.sendMediaSignal(bookingId, 'audio', signal),
+        );
         if (cancelled) return;
 
         if (!sessionActiveRef.current) {
@@ -240,7 +243,7 @@ export function AudioSession() {
             setStartsAt(null);
             setConnectionStatusSafe('Waiting for user');
             setTimerLabel('--:--');
-            chimeAudio.enterWaitingRoomMode();
+            webrtcAudio.enterWaitingRoomMode();
           },
           onWaitingForStart: ({ startsAt: startsAtIso }) => {
             const startMs = Date.parse(startsAtIso);
@@ -254,7 +257,7 @@ export function AudioSession() {
             setWaitingForStart(true);
             setStartsAt(startsAtIso);
             setConnectionStatusSafe('User is ready — waiting for start time');
-            chimeAudio.enterWaitingRoomMode();
+            webrtcAudio.enterWaitingRoomMode();
             setTimerLabel(
               startTimeMsRef.current === null
                 ? '--:--'
@@ -274,10 +277,10 @@ export function AudioSession() {
             setWaitingForStart(false);
             setStartsAt(null);
             setConnectionStatusSafe('Connected');
-            chimeAudio.enableSessionMedia();
+            webrtcAudio.enableSessionMedia();
             isMutedRef.current = false;
             setIsMuted(false);
-            chimeAudio.setMuted(false);
+            webrtcAudio.setMuted(false);
             scheduleMicPublishWarning();
             setMicStatusMessage('Microphone connected — speak to test');
             setTimerLabel(
@@ -310,6 +313,12 @@ export function AudioSession() {
               setConnectionStatusSafe('Connected');
             }
           },
+          onMediaPeerReady: ({ initiator }) => {
+            void webrtcAudio.handlePeerReady(session, initiator);
+          },
+          onMediaSignal: (signal) => {
+            void webrtcAudio.handleSignal(session, signal);
+          },
           onSessionGraceEnded: ({ message }) => {
             handleGraceEnded(message);
           },
@@ -338,7 +347,8 @@ export function AudioSession() {
       if (bookingId && !sessionEndedRef.current) {
         chatSocket.leaveAudioSession(bookingId);
       }
-      void chimeAudio.stopSession();
+      webrtcAudio.setSignalSender(null);
+      void webrtcAudio.stopSession();
       chatSocket.removeAllListeners();
     };
   }, [accessToken, bookingId, handleGraceEnded, handleSessionEnded, navigate, scheduleMicPublishWarning, setConnectionStatusSafe]);

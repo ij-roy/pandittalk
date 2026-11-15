@@ -1,26 +1,34 @@
-import { useEffect, type ReactNode } from 'react';
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
-import { NotificationProvider } from './components/NotificationProvider';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { bootstrapAuthSession } from './lib/api';
-import { ArticleEditor } from './pages/ArticleEditor';
-import { ArticlePerformance } from './pages/ArticlePerformance';
-import { ArticlesHome } from './pages/ArticlesHome';
-import { AudioSession } from './pages/AudioSession';
-import { ChatSession } from './pages/ChatSession';
-import { Clients } from './pages/Clients';
-import { Dashboard } from './pages/Dashboard';
-import { Login } from './pages/Login';
-import { NotificationsPage } from './pages/NotificationsPage';
-import { Profile } from './pages/Profile';
-import { VideoSession } from './pages/VideoSession';
-import { AccountDeletion } from './pages/legal/AccountDeletion';
-import { ContactUs } from './pages/legal/ContactUs';
-import { Disclaimer } from './pages/legal/Disclaimer';
-import { PrivacyPolicy } from './pages/legal/PrivacyPolicy';
-import { RefundPolicy } from './pages/legal/RefundPolicy';
-import { Terms } from './pages/legal/Terms';
-import { usePanditStore } from './store/usePanditStore';
+import { useEffect, type ReactNode } from "react";
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+} from "react-router-dom";
+import { NotificationProvider } from "./components/NotificationProvider";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { bootstrapAuthSession } from "./lib/api";
+import { ArticleEditor } from "./pages/ArticleEditor";
+import { ArticlePerformance } from "./pages/ArticlePerformance";
+import { ArticlesHome } from "./pages/ArticlesHome";
+import { AudioSession } from "./pages/AudioSession";
+import { ChatSession } from "./pages/ChatSession";
+import { Clients } from "./pages/Clients";
+import { Dashboard } from "./pages/Dashboard";
+import { Login } from "./pages/Login";
+import { NotificationsPage } from "./pages/NotificationsPage";
+import { Profile } from "./pages/Profile";
+import { VideoSession } from "./pages/VideoSession";
+import { AdminHome } from "./pages/admin/AdminHome";
+import { AdminResourcePage } from "./pages/admin/AdminResourcePage";
+import { AccountDeletion } from "./pages/legal/AccountDeletion";
+import { ContactUs } from "./pages/legal/ContactUs";
+import { Disclaimer } from "./pages/legal/Disclaimer";
+import { PrivacyPolicy } from "./pages/legal/PrivacyPolicy";
+import { RefundPolicy } from "./pages/legal/RefundPolicy";
+import { Terms } from "./pages/legal/Terms";
+import { usePanditStore } from "./store/usePanditStore";
 
 function NotificationLayout() {
   return (
@@ -42,6 +50,11 @@ function AuthBootstrap({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function RoleLanding() {
+  const role = usePanditStore((state) => state.role);
+  return <Navigate to={role === "ADMIN" ? "/admin" : "/dashboard"} replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -54,21 +67,34 @@ export default function App() {
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/account-deletion" element={<AccountDeletion />} />
-          <Route element={<ProtectedRoute />}>
+          <Route element={<ProtectedRoute allowedRoles={["PANDIT"]} />}>
             <Route element={<NotificationLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/articles" element={<ArticlesHome />} />
-              <Route path="/articles/performance" element={<ArticlePerformance />} />
+              <Route
+                path="/articles/performance"
+                element={<ArticlePerformance />}
+              />
               <Route path="/articles/:id" element={<ArticleEditor />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/clients" element={<Clients />} />
-              <Route path="/session/audio/:bookingId" element={<AudioSession />} />
-              <Route path="/session/video/:bookingId" element={<VideoSession />} />
+              <Route
+                path="/session/audio/:bookingId"
+                element={<AudioSession />}
+              />
+              <Route
+                path="/session/video/:bookingId"
+                element={<VideoSession />}
+              />
               <Route path="/session/:bookingId" element={<ChatSession />} />
             </Route>
           </Route>
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+            <Route path="/admin" element={<AdminHome />} />
+            <Route path="/admin/:resource" element={<AdminResourcePage />} />
+          </Route>
+          <Route path="*" element={<RoleLanding />} />
         </Routes>
       </AuthBootstrap>
     </BrowserRouter>

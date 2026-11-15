@@ -21,7 +21,7 @@ Source of truth for Expo/EAS iOS builds:
 | User ID | Account |
 | Date of birth | Astrology tools + 18+ gate |
 | Photos or videos | Profile avatar, palm upload |
-| Audio data | Live A/V consultations (Chime) |
+| Audio data | Live A/V consultations (WebRTC) |
 | Purchase history | Wallet / Razorpay |
 | Other user content | Chat, birth place, reviews |
 | Device ID | Push token registration (when enabled) |
@@ -51,7 +51,7 @@ Use the same inventory when filling **App Privacy**. For each type, mark:
 | Razorpay | Payment / purchase history | Checkout |
 | Google Sign-In | Email, name, user id | Optional login |
 | Sign in with Apple | Email/relay, user id | Required if Google offered on iOS |
-| AWS Chime | Audio/video session media | Consultations |
+| WebRTC/STUN/TURN | Audio/video session connectivity | Consultations |
 | Expo / APNs | Device push token | Session reminders when remote push ships |
 | Firebase (config present) | None for analytics today | Confirm no Analytics SDK enabled before ASC answers |
 

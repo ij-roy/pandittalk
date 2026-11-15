@@ -1,13 +1,24 @@
-export type SenderRole = 'user' | 'pandit';
+export type SenderRole = "user" | "pandit";
+
+export type UserRole = "CUSTOMER" | "PANDIT" | "ADMIN";
 
 export interface AuthUserPayload {
   id: string;
   phoneNumber: string;
   name: string | null;
+  role: UserRole;
   walletBalance: string;
   coinBalance: number;
   createdAt: string;
   profileCompleted: boolean;
+}
+
+export interface CurrentUser {
+  id: string;
+  phoneNumber: string;
+  name: string | null;
+  role: UserRole;
+  panditId: string | null;
 }
 
 export interface VerifyOtpResponse {
@@ -97,16 +108,16 @@ export interface SocketErrorPayload {
 }
 
 export type NotificationType =
-  | 'booking_confirmed'
-  | 'session_reminder_30'
-  | 'session_reminder_10'
-  | 'session_reminder_5'
-  | 'session_started'
-  | 'session_ended'
-  | 'new_message'
-  | 'chat_now_accepted'
-  | 'chat_now_missed'
-  | 'new_booking';
+  | "booking_confirmed"
+  | "session_reminder_30"
+  | "session_reminder_10"
+  | "session_reminder_5"
+  | "session_started"
+  | "session_ended"
+  | "new_message"
+  | "chat_now_accepted"
+  | "chat_now_missed"
+  | "new_booking";
 
 export interface Notification {
   id: string;

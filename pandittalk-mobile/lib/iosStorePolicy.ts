@@ -20,7 +20,7 @@ export function canPurchaseDigitalTools(): boolean {
 }
 
 /**
- * Audio and video consultations use the native Chime bridge on iOS and Android.
+ * Audio and video consultations use native WebRTC on iOS and Android.
  */
 export function canBookAvSessions(): boolean {
   return true;
@@ -35,10 +35,10 @@ export const IOS_DIGITAL_TOOLS_UNAVAILABLE_TITLE = 'Not available on iPhone';
 export const IOS_DIGITAL_TOOLS_UNAVAILABLE_MESSAGE =
   'Paid digital reports are not available for purchase in the iPhone app. You can still use free tools or book a live chat with a pandit.';
 
-export const IOS_AV_UNAVAILABLE_TITLE = 'Calls coming soon on iPhone';
+export const IOS_AV_UNAVAILABLE_TITLE = 'Calls unavailable';
 
 export const IOS_AV_UNAVAILABLE_MESSAGE =
-  'Audio and video calls are not available on iPhone yet. Please use Chat Now for a live consultation.';
+  'Audio and video calls require a supported device with microphone/camera permissions and an active WebRTC connection.';
 
 export const CLIENT_PLATFORM_HEADER = 'X-Client-Platform';
 

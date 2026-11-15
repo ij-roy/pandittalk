@@ -4,6 +4,8 @@ import { UserServiceController } from './user-service.controller';
 import { UserServiceService } from './user-service.service';
 import { ConfigService } from '@nestjs/config';
 import { AVATAR_STORAGE } from './avatar/avatar-storage.interface';
+import { RedisClientService } from './redis/redis-client.service';
+import { CHAT_STORAGE } from './chat/chat-storage.interface';
 
 describe('UserServiceController', () => {
   let userServiceController: UserServiceController;
@@ -11,6 +13,7 @@ describe('UserServiceController', () => {
   beforeEach(async () => {
     const prismaMock = {
       user: { update: jest.fn() },
+      $queryRaw: jest.fn().mockResolvedValue([{ '?column?': 1 }]),
     } as unknown as PrismaService;
 
     const app: TestingModule = await Test.createTestingModule({
@@ -18,7 +21,14 @@ describe('UserServiceController', () => {
       providers: [
         UserServiceService,
         { provide: PrismaService, useValue: prismaMock },
-        { provide: ConfigService, useValue: { get: jest.fn((_key: string, fallback?: unknown) => fallback) } },
+        { provide: RedisClientService, useValue: { ping: jest.fn() } },
+        { provide: CHAT_STORAGE, useValue: { ping: jest.fn() } },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((_key: string, fallback?: unknown) => fallback),
+          },
+        },
         { provide: AVATAR_STORAGE, useValue: {} },
       ],
     }).compile();
@@ -41,6 +51,16 @@ describe('UserServiceController', () => {
       expect(body.ios.minSupportedVersion).toBe('1.0.0');
       expect(body.ios.latestVersion).toBe('1.0.9');
       expect(body.android.storeUrl).toContain('play.google.com');
+    });
+
+    it('should report dependency readiness', async () => {
+      const body = await userServiceController.getReadiness();
+      expect(body.status).toBe('ready');
+      expect(body.checks).toEqual({
+        postgres: 'ok',
+        redis: 'ok',
+        mongodb: 'ok',
+      });
     });
   });
 });

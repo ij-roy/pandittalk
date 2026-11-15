@@ -64,7 +64,9 @@ type ArticleWithAuthor = Article & { authorPandit: Pandit | null };
 export class ArticlesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(query: ListArticlesQueryDto): Promise<PaginatedArticlesResponse> {
+  async findAll(
+    query: ListArticlesQueryDto,
+  ): Promise<PaginatedArticlesResponse> {
     await this.promoteDueScheduled();
     const limit = query.limit ?? 10;
     const now = new Date();

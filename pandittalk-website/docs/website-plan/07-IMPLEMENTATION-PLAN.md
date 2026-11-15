@@ -4,9 +4,9 @@
 
 **Goal:** Deliver the entire customer app experience in the existing website, alongside distinctive public, educational, support and legal pages.
 
-**Architecture:** Extend Next.js App Router; use the current NestJS backend as the shared system of record. Add browser adapters for auth, Razorpay, Socket.IO and Chime. Separate public rendering from authorized customer data.
+**Architecture:** Extend Next.js App Router; use the current NestJS backend as the shared system of record. Add browser adapters for auth, Razorpay, Socket.IO and WebRTC. Separate public rendering from authorized customer data.
 
-**Tech stack:** Existing Next.js/React/TypeScript/Tailwind; browser Socket.IO and Chime where validated; Razorpay web checkout; proposed Playwright and TypeScript contract tests.
+**Tech stack:** Existing Next.js/React/TypeScript/Tailwind; browser Socket.IO and WebRTC; Razorpay web checkout; proposed Playwright and TypeScript contract tests.
 
 **Spec:** [Parity](02-APP-PARITY.md), [Pages](03-SITEMAP-AND-PAGES.md), [Brand](04-BRAND-AND-EXPERIENCE.md), [Architecture](05-ARCHITECTURE-AND-CONTRACTS.md), [Legal](06-LEGAL-AND-OPERATIONS.md).
 
@@ -136,11 +136,11 @@ Gate: no fake messages, hidden fixed-minute cutoff or client-calculated refunds.
 
 ## Task 8 — Browser audio and video
 
-Files: create `src/features/sessions/chime/{client,devices}.ts`, `AudioRoom.tsx`, `VideoRoom.tsx`, `DeviceCheck.tsx`; audio/video routes; `tests/e2e/media.spec.ts`.
+Files: create `src/features/sessions/webrtc.ts`, `AudioRoom.tsx`, `VideoRoom.tsx`, `DeviceCheck.tsx`; audio/video routes; `tests/e2e/media.spec.ts`.
 
 Consumes: Task 7 state model and D04. Produces: browser↔Pandit audio/video with identical booking/refund lifecycle.
 
-- [ ] Prove Chime browser interoperability using test meeting credentials on staging.
+- [x] Prove local browser WebRTC interoperability through the API/WebSocket front door; repeat through the public tunnel before presentation.
 - [ ] Build user-initiated permission/device preflight and waiting room.
 - [ ] Implement mute/camera/device/tile states, reconnect and server-authorized no-timer lifecycle.
 - [ ] Distinguish leave/rejoin from end and policy-backed grace cancellation; release all tracks/listeners on exit.

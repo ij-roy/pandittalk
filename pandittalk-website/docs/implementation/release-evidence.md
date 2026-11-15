@@ -30,13 +30,13 @@ Date: 10 September 2026
 
 - D01 browser OAuth credentials and redirect origins must be configured for Google/Apple.
 - D02/D03 approved commercial catalogue, taxes, entitlement scope, idempotent purchase verification and staging Razorpay keys are required before enabling recharge.
-- D04 browser Chime interoperability with the Pandit dashboard, WSS/CORS and short-lived session bootstrap must be verified in staging before enabling audio/video.
+- D04 browser WebRTC interoperability with the Pandit dashboard, WSS/CORS and short-lived session bootstrap must be verified through the public tunnel before enabling the live production link. Local two-peer audio/video signaling is verified.
 - D05 server notification preferences are now present and the account UI persists them. A real outbound delivery provider and per-channel operational policy still require staging configuration.
 - D06 durable support/practitioner application intake is now present in the user-service database. Support operations still need a dashboard/work queue and notification routing.
 - D07 verified phone-change flow is now present (SMS challenge, attempt limits, session revocation). SMS credentials/templates and staging verification remain manual.
 - D08 retention/export/consent owner decisions are required before publishing stronger privacy claims.
 - D10 private saved-context persistence, edit/delete, per-booking recipient sharing and practitioner access control are implemented in the user-service contract and customer UI. Retention/export policy and practitioner dashboard presentation still require owner decisions.
-- D11 No Timer has an explicit persisted model and disabled-by-default policy gate, but the actual duration-free queue, Chime TTL, fair-use/capacity rules, completion semantics and approved pricing are not yet supplied. The website blocks new No Timer creation with an explicit no-charge response; it does not hide a legacy timer or silently fall back to timed pricing. Existing legacy bookings remain readable/resumable under their stored terms.
+- D11 No Timer has an explicit persisted model and disabled-by-default policy gate, but the actual duration-free queue, WebRTC session TTL, fair-use/capacity rules, completion semantics and approved pricing are not yet supplied. The website blocks new No Timer creation with an explicit no-charge response; it does not hide a legacy timer or silently fall back to timed pricing. Existing legacy bookings remain readable/resumable under their stored terms.
 
 ## Release gate
 

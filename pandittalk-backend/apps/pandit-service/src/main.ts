@@ -5,9 +5,9 @@ import { PanditServiceModule } from './pandit-service.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(PanditServiceModule);
-  
+
   // Optional but recommended: Enable CORS if you run into fetching issues later
-  app.enableCors(); 
+  app.enableCors();
 
   app.useGlobalPipes(
     new ValidationPipe({

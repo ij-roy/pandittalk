@@ -13,6 +13,7 @@ import {
   GOLD,
   GREY_LABEL,
   TEXT_PRIMARY_DARK,
+  WHITE,
 } from '@/constants/Colors';
 import { fetchExpertById, type ExpertEntity } from '@/lib/expertsApi';
 import { presenceLabel } from '@/lib/presenceCopy';

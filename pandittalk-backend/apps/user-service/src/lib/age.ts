@@ -1,8 +1,7 @@
 /** Minimum age for PanditTalk account holders (chat marketplace). */
 export const MINIMUM_ACCOUNT_AGE = 18;
 
-const UNDERAGE_MESSAGE =
-  'You must be 18 or older to use PanditTalk.';
+const UNDERAGE_MESSAGE = 'You must be 18 or older to use PanditTalk.';
 
 export function underageAccountMessage(): string {
   return UNDERAGE_MESSAGE;
@@ -40,7 +39,10 @@ export function isAtLeastAge(
 
   let age = asOf.getFullYear() - birth.getFullYear();
   const monthDelta = asOf.getMonth() - birth.getMonth();
-  if (monthDelta < 0 || (monthDelta === 0 && asOf.getDate() < birth.getDate())) {
+  if (
+    monthDelta < 0 ||
+    (monthDelta === 0 && asOf.getDate() < birth.getDate())
+  ) {
     age -= 1;
   }
   return age >= minAge;

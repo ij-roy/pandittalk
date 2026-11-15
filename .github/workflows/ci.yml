@@ -1,0 +1,143 @@
+name: PanditTalk CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pandittalk-backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: pandittalk-backend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run prisma:generate
+      - run: npm run lint:check
+      - run: npm test -- --runInBand
+      - run: npm run typecheck
+      - run: npm run build
+
+  website:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pandittalk-website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: pandittalk-website/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - name: Run browser journeys and responsive checks
+        env:
+          SESSION_SECRET: ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+        run: npm run test:ui
+      - run: npm run lint
+      - run: npm run build
+
+  dashboard:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pandittalk-dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: pandittalk-dashboard/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm run build
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pandittalk-mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: pandittalk-mobile/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:webview-allowlist
+      - run: npx expo export --platform web
+
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create safe local runtime configuration
+        shell: bash
+        run: cp .env.example .env
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+      - name: Build backend runtime image
+        run: docker compose build api pandit-service
+      - name: Start the local stack
+        run: docker compose up -d
+      - name: Wait for the API through Caddy
+        shell: bash
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://localhost:3001/readiness >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          curl --fail http://localhost:3001/readiness
+      - name: Verify dependencies and Socket.IO handshake
+        run: |
+          docker compose exec -T redis redis-cli ping
+          docker compose exec -T postgres pg_isready -U pandittalk -d pandittalk
+          curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
+      - name: Verify two API replicas remain reachable
+        run: |
+          docker compose up -d --scale api=2 --no-recreate api proxy
+          curl --fail http://localhost:3001/
+      - name: Show service state
+        if: always()
+        run: docker compose ps
+      - name: Tear down local stack
+        if: always()
+        run: docker compose down -v
+
+  secret-hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject tracked environment and credential files
+        shell: bash
+        run: |
+          tracked="$(git ls-files | grep -E '(^|/)\.env($|\.local$|\.production$)|(^|/)(google-services\.json|GoogleService-Info\.plist|credentials\.json|razorpaykeys\.txt|.*\.(pem|key|p12))$' || true)"
+          if [ -n "$tracked" ]; then
+            echo "Tracked secret-like files found:"
+            echo "$tracked"
+            exit 1
+          fi
+      - name: Check the committed examples contain no private-key block
+        shell: bash
+        run: |
+          if git grep -n --exclude='*.lock' -- 'BEGIN [A-Z ]* PRIVATE KEY'; then
+            exit 1
+          fi

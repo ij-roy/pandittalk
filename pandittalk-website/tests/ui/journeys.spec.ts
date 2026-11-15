@@ -18,15 +18,19 @@ test.beforeEach(async ({ page }) => {
 
 test('guidance keeps the chosen Pandit and restores draft notes', async ({ page }) => {
   await page.goto('/guidance/start?expertId=expert-a');
-  await page.getByRole('button', { name: '5. Your Pandit', exact: true }).click();
-  await expect(page.getByLabel('Choose a Pandit')).toHaveValue('expert-a');
+  await page.getByLabel('Where would you like guidance?').selectOption('career');
   await page.getByRole('button', { name: '2. Your question', exact: true }).click();
   await page.getByLabel('Your question or context (optional)').fill('Considering a change at work.');
+  await page.getByRole('button', { name: '3. No Timer status', exact: true }).click();
+  await page.getByRole('button', { name: '4. Format', exact: true }).click();
+  await page.getByLabel('Chat', { exact: true }).check();
+  await page.getByRole('button', { name: '5. Your Pandit', exact: true }).click();
+  await expect(page.getByLabel('Optional Pandit preference (not a booking)')).toHaveValue('expert-a');
   await page.reload();
-  await page.getByRole('button', { name: '6. Review', exact: true }).click();
+  await page.getByRole('button', { name: '6. Saved draft', exact: true }).click();
   await expect(page.locator('dd', { hasText: 'Pandita Meera Sharma' })).toBeVisible();
   await expect(page.locator('dd', { hasText: 'Considering a change at work.' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Review', exact: true })).toBeFocused();
+  await expect(page.getByRole('heading', { name: 'Saved draft', exact: true })).toBeFocused();
 });
 
 test('guidance start fresh works when draft storage is unavailable', async ({ page }) => {
@@ -40,13 +44,16 @@ test('guidance start fresh works when draft storage is unavailable', async ({ pa
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/guidance/start');
+  await page.getByLabel('Where would you like guidance?').selectOption('career');
   await page.getByRole('button', { name: '2. Your question', exact: true }).click();
   await page.getByLabel('Your question or context (optional)').fill('Temporary draft');
-  await page.getByRole('button', { name: 'Start fresh', exact: true }).click();
+  await page.getByRole('button', { name: 'Clear draft and start over', exact: true }).click();
+  await page.getByRole('button', { name: 'Clear draft', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your area', exact: true })).toBeVisible();
+  await page.getByLabel('Where would you like guidance?').selectOption('career');
   await page.getByRole('button', { name: '2. Your question', exact: true }).click();
   await expect(page.getByLabel('Your question or context (optional)')).toHaveValue('');
-  await expect(page.getByText('This browser cannot preserve your draft. Keep this page open.')).toBeVisible();
+  await expect(page.getByText('This browser cannot preserve your draft.', { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -63,9 +70,9 @@ test('successful Pandit application resets fields and keeps the confirmation', a
   await page.getByLabel('Languages', { exact: true }).fill('Hindi, English');
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Submit application', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('Application received. Reference: TEST-APPLICATION-42');
-  await expect(page.getByLabel('Name', { exact: true })).toHaveValue('');
-  await expect(page.getByRole('checkbox')).not.toBeChecked();
+  await expect(page.locator('#application-status')).toContainText('Application received. Reference: TEST-APPLICATION-42');
+  await expect(page.getByRole('button', { name: 'Submit another application', exact: true })).toBeVisible();
+  await expect(page.locator('#apply form input[name="name"]')).toHaveCount(0);
   await expect(page.locator('form').getByRole('alert')).toHaveCount(0);
   expect(received?.languages).toEqual(['Hindi', 'English']);
 });
@@ -91,16 +98,16 @@ test('invalid palm replacement clears the previous photo and prevents submission
     await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
   });
   await page.goto('/tools/palm-reading');
-  const photo = { name: 'palm.jpg', mimeType: 'image/jpeg', buffer: Buffer.from([0xff, 0xd8, 0xff, 0xd9]) };
+  const photo = { name: 'palm.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64') };
   await page.getByLabel('Left palm photo').setInputFiles(photo);
   await page.getByLabel('Right palm photo').setInputFiles(photo);
   await expect(page.getByAltText('left palm preview')).toBeVisible();
   await page.getByLabel('Left palm photo').setInputFiles({ name: 'palm.heic', mimeType: 'image/heic', buffer: Buffer.from('not a supported palm photo') });
-  await expect(page.locator('#tool-form-error')).toContainText('Choose a clear palm photo (JPEG, PNG or WebP) for your left palm.');
+  await expect(page.locator('#tool-form-error')).toContainText('HEIC photos cannot be used for your left palm.');
   await expect(page.getByAltText('left palm preview')).toHaveCount(0);
   await expect(page.getByLabel('Left palm photo')).toHaveValue('');
   await page.getByRole('checkbox').check();
-  await page.getByRole('button', { name: 'Get free reading', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Get free reading', exact: true })).toBeDisabled();
   expect(toolRequests).toBe(0);
 });
 
@@ -120,7 +127,7 @@ test('a resend cooldown still permits verifying the existing OTP', async ({ page
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Send code', exact: true }).click();
   await page.getByRole('button', { name: 'Resend code', exact: true }).click();
-  await expect(page.getByRole('button', { name: /Resend in \d+s/ })).toBeDisabled();
+  await expect(page.getByLabel('Phone sign-in actions').getByRole('button', { name: /Resend in \d+s/ })).toBeDisabled();
   await page.getByLabel('Four-digit code').fill('1234');
   await page.getByRole('button', { name: 'Verify and continue', exact: true }).click();
   await expect(page.locator('form').getByRole('alert')).toContainText('Test verification received.');

@@ -21,16 +21,16 @@ import { HoroscopeDto } from './dto/horoscope.dto';
 import { KundliDto } from './dto/kundli.dto';
 import { MonthlyHoroscopeDto } from './dto/monthly-horoscope.dto';
 import { PalmReadingDto } from './dto/palm-reading.dto';
-import { DetailedKundliCancelledError, KUNDLI_CANCELLED_MESSAGE } from './kundli-cancel';
+import {
+  DetailedKundliCancelledError,
+  KUNDLI_CANCELLED_MESSAGE,
+} from './kundli-cancel';
 import {
   UNLOCK_TOOL_TYPES,
   type MonthlyHoroscopeReportPayloadDto,
   type UnlockToolType,
 } from './dto/unlock-tool.dto';
-import {
-  MAJOR_ARCANA,
-  resolveCoordinatesFromPlace,
-} from './tools.constants';
+import { MAJOR_ARCANA, resolveCoordinatesFromPlace } from './tools.constants';
 
 const TOOL_UNLOCK_COSTS: Record<UnlockToolType, number> = {
   monthly_horoscope: 101,
@@ -350,7 +350,10 @@ export class ToolsService {
   }
 
   private async getBasicKundli(dto: KundliDto): Promise<KundliResponse> {
-    const coordinates = this.resolveCoordinates(dto.placeOfBirth, dto.coordinates);
+    const coordinates = this.resolveCoordinates(
+      dto.placeOfBirth,
+      dto.coordinates,
+    );
     const datetime = this.buildDatetime(dto.dob, dto.timeOfBirth);
     const params = {
       ayanamsa: '1',
@@ -374,7 +377,10 @@ export class ToolsService {
   private async getDetailedKundli(
     dto: KundliDto,
   ): Promise<Omit<KundliDetailedResponse, 'newBalance'>> {
-    const coordinates = this.resolveCoordinates(dto.placeOfBirth, dto.coordinates);
+    const coordinates = this.resolveCoordinates(
+      dto.placeOfBirth,
+      dto.coordinates,
+    );
     const datetime = this.buildDatetime(dto.dob, dto.timeOfBirth);
     const params = {
       ayanamsa: '1',
@@ -496,7 +502,11 @@ Return JSON with exactly these fields:
     if (!dto.detailed) {
       const basic = await this.getBasicCompatibility(dto);
       if (userId) {
-        await this.reportsService.saveFreeCompatibilityReport(userId, dto, basic);
+        await this.reportsService.saveFreeCompatibilityReport(
+          userId,
+          dto,
+          basic,
+        );
       }
       return basic;
     }
@@ -700,15 +710,17 @@ Return only valid JSON, no markdown.`;
         lifeLine: this.normalizePalmLine(parsed.lifeLine, 'Life Line'),
         heartLine: this.normalizePalmLine(parsed.heartLine, 'Heart Line'),
         headLine: this.normalizePalmLine(parsed.headLine, 'Head Line'),
-        overview:
-          typeof parsed.overview === 'string' ? parsed.overview : '',
+        overview: typeof parsed.overview === 'string' ? parsed.overview : '',
       };
       if (userId) {
         await this.reportsService.savePalmReadingReport(userId, report);
       }
       return report;
     } catch (error) {
-      console.error('Palm reading OpenAI error:', error?.response?.data || error?.message || error);
+      console.error(
+        'Palm reading OpenAI error:',
+        error?.response?.data || error?.message || error,
+      );
       throw new InternalServerErrorException('Failed to analyze palm images');
     }
   }
@@ -723,10 +735,8 @@ Return only valid JSON, no markdown.`;
     if (value && typeof value === 'object') {
       const obj = value as Record<string, unknown>;
       return {
-        title:
-          typeof obj.title === 'string' ? obj.title : fallbackTitle,
-        description:
-          typeof obj.description === 'string' ? obj.description : '',
+        title: typeof obj.title === 'string' ? obj.title : fallbackTitle,
+        description: typeof obj.description === 'string' ? obj.description : '',
       };
     }
     return { title: fallbackTitle, description: '' };
@@ -826,11 +836,7 @@ Return only valid JSON, no markdown.`,
           reportPayload,
         );
       } catch (error) {
-        await this.refundToolCharge(
-          userId,
-          cost,
-          'Month Report Unlock',
-        );
+        await this.refundToolCharge(userId, cost, 'Month Report Unlock');
         throw error;
       }
     }
@@ -880,9 +886,15 @@ Return only valid JSON, no markdown.`,
     return unlockedSet;
   }
 
-  private resolveCoordinates(placeOfBirth: string, coordinatesOverride?: string): string {
+  private resolveCoordinates(
+    placeOfBirth: string,
+    coordinatesOverride?: string,
+  ): string {
     const override = coordinatesOverride?.trim();
-    if (override && /^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(override)) {
+    if (
+      override &&
+      /^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(override)
+    ) {
       return override.replace(/\s+/g, '');
     }
     const coordinates = resolveCoordinatesFromPlace(placeOfBirth);
@@ -985,9 +997,7 @@ Return only valid JSON, no markdown.`,
     );
 
     if (!clientId || !clientSecret) {
-      throw new InternalServerErrorException(
-        'Prokerala API is not configured',
-      );
+      throw new InternalServerErrorException('Prokerala API is not configured');
     }
 
     try {

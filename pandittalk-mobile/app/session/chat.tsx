@@ -70,6 +70,7 @@ import { formatElapsedMmSs } from '@/lib/waitingRoomEta';
 import { shouldEmitTyping, TYPING_HIDE_AFTER_MS } from '@/lib/typingIndicator';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useActiveChatViewStore } from '@/store/useActiveChatViewStore';
+import { endChatPrompt, leaveChatPrompt } from '@/lib/sessionLeaveCopy';
 
 const DISCONNECT_WAIT_SECONDS = 60;
 

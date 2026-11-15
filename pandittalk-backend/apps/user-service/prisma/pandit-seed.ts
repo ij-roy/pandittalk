@@ -230,12 +230,7 @@ const EXTRA_PANDIT_BIOS: Record<string, string> = {
 
 /** Pandits added in code (not in the original xlsx). Safe to upsert without touching xlsx rows. */
 export const EXTRA_PANDIT_SEEDS: PanditSeedRow[] = (
-  [
-    '+919899990741',
-    '+919599368991',
-    '+919882060030',
-    '+919717899598',
-  ] as const
+  ['+919899990741', '+919599368991', '+919882060030', '+919717899598'] as const
 ).map((phone) => {
   const meta = PANDIT_META_BY_PHONE[phone];
   const bio = EXTRA_PANDIT_BIOS[phone];
@@ -334,7 +329,8 @@ export function loadPanditSeedsFromXlsx(backendRoot: string): PanditSeedRow[] {
       displayName: formatDisplayName(rawName, phone),
       bio,
       languages,
-      experience: Number.isFinite(experience) && experience > 0 ? experience : 1,
+      experience:
+        Number.isFinite(experience) && experience > 0 ? experience : 1,
     });
   }
 

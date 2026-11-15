@@ -42,7 +42,7 @@ PAYMENTS (Guideline 3.1.3(d) Option C)
 • Reviewer wallet is pre-funded via ops script; Razorpay top-up is optional
 
 SESSIONS
-• Chat Now, Audio, and Video consultations are available on iPhone (native Chime)
+• Chat Now, Audio, and Video consultations are available on iPhone (native WebRTC custom dev client)
 • If no pandit is online, try another expert or note that live availability varies
 
 DIFFERENTIATION (Guideline 4.3(b))

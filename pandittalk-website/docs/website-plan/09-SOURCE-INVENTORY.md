@@ -68,8 +68,8 @@ Read-only inventory from the reference checkout. File existence is not productio
 - `apps/mobile/lib/callBookingStatus.ts`
 - `apps/mobile/lib/chatBookingStatus.ts`
 - `apps/mobile/lib/chatSocket.ts`
-- `apps/mobile/lib/chimeAudio.ts`
-- `apps/mobile/lib/chimeVideo.ts`
+- `apps/mobile/lib/webrtcAudio.ts`
+- `apps/mobile/lib/webrtcVideo.ts`
 - `apps/mobile/lib/expertsApi.ts`
 - `apps/mobile/lib/formatRelativeTime.ts`
 - `apps/mobile/lib/googleAuth.ts`
@@ -113,11 +113,11 @@ apps/backend/apps/user-service/src/tools/tools.controller.ts:58:  @Post('palm-re
 apps/backend/apps/user-service/src/tools/tools.controller.ts:63:  @Post('monthly-horoscope')
 apps/backend/apps/user-service/src/tools/tools.controller.ts:70:  @Post('unlock')
 apps/backend/apps/user-service/src/tools/tools.controller.ts:83:  @Get('unlocked')
-apps/backend/apps/user-service/src/chime/video-chime.controller.ts:26:@Controller('sessions/video')
-apps/backend/apps/user-service/src/chime/video-chime.controller.ts:34:  @Post('create')
-apps/backend/apps/user-service/src/chime/video-chime.controller.ts:53:  @Post('join')
-apps/backend/apps/user-service/src/chime/video-chime.controller.ts:75:  @Get(':bookingId')
-apps/backend/apps/user-service/src/chime/video-chime.controller.ts:84:  @Delete(':bookingId')
+apps/backend/apps/user-service/src/webrtc/video-session.controller.ts:26:@Controller('sessions/video')
+apps/backend/apps/user-service/src/webrtc/video-session.controller.ts:34:  @Post('create')
+apps/backend/apps/user-service/src/webrtc/video-session.controller.ts:53:  @Post('join')
+apps/backend/apps/user-service/src/webrtc/video-session.controller.ts:75:  @Get(':bookingId')
+apps/backend/apps/user-service/src/webrtc/video-session.controller.ts:84:  @Delete(':bookingId')
 apps/backend/apps/user-service/src/reports/reports.controller.ts:16:@Controller('reports')
 apps/backend/apps/user-service/src/reports/reports.controller.ts:21:  @Get()
 apps/backend/apps/user-service/src/reports/reports.controller.ts:28:  @Get(':id')
@@ -148,11 +148,11 @@ apps/backend/apps/user-service/src/articles/pandit-articles.controller.ts:64:  @
 apps/backend/apps/user-service/src/articles/pandit-articles.controller.ts:73:  @Post(':id/publish')
 apps/backend/apps/user-service/src/articles/pandit-articles.controller.ts:82:  @Post(':id/unpublish')
 apps/backend/apps/user-service/src/articles/pandit-articles.controller.ts:90:  @Post(':id/cover')
-apps/backend/apps/user-service/src/chime/chime.controller.ts:26:@Controller('sessions/audio')
-apps/backend/apps/user-service/src/chime/chime.controller.ts:34:  @Post('create')
-apps/backend/apps/user-service/src/chime/chime.controller.ts:53:  @Post('join')
-apps/backend/apps/user-service/src/chime/chime.controller.ts:75:  @Get(':bookingId')
-apps/backend/apps/user-service/src/chime/chime.controller.ts:84:  @Delete(':bookingId')
+apps/backend/apps/user-service/src/webrtc/audio-session.controller.ts:26:@Controller('sessions/audio')
+apps/backend/apps/user-service/src/webrtc/audio-session.controller.ts:34:  @Post('create')
+apps/backend/apps/user-service/src/webrtc/audio-session.controller.ts:53:  @Post('join')
+apps/backend/apps/user-service/src/webrtc/audio-session.controller.ts:75:  @Get(':bookingId')
+apps/backend/apps/user-service/src/webrtc/audio-session.controller.ts:84:  @Delete(':bookingId')
 apps/backend/apps/user-service/src/articles/articles.controller.ts:20:@Controller('articles')
 apps/backend/apps/user-service/src/articles/articles.controller.ts:27:  @Get()
 apps/backend/apps/user-service/src/articles/articles.controller.ts:34:  @Get('sitemap')
@@ -199,4 +199,4 @@ apps/backend/apps/user-service/src/experts/experts.controller.ts:92:  @Get(':id'
 
 ## Inventory limitations
 
-Native layouts, redirect aliases and generic modal infrastructure are not separate business capabilities. Review imports and handlers to identify any new nested feature. Native notification delivery, secure storage, OAuth, payment and Chime implementations require browser adapters. A non-TSX debugging artifact under the tabs folder is not a customer route and should not be reproduced.
+Native layouts, redirect aliases and generic modal infrastructure are not separate business capabilities. Review imports and handlers to identify any new nested feature. Native notification delivery, secure storage, OAuth, payment and WebRTC implementations require browser adapters. A non-TSX debugging artifact under the tabs folder is not a customer route and should not be reproduced.

@@ -1,18 +1,17 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import type { DefaultMeetingSession, AudioVideoObserver, VideoTileState } from 'amazon-chime-sdk-js';
 import type { Socket } from 'socket.io-client';
 import { api } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { createSessionSocket } from './socket';
 import { sessionEvents } from './events';
+import { BrowserWebRtcSession, type WebRtcSessionConfig } from './webrtc';
 import styles from '../account/customer.module.css';
 
 export default function MediaRoom({ id, format }: { id: string; format: 'audio' | 'video' }) {
-  const meeting = useRef<DefaultMeetingSession | null>(null);
+  const media = useRef<BrowserWebRtcSession | null>(null);
   const socket = useRef<Socket | null>(null);
-  const audio = useRef<HTMLAudioElement | null>(null);
   const local = useRef<HTMLVideoElement | null>(null);
   const remote = useRef<HTMLVideoElement | null>(null);
   const confirmRef = useRef<HTMLDivElement | null>(null);
@@ -62,19 +61,13 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
   }, [leftRoom, joined, ended]);
 
   async function cleanup() {
-    const m = meeting.current;
-    meeting.current = null;
+    const m = media.current;
+    media.current = null;
     socket.current?.emit(events.leave, { bookingId: id });
     socket.current?.removeAllListeners();
     socket.current?.disconnect();
     socket.current = null;
-    if (m) {
-      m.audioVideo.stopLocalVideoTile();
-      m.audioVideo.stop();
-      await Promise.allSettled([m.audioVideo.stopAudioInput(), m.audioVideo.stopVideoInput()]);
-      m.audioVideo.unbindAudioElement();
-      await m.destroy();
-    }
+    if (m) await m.stop();
     if (mounted.current) {
       setJoined(false);
       setCamera(false);
@@ -150,33 +143,17 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
     setBusy(true);
     setError('');
     try {
-      const sdk = await import('amazon-chime-sdk-js');
-      const credentials = await api<{ meeting: object; attendee: object }>(`/sessions/${format}/join`, {
+      const config = await api<WebRtcSessionConfig>(`/sessions/${format}/join`, {
         method: 'POST',
         body: JSON.stringify({ bookingId: id }),
       });
       if (!mounted.current) return;
-      const logger = new sdk.NoOpLogger();
-      const m = new sdk.DefaultMeetingSession(
-        new sdk.MeetingSessionConfiguration(credentials.meeting, credentials.attendee),
-        logger,
-        new sdk.DefaultDeviceController(logger),
-      );
-      meeting.current = m;
-      const observer: AudioVideoObserver = {
-        audioVideoDidStart: () => setState('Your devices are connected. Preparing your consultation…'),
-        audioVideoDidStop: () => setState('Your connection has stopped. You can rejoin within your booking window.'),
-        audioVideoDidStartConnecting: reconnecting =>
-          setState(reconnecting ? 'Reconnecting media… Keep this tab open.' : 'Connecting media…'),
-        videoTileDidUpdate: (tile: VideoTileState) => {
-          const element = tile.localTile ? local.current : remote.current;
-          if (tile.tileId !== null && element) m.audioVideo.bindVideoElement(tile.tileId, element);
-        },
-        videoTileWasRemoved: tileId => m.audioVideo.unbindVideoElement(tileId),
-      };
-      m.audioVideo.addObserver(observer);
-      await m.audioVideo.startAudioInput(mic || 'default');
-      if (audio.current) await m.audioVideo.bindAudioElement(audio.current);
+      const session = new BrowserWebRtcSession(config, format, {
+        localVideo: local.current,
+        remoteVideo: remote.current,
+      });
+      await session.start(mic || undefined, cam || undefined);
+      media.current = session;
       const connection = await createSessionSocket();
       if (!mounted.current) {
         connection.socket.disconnect();
@@ -185,19 +162,37 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
       }
       socket.current = connection.socket;
       const s = connection.socket;
+      session.setSignalSender(signal => s.emit('mediaSignal', { bookingId: id, format, signal }));
       s.on('connect', () => s.emit(events.join, { bookingId: id, token: connection.token }));
       s.on('disconnect', () => setState('Connection interrupted. Reconnecting automatically… Stay on this page.'));
       s.on('error', (p: { message?: string }) => setError(p.message || 'Session request rejected.'));
       s.on('connect_error', () =>
         setError('We could not reconnect your consultation yet. Keep this page open, or return from your booking and try again.'),
       );
-      s.on(events.started, () => setState('Consultation started'));
-      s.on(`${format}WaitingForOther`, () => setState('Waiting for your Pandit'));
-      s.on(`${format}WaitingForStart`, () => setState('Waiting for the scheduled start'));
+      s.on(events.started, () => {
+        session.enableSessionMedia();
+        setState('Consultation started');
+      });
+      s.on(`${format}WaitingForOther`, () => {
+        session.enterWaitingRoomMode();
+        setState('Waiting for your Pandit');
+      });
+      s.on(`${format}WaitingForStart`, () => {
+        session.enterWaitingRoomMode();
+        setState('Waiting for the scheduled start');
+      });
       s.on(`${format}ParticipantLeft`, () =>
         setState('Your Pandit left briefly. Stay here — we will reconnect when they return.'),
       );
       s.on(`${format}ParticipantRejoined`, () => setState('Your Pandit rejoined. You can continue.'));
+      s.on('mediaPeerReady', (payload: { bookingId?: string; format?: string; initiator?: boolean }) => {
+        if (payload.bookingId !== id || payload.format !== format || typeof payload.initiator !== 'boolean') return;
+        void session.handlePeerReady(payload.initiator);
+      });
+      s.on('mediaSignal', (payload: { bookingId?: string; format?: string; signal?: unknown }) => {
+        if (payload.bookingId !== id || payload.format !== format || !payload.signal) return;
+        void session.handleSignal(payload.signal as Parameters<BrowserWebRtcSession['handleSignal']>[0]);
+      });
       s.on('videoCameraState', (p: { cameraOn: boolean }) =>
         setCameraNote(p.cameraOn ? 'Pandit camera is on' : 'Pandit camera is off'),
       );
@@ -213,19 +208,10 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
         });
       }
       s.connect();
-      m.audioVideo.start();
       setJoined(true);
       if (format === 'video') {
-        try {
-          await m.audioVideo.startVideoInput(cam || (await m.audioVideo.listVideoInputDevices())[0]?.deviceId);
-          m.audioVideo.startLocalVideoTile();
-          setCamera(true);
-          s.emit('videoCameraState', { bookingId: id, cameraOn: true });
-        } catch {
-          setError(
-            'Camera unavailable. Audio connected; the booked video format and price are unchanged. Enable the camera or leave and contact support.',
-          );
-        }
+        setCamera(true);
+        s.emit('videoCameraState', { bookingId: id, cameraOn: true });
       }
     } catch (e) {
       setError((e as Error).message);
@@ -239,17 +225,9 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
     if (cameraBusy) return;
     setCameraBusy(true);
     try {
-      const m = meeting.current;
+      const m = media.current;
       if (!m) return;
-      if (camera) {
-        m.audioVideo.stopLocalVideoTile();
-        await m.audioVideo.stopVideoInput();
-      } else {
-        const available = await m.audioVideo.listVideoInputDevices();
-        if (!cam && !available[0]) throw Error('No camera available');
-        await m.audioVideo.startVideoInput(cam || available[0].deviceId);
-        m.audioVideo.startLocalVideoTile();
-      }
+      m.setCameraEnabled(!camera);
       socket.current?.emit('videoCameraState', { bookingId: id, cameraOn: !camera });
       setCamera(!camera);
     } catch (e) {
@@ -334,7 +312,6 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
           </LinkKeyboardGroup>
         </div>
       )}
-      <audio ref={audio} autoPlay aria-hidden="true" />
       <div className="grid" inert={dialogOpen ? true : undefined}>
         {format === 'video' && (
           <>
@@ -459,8 +436,7 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
             aria-pressed={muted}
             disabled={dialogOpen}
             onClick={() => {
-              if (muted) meeting.current?.audioVideo.realtimeUnmuteLocalAudio();
-              else meeting.current?.audioVideo.realtimeMuteLocalAudio();
+              media.current?.setMuted(!muted);
               setMuted(!muted);
             }}
           >

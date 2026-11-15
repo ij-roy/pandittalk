@@ -1,4 +1,4 @@
-import { ArticleLanguage, ArticleStatus } from '@prisma/client';
+import { ArticleStatus } from '@prisma/client';
 import {
   detectLanguage,
   excerptFromContent,
@@ -29,9 +29,12 @@ describe('article.util', () => {
   });
 
   it('detects hindi, english, and mixed copy', () => {
-    expect(detectLanguage('Hello world', 'This is an english article about vastu and career guidance for families.')).toBe(
-      'en',
-    );
+    expect(
+      detectLanguage(
+        'Hello world',
+        'This is an english article about vastu and career guidance for families.',
+      ),
+    ).toBe('en');
     expect(
       detectLanguage(
         'राखी',

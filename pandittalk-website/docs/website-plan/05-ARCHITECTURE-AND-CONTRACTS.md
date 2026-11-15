@@ -63,7 +63,7 @@ A new quote/catalogue contract is recommended because current pricing constants 
 
 Source socket commands include `joinSession`, `leaveSession`, `sendMessage`, `typing`, `endSession`; audio/video join/leave/end; `requestGraceRefund`; `videoCameraState`. Inspect both `lib/chatSocket.ts` and `chat.gateway.ts` for exact payload/acknowledgement/event names and namespace. Reuse participant authorization and reconcile refund authority; replace fixed-minute termination under D11. Preserve operational timestamps without customer countdowns. Socket disconnect is not proof a booking ended.
 
-Use the browser Amazon Chime SDK with existing meeting/attendee backend flows. Run a browser↔existing Pandit dashboard proof before building polished video UI. Use device consent, tile cleanup, reconnection and supported-browser behavior from the [official Chime JavaScript SDK](https://aws.github.io/amazon-chime-sdk-js/). Native `expo-pandit-chime` is reference behavior, not browser code.
+Use browser WebRTC with the provider-neutral session config and Socket.IO signaling boundary. Run a browser↔existing Pandit dashboard proof before building polished video UI. Use device consent, track cleanup, reconnection, free STUN by default, and optional coturn for restrictive networks. Native `react-native-webrtc` is a custom-dev-client adapter, not browser code.
 
 Real-time infrastructure stays on the existing service; do not assume a Next.js deployment can host persistent Socket.IO connections. Cross-origin allowlists, WSS/HTTPS, proxy timeouts and media connectivity must be tested in staging.
 
@@ -80,7 +80,7 @@ Palm uploads require MIME decoding, size/pixel limits, safe image conversion, me
 - **D01 Browser auth:** OAuth web configuration, cookie/refresh integration, CSRF and socket bootstrap. Owner: web + backend.
 - **D02 Commercial catalogue:** authoritative pricing/units, taxes and entitlement scopes. Owner: product + backend.
 - **D03 Transaction reliability:** contention/idempotency and pending-payment status recovery. Owner: backend; web implements state UI.
-- **D04 Browser media:** Chime compatibility with current Pandit dashboard and booking lifecycle. Owner: web + backend.
+- **D04 Browser media:** WebRTC compatibility with current Pandit dashboard and booking lifecycle. Owner: web + backend.
 - **D05 Notification persistence:** current local preferences cannot sync; server preferences and optional web push are additions. Owner: backend.
 - **D06 Support/application:** durable ticket and practitioner application intake were not established by the inspected customer endpoints. Owner: operations + backend.
 - **D07 Phone change:** currently a coming-soon action; requires authenticated number replacement and recovery protections. Owner: backend.

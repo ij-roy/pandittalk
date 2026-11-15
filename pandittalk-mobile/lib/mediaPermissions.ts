@@ -1,8 +1,4 @@
 import { Alert, Linking, PermissionsAndroid, Platform } from 'react-native';
-import {
-  requestCameraPermission as requestNativeCameraPermission,
-  requestMicrophonePermission as requestNativeMicrophonePermission,
-} from 'expo-pandit-chime';
 
 export type MediaPermissionKind = 'microphone' | 'camera';
 
@@ -72,10 +68,7 @@ export async function ensureMicrophonePermission(): Promise<void> {
   }
 
   if (Platform.OS === 'ios') {
-    const status = await requestNativeMicrophonePermission();
-    if (status !== 'granted') {
-      throw new MediaPermissionDeniedError('microphone');
-    }
+    return;
   }
 }
 
@@ -101,9 +94,6 @@ export async function ensureCameraPermission(): Promise<void> {
   }
 
   if (Platform.OS === 'ios') {
-    const status = await requestNativeCameraPermission();
-    if (status !== 'granted') {
-      throw new MediaPermissionDeniedError('camera');
-    }
+    return;
   }
 }

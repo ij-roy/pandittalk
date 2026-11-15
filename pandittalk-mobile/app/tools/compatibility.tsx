@@ -212,12 +212,13 @@ export default function CompatibilityScreen() {
   const inviteAppliedRef = useRef(false);
 
   const isFormComplete = isPersonComplete(person1) && isPersonComplete(person2);
-  const canInvite = isPersonComplete(person1) && person1.selectedDate && person1.selectedTime;
-  const inviteLink = canInvite
+  const inviteDate = person1.selectedDate;
+  const inviteTime = person1.selectedTime;
+  const inviteLink = isPersonComplete(person1) && inviteDate && inviteTime
     ? encodeCoupleInvite({
         name: person1.name.trim(),
-        dob: formatLocalYmd(person1.selectedDate),
-        time: formatTimeForApi(person1.selectedTime),
+        dob: formatLocalYmd(inviteDate),
+        time: formatTimeForApi(inviteTime),
         place: person1.placeOfBirth,
         coordinates: person1.birthCoordinates,
       })

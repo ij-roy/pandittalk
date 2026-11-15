@@ -10,10 +10,7 @@ import {
   resolveGuidanceAreasForFilter,
 } from './expert-area-filter';
 import type { ListExpertsQueryDto } from './dto/list-experts-query.dto';
-import {
-  publicReviewWhere,
-  publicReviewerFirstName,
-} from './public-reviews';
+import { publicReviewWhere, publicReviewerFirstName } from './public-reviews';
 import { isPanditPresent } from './presence-fresh';
 
 export interface Expert {
@@ -83,7 +80,12 @@ function pad2(n: number): string {
   return String(n).padStart(2, '0');
 }
 
-function slotAtIST(year: number, month: number, day: number, hour: number): Date {
+function slotAtIST(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+): Date {
   return new Date(
     `${year}-${pad2(month)}-${pad2(day)}T${pad2(hour)}:00:00+05:30`,
   );
@@ -103,7 +105,11 @@ function todayIST(): { year: number; month: number; day: number } {
   return { year: get('year'), month: get('month'), day: get('day') };
 }
 
-function ymdFromDateIST(date: Date): { year: number; month: number; day: number } {
+function ymdFromDateIST(date: Date): {
+  year: number;
+  month: number;
+  day: number;
+} {
   const ymd = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Kolkata',
     year: 'numeric',
@@ -115,16 +121,16 @@ function ymdFromDateIST(date: Date): { year: number; month: number; day: number 
   return { year, month, day };
 }
 
-function parseYmd(dateYmd: string): { year: number; month: number; day: number } {
+function parseYmd(dateYmd: string): {
+  year: number;
+  month: number;
+  day: number;
+} {
   const [year, month, day] = dateYmd.split('-').map(Number);
   return { year, month, day };
 }
 
-function timeAtIST(
-  dateYmd: string,
-  hour: number,
-  minute: number,
-): Date {
+function timeAtIST(dateYmd: string, hour: number, minute: number): Date {
   const { year, month, day } = parseYmd(dateYmd);
   return new Date(
     `${year}-${pad2(month)}-${pad2(day)}T${pad2(hour)}:${pad2(minute)}:00+05:30`,
@@ -203,7 +209,9 @@ function mapPanditToExpert(
   };
 }
 
-function mapReview(review: Review & { user: Pick<User, 'firstName'> }): ExpertReview {
+function mapReview(
+  review: Review & { user: Pick<User, 'firstName'> },
+): ExpertReview {
   return {
     id: review.id,
     rating: review.rating,
@@ -222,7 +230,13 @@ export class ExpertsService {
   async findByUserId(userId: string): Promise<PanditMe> {
     const pandit = await this.prisma.pandit.findUnique({
       where: { userId },
-      select: { id: true, name: true, specialty: true, isOnline: true, presenceSeenAt: true },
+      select: {
+        id: true,
+        name: true,
+        specialty: true,
+        isOnline: true,
+        presenceSeenAt: true,
+      },
     });
 
     if (!pandit) {
@@ -282,7 +296,8 @@ export class ExpertsService {
         row.panditId,
         {
           total_reviews: row._count._all,
-          rating: row._avg.rating == null ? 0 : Number(row._avg.rating.toFixed(1)),
+          rating:
+            row._avg.rating == null ? 0 : Number(row._avg.rating.toFixed(1)),
         },
       ]),
     );

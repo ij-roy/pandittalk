@@ -29,9 +29,7 @@ export class PanditGuard implements CanActivate {
       where: { userId },
     });
     if (!pandit) {
-      throw new ForbiddenException(
-        'No pandit profile linked to this account',
-      );
+      throw new ForbiddenException('No pandit profile linked to this account');
     }
 
     req.pandit = pandit;

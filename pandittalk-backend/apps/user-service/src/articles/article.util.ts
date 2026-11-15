@@ -1,4 +1,8 @@
-import { ArticleCategory, ArticleLanguage, ArticleStatus } from '@prisma/client';
+import {
+  ArticleCategory,
+  ArticleLanguage,
+  ArticleStatus,
+} from '@prisma/client';
 
 export const CATEGORY_COVER_IMAGES: Record<ArticleCategory, string> = {
   astrology:
@@ -47,7 +51,10 @@ export function excerptFromContent(content: string, maxLength = 150): string {
   return `${plain.slice(0, maxLength - 3).trim()}...`;
 }
 
-export function detectLanguage(title: string, content: string): ArticleLanguage {
+export function detectLanguage(
+  title: string,
+  content: string,
+): ArticleLanguage {
   const sample = `${title} ${content}`;
   const devanagari = (sample.match(/[\u0900-\u097F]/g) ?? []).length;
   const latin = (sample.match(/[A-Za-z]/g) ?? []).length;
@@ -57,11 +64,14 @@ export function detectLanguage(title: string, content: string): ArticleLanguage 
   return 'mixed';
 }
 
-export function isPubliclyVisible(article: {
-  status: ArticleStatus;
-  publishedAt: Date;
-  scheduledAt: Date | null;
-}, now = new Date()): boolean {
+export function isPubliclyVisible(
+  article: {
+    status: ArticleStatus;
+    publishedAt: Date;
+    scheduledAt: Date | null;
+  },
+  now = new Date(),
+): boolean {
   if (article.status === 'published' && article.publishedAt <= now) {
     return true;
   }

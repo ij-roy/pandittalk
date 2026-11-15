@@ -1,25 +1,28 @@
-import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import type {
   BookingListItem,
   BookingUserDetails,
+  CurrentUser,
   PanditMe,
   VerifyOtpResponse,
-} from '../types';
-import { getStoredToken, usePanditStore } from '../store/usePanditStore';
+} from "../types";
+import { getStoredToken, usePanditStore } from "../store/usePanditStore";
 
 /** Routes that must stay reachable without a pandit session (consent, legal, login). */
 const PUBLIC_PATH_PREFIXES = [
-  '/login',
-  '/terms',
-  '/privacy-policy',
-  '/refund-policy',
-  '/disclaimer',
-  '/contact',
-  '/account-deletion',
+  "/login",
+  "/terms",
+  "/privacy-policy",
+  "/refund-policy",
+  "/disclaimer",
+  "/contact",
+  "/account-deletion",
 ] as const;
 
-export function isPublicAppPath(pathname: string = window.location.pathname): boolean {
-  const path = pathname.split('?')[0] || '/';
+export function isPublicAppPath(
+  pathname: string = window.location.pathname,
+): boolean {
+  const path = pathname.split("?")[0] || "/";
   return PUBLIC_PATH_PREFIXES.some(
     (prefix) => path === prefix || path.startsWith(`${prefix}/`),
   );
@@ -27,18 +30,18 @@ export function isPublicAppPath(pathname: string = window.location.pathname): bo
 
 function redirectToLoginIfProtected(): void {
   if (isPublicAppPath()) return;
-  window.location.href = '/login';
+  window.location.href = "/login";
 }
 
 export function getApiBase(): string {
   const fromEnv = import.meta.env.VITE_API_BASE;
-  if (typeof fromEnv === 'string' && fromEnv.trim()) {
-    return fromEnv.trim().replace(/\/$/, '');
+  if (typeof fromEnv === "string" && fromEnv.trim()) {
+    return fromEnv.trim().replace(/\/$/, "");
   }
   if (import.meta.env.DEV) {
-    return 'http://localhost:3001';
+    return "http://localhost:3001";
   }
-  throw new Error('VITE_API_BASE is not configured');
+  throw new Error("VITE_API_BASE is not configured");
 }
 
 export const api = axios.create({
@@ -70,12 +73,11 @@ async function refreshAccessToken(): Promise<string | null> {
   }
   refreshInFlight = (async () => {
     try {
-      const { data } = await api.post<TokenPairResponse>('/auth/refresh', {});
-      if (typeof data?.accessToken !== 'string' || !data.accessToken) {
+      const { data } = await api.post<TokenPairResponse>("/auth/refresh", {});
+      if (typeof data?.accessToken !== "string" || !data.accessToken) {
         return null;
       }
-      const userId = usePanditStore.getState().userId ?? '';
-      usePanditStore.getState().setAuth(data.accessToken, userId);
+      usePanditStore.getState().setAccessToken(data.accessToken);
       return data.accessToken;
     } catch {
       return null;
@@ -89,13 +91,31 @@ async function refreshAccessToken(): Promise<string | null> {
 /** Hydrate access token from httpOnly refresh cookie (page load). */
 export async function bootstrapAuthSession(): Promise<boolean> {
   const token = await refreshAccessToken();
+  if (token) {
+    try {
+      await fetchCurrentUser();
+    } catch {
+      usePanditStore.getState().clearLocalAuth();
+    }
+  }
   usePanditStore.getState().markAuthHydrated();
   return Boolean(token);
 }
 
+export async function fetchCurrentUser(): Promise<CurrentUser> {
+  const { data } = await api.get<CurrentUser>("/auth/me");
+  usePanditStore
+    .getState()
+    .setAuth(usePanditStore.getState().accessToken ?? "", data.id, data.role);
+  if (data.panditId && data.name) {
+    usePanditStore.getState().setPanditInfo(data.panditId, data.name, false);
+  }
+  return data;
+}
+
 export async function logoutSession(): Promise<void> {
   try {
-    await api.post('/auth/logout', {});
+    await api.post("/auth/logout", {});
   } catch {
     // Still clear local state.
   } finally {
@@ -111,10 +131,10 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const url = original.url ?? '';
+    const url = original.url ?? "";
     if (
-      url.includes('/auth/refresh') ||
-      url.includes('/auth/logout') ||
+      url.includes("/auth/refresh") ||
+      url.includes("/auth/logout") ||
       original._retry
     ) {
       usePanditStore.getState().clearLocalAuth();
@@ -135,15 +155,15 @@ api.interceptors.response.use(
 );
 
 export function buildIndiaPhone(digits10: string): string {
-  const d = digits10.replace(/\D/g, '').slice(0, 10);
+  const d = digits10.replace(/\D/g, "").slice(0, 10);
   return `+91${d}`;
 }
 
 export async function requestOtp(
   phoneNumber: string,
-  intent?: 'dashboard',
+  intent?: "dashboard",
 ): Promise<void> {
-  await api.post('/auth/request-otp', {
+  await api.post("/auth/request-otp", {
     phoneNumber,
     ...(intent ? { intent } : {}),
   });
@@ -153,9 +173,9 @@ export async function verifyOtp(
   phoneNumber: string,
   otp: string,
   acceptedLegalConsent: boolean,
-  intent?: 'dashboard',
+  intent?: "dashboard",
 ): Promise<VerifyOtpResponse> {
-  const { data } = await api.post<VerifyOtpResponse>('/auth/verify-otp', {
+  const { data } = await api.post<VerifyOtpResponse>("/auth/verify-otp", {
     phoneNumber,
     otp,
     acceptedLegalConsent,
@@ -165,7 +185,7 @@ export async function verifyOtp(
 }
 
 export async function fetchPanditMe(): Promise<PanditMe> {
-  const { data } = await api.get<PanditMe>('/experts/me');
+  const { data } = await api.get<PanditMe>("/experts/me");
   return data;
 }
 
@@ -181,13 +201,11 @@ export async function updatePresence(
 }
 
 export async function fetchPanditBookings(): Promise<BookingListItem[]> {
-  const { data } = await api.get<BookingListItem[]>('/bookings/pandit');
+  const { data } = await api.get<BookingListItem[]>("/bookings/pandit");
   return data;
 }
 
-export async function cancelBookingAsPandit(
-  bookingId: string,
-): Promise<void> {
+export async function cancelBookingAsPandit(bookingId: string): Promise<void> {
   await api.post(`/bookings/${bookingId}/pandit-cancel`);
 }
 
@@ -217,34 +235,24 @@ export async function getSharedContextForBooking(
   return data;
 }
 
-export interface ChimeMeeting {
-  MeetingId?: string;
-  ExternalMeetingId?: string;
-  MediaRegion?: string;
-  MediaPlacement?: {
-    AudioHostUrl?: string;
-    AudioFallbackUrl?: string;
-    SignalingUrl?: string;
-    TurnControlUrl?: string;
-  };
-}
-
-export interface ChimeAttendee {
-  AttendeeId?: string;
-  ExternalUserId?: string;
-  JoinToken?: string;
+export interface WebRtcIceServer {
+  urls: string | string[];
+  username?: string;
+  credential?: string;
 }
 
 export interface JoinAudioSessionResponse {
-  meeting: ChimeMeeting;
-  attendee: ChimeAttendee;
+  provider: 'webrtc';
+  bookingId: string;
+  format: 'audio' | 'video';
+  iceServers: WebRtcIceServer[];
 }
 
 export async function joinAudioSession(
   bookingId: string,
 ): Promise<JoinAudioSessionResponse> {
   const { data } = await api.post<JoinAudioSessionResponse>(
-    '/sessions/audio/join',
+    "/sessions/audio/join",
     { bookingId },
   );
   return data;
@@ -258,7 +266,7 @@ export async function joinVideoSession(
   bookingId: string,
 ): Promise<JoinAudioSessionResponse> {
   const { data } = await api.post<JoinAudioSessionResponse>(
-    '/sessions/video/join',
+    "/sessions/video/join",
     { bookingId },
   );
   return data;
@@ -271,13 +279,13 @@ export async function endVideoSessionApi(bookingId: string): Promise<void> {
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const data = error.response?.data;
-    if (data && typeof data === 'object' && 'message' in data) {
+    if (data && typeof data === "object" && "message" in data) {
       const message = (data as { message: unknown }).message;
-      if (typeof message === 'string') return message;
-      if (Array.isArray(message)) return message.join(', ');
+      if (typeof message === "string") return message;
+      if (Array.isArray(message)) return message.join(", ");
     }
     return error.message;
   }
   if (error instanceof Error) return error.message;
-  return 'Something went wrong';
+  return "Something went wrong";
 }

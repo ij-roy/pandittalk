@@ -5,7 +5,7 @@ import { join } from 'path';
 import { ArticlesModule } from './articles/articles.module';
 import { AuthModule } from './auth/auth.module';
 import { BookingsModule } from './bookings/bookings.module';
-import { ChimeModule } from './chime/chime.module';
+import { WebRtcModule } from './webrtc/webrtc.module';
 import { ChatModule } from './chat/chat.module';
 import { ExpertsModule } from './experts/experts.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -18,6 +18,7 @@ import { ToolsModule } from './tools/tools.module';
 import { WalletModule } from './wallet/wallet.module';
 import { AvatarModule } from './avatar/avatar.module';
 import { CustomerContractsModule } from './customer/customer-contracts.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -41,10 +42,11 @@ import { CustomerContractsModule } from './customer/customer-contracts.module';
     WalletModule,
     ToolsModule,
     RedisModule,
-    ChimeModule,
+    WebRtcModule,
     ChatModule,
     AvatarModule,
     CustomerContractsModule,
+    AdminModule,
   ],
   controllers: [UserServiceController],
   providers: [UserServiceService],

@@ -1,7 +1,7 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
 import { AuthSessionService } from './auth-session.service';
@@ -23,9 +23,14 @@ const mockUser = {
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
   profileCompleted: false,
   isActive: true,
+  role: 'CUSTOMER',
 };
 
-function createModule(allowTestOtp: string, testOtpAllowlist = '') {
+function createModule(
+  allowTestOtp: string,
+  testOtpAllowlist = '',
+  adminTestOtpAllowlist = '',
+) {
   const prisma = {
     user: {
       findUnique: jest.fn().mockResolvedValue(mockUser),
@@ -74,6 +79,9 @@ function createModule(allowTestOtp: string, testOtpAllowlist = '') {
       if (key === 'TEST_OTP_PHONE_ALLOWLIST') {
         return testOtpAllowlist;
       }
+      if (key === 'ADMIN_TEST_OTP_PHONE_ALLOWLIST') {
+        return adminTestOtpAllowlist;
+      }
       return defaultValue;
     }),
   };
@@ -89,7 +97,10 @@ function createModule(allowTestOtp: string, testOtpAllowlist = '') {
       { provide: AuthSessionService, useValue: authSessions },
       { provide: GoogleTokenVerifier, useValue: { verify: jest.fn() } },
       { provide: AppleTokenVerifier, useValue: { verify: jest.fn() } },
-      { provide: SocialPendingStore, useValue: { save: jest.fn(), consume: jest.fn() } },
+      {
+        provide: SocialPendingStore,
+        useValue: { save: jest.fn(), consume: jest.fn() },
+      },
       { provide: ConfigService, useValue: config },
     ],
   }).compile();
@@ -174,20 +185,24 @@ describe('AuthService.verifyOtp', () => {
     expect(result.refreshToken).toBe('refresh-token-1');
   });
 
-  it('accepts test OTP 1234 for an allowlisted number when ALLOW_TEST_OTP is false', async () => {
+  it('rejects test OTP 1234 for an allowlisted number when ALLOW_TEST_OTP is false', async () => {
     const allowlistedPhone = '+919999999998';
     const module = await createModule('false', allowlistedPhone);
     const authService = module.get(AuthService);
     const otpStore = module.get(OtpStoreService);
 
-    const result = await authService.verifyOtp({
-      phoneNumber: allowlistedPhone,
-      otp: '1234',
-      acceptedLegalConsent: true,
-    });
+    await expect(
+      authService.verifyOtp({
+        phoneNumber: allowlistedPhone,
+        otp: '1234',
+        acceptedLegalConsent: true,
+      }),
+    ).rejects.toThrow(BadRequestException);
 
-    expect(otpStore.verifyAndConsume).not.toHaveBeenCalled();
-    expect(result.accessToken).toBe('jwt-token');
+    expect(otpStore.verifyAndConsume).toHaveBeenCalledWith(
+      allowlistedPhone,
+      '1234',
+    );
   });
 
   it('rejects test OTP 1234 for a non-allowlisted number when ALLOW_TEST_OTP is false', async () => {
@@ -207,10 +222,33 @@ describe('AuthService.verifyOtp', () => {
 
     expect(otpStore.verifyAndConsume).toHaveBeenCalledWith(phoneNumber, '1234');
   });
+
+  it('allows an active Admin to use dashboard OTP without a Pandit relation', async () => {
+    const module = await createModule('true');
+    const authService = module.get(AuthService);
+    const prisma = module.get(PrismaService);
+    const admin = {
+      ...mockUser,
+      phoneNumber: '+919999999996',
+      role: 'ADMIN',
+      pandit: null,
+    };
+    prisma.user.findUnique.mockResolvedValue(admin);
+    prisma.user.update.mockResolvedValue(admin);
+
+    const result = await authService.verifyOtp({
+      phoneNumber: admin.phoneNumber,
+      otp: '1234',
+      acceptedLegalConsent: true,
+      intent: 'dashboard',
+    });
+
+    expect(result.user[0].role).toBe('ADMIN');
+  });
 });
 
 describe('AuthService.requestOtp', () => {
-  it('skips the real SMS send for an allowlisted number when ALLOW_TEST_OTP is false', async () => {
+  it('sends the real SMS for an allowlisted number when ALLOW_TEST_OTP is false', async () => {
     const allowlistedPhone = '+919999999998';
     const module = await createModule('false', allowlistedPhone);
     const authService = module.get(AuthService);
@@ -225,7 +263,7 @@ describe('AuthService.requestOtp', () => {
       '127.0.0.1',
     );
     expect(otpStore.save).toHaveBeenCalled();
-    expect(otpSms.sendOtp).not.toHaveBeenCalled();
+    expect(otpSms.sendOtp).toHaveBeenCalled();
     expect(otpRateLimit.releaseReservation).not.toHaveBeenCalled();
   });
 
@@ -266,6 +304,40 @@ describe('AuthService.requestOtp', () => {
     await authService.requestOtp(allowlistedPhone, '127.0.0.1');
 
     expect(otpSms.sendOtp).not.toHaveBeenCalled();
+  });
+
+  it('supports the dedicated Admin test allowlist only in test OTP mode', async () => {
+    const adminPhone = '+919999999996';
+    const module = await createModule('true', '', adminPhone);
+    const authService = module.get(AuthService);
+    const otpSms = module.get(OtpSmsService);
+
+    await authService.requestOtp(adminPhone, '127.0.0.1');
+
+    expect(otpSms.sendOtp).not.toHaveBeenCalled();
+  });
+});
+
+describe('AuthService.getAuthenticatedUser', () => {
+  it('returns role and linked Pandit identity from the active database user', async () => {
+    const module = await createModule('true');
+    const authService = module.get(AuthService);
+    const prisma = module.get(PrismaService);
+    prisma.user.findFirst.mockResolvedValue({
+      ...mockUser,
+      firstName: 'Local',
+      lastName: 'Admin',
+      role: 'ADMIN',
+      pandit: null,
+    });
+
+    await expect(authService.getAuthenticatedUser('user-1')).resolves.toEqual({
+      id: 'user-1',
+      phoneNumber,
+      role: 'ADMIN',
+      name: 'Local Admin',
+      panditId: null,
+    });
   });
 });
 

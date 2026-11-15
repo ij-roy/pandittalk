@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthenticatedUser, JwtPayload } from './types/jwt-payload';
+import type { UserRole } from './types/user-role';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -29,13 +30,17 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     const user = await this.prisma.user.findFirst({
       where: { id: payload.sub, isActive: true },
-      select: { id: true, phoneNumber: true },
+      select: { id: true, phoneNumber: true, role: true },
     });
 
     if (!user) {
       throw new UnauthorizedException('User account is inactive or not found');
     }
 
-    return { sub: user.id, phoneNumber: user.phoneNumber };
+    return {
+      sub: user.id,
+      phoneNumber: user.phoneNumber,
+      role: user.role as UserRole,
+    };
   }
 }

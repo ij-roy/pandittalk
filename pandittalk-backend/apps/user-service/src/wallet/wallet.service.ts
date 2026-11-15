@@ -96,17 +96,28 @@ export class WalletService {
     };
   }
 
-  async getPurchaseInvoice(userId: string, transactionId: string): Promise<GstInvoice> {
+  async getPurchaseInvoice(
+    userId: string,
+    transactionId: string,
+  ): Promise<GstInvoice> {
     const transaction = await this.prisma.transaction.findFirst({
       where: { id: transactionId, userId },
     });
     if (!transaction) {
       throw new NotFoundException('Transaction not found');
     }
-    if (transaction.type !== 'purchase' || transaction.status !== TransactionStatus.SUCCESS) {
-      throw new BadRequestException('A tax invoice is available after a successful recharge');
+    if (
+      transaction.type !== 'purchase' ||
+      transaction.status !== TransactionStatus.SUCCESS
+    ) {
+      throw new BadRequestException(
+        'A tax invoice is available after a successful recharge',
+      );
     }
-    const amountInr = transaction.amountInr == null ? Number.NaN : Number(transaction.amountInr);
+    const amountInr =
+      transaction.amountInr == null
+        ? Number.NaN
+        : Number(transaction.amountInr);
     if (!Number.isFinite(amountInr) || amountInr <= 0) {
       throw new BadRequestException('This recharge has no payable amount');
     }
@@ -114,10 +125,14 @@ export class WalletService {
       where: { id: userId },
       select: { name: true, firstName: true, lastName: true },
     });
-    const composed = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
+    const composed = [user?.firstName, user?.lastName]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
     const buyerName = user?.name?.trim() || composed || 'Customer';
     const sellerGstin = this.configService.get<string>('GSTIN')?.trim() || null;
-    const sellerAddress = this.configService.get<string>('GST_ADDRESS')?.trim() || null;
+    const sellerAddress =
+      this.configService.get<string>('GST_ADDRESS')?.trim() || null;
     return buildGstInvoice({
       transactionId: transaction.id,
       paidAt: transaction.createdAt,
@@ -125,7 +140,9 @@ export class WalletService {
       coinsAmount: transaction.coinsAmount,
       paymentReference: transaction.razorpayPaymentId,
       buyerName,
-      sellerName: this.configService.get<string>('GST_LEGAL_NAME')?.trim() || 'PanditTalk',
+      sellerName:
+        this.configService.get<string>('GST_LEGAL_NAME')?.trim() ||
+        'PanditTalk',
       sellerGstin,
       sellerAddress,
     });
@@ -155,7 +172,9 @@ export class WalletService {
     const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
 
     if (!keyId || !keySecret) {
-      throw new InternalServerErrorException('Payment gateway is not configured');
+      throw new InternalServerErrorException(
+        'Payment gateway is not configured',
+      );
     }
 
     const razorpay = new Razorpay({
@@ -225,7 +244,9 @@ export class WalletService {
     const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
 
     if (!keySecret) {
-      throw new InternalServerErrorException('Payment gateway is not configured');
+      throw new InternalServerErrorException(
+        'Payment gateway is not configured',
+      );
     }
 
     const body = `${dto.razorpayOrderId}|${dto.razorpayPaymentId}`;
@@ -308,7 +329,9 @@ export class WalletService {
       throw new UnauthorizedException('Invalid webhook signature');
     }
 
-    const event = JSON.parse(rawBody.toString('utf8')) as RazorpayWebhookPayload;
+    const event = JSON.parse(
+      rawBody.toString('utf8'),
+    ) as RazorpayWebhookPayload;
 
     if (event.event !== 'payment.captured') {
       return { received: true };

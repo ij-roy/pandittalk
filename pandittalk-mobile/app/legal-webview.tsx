@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BackChevron } from '@/components/BackChevron';
 import React, { useCallback, useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { WebView, type ShouldStartLoadRequest } from 'react-native-webview';
+import { WebView, type WebViewProps } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BG, DEEP_GREY, GOLD, HEADER_RULE_GREY } from '@/constants/Colors';
@@ -12,6 +12,8 @@ import {
   isAllowedWebViewNavigation,
   resolveAllowedWebViewUrl,
 } from '@/lib/webviewAllowlist';
+
+type ShouldStartLoadRequest = Parameters<NonNullable<WebViewProps['onShouldStartLoadWithRequest']>>[0];
 
 /**
  * Public legal document viewer (Terms / Privacy).

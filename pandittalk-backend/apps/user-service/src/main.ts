@@ -5,16 +5,29 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import * as express from 'express';
 import { join } from 'path';
 import { parseAllowedOrigins } from './config/cors-origins';
+import { RedisIoAdapter } from './redis/redis-io.adapter';
 import { UserServiceModule } from './user-service.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(UserServiceModule, {
-    bodyParser: false,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(
+    UserServiceModule,
+    {
+      bodyParser: false,
+    },
+  );
 
   app.set('trust proxy', 1);
 
   const configService = app.get(ConfigService);
+  const redisIoAdapter = new RedisIoAdapter(app, configService);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
+
+  app.enableShutdownHooks();
+  app.getHttpServer().on('close', () => {
+    void redisIoAdapter.close();
+  });
+
   const avatarUploadDir = configService.get<string>(
     'AVATAR_UPLOAD_DIR',
     'uploads/avatars',
@@ -30,7 +43,11 @@ async function bootstrap() {
   const httpServer = app.getHttpAdapter().getInstance();
   httpServer.set('etag', false);
   app.use(
-    (_req: express.Request, res: express.Response, next: express.NextFunction) => {
+    (
+      _req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) => {
       res.setHeader(
         'Cache-Control',
         'no-store, no-cache, must-revalidate, private',
@@ -38,8 +55,6 @@ async function bootstrap() {
       next();
     },
   );
-
-  app.enableShutdownHooks();
 
   const allowedOrigins = parseAllowedOrigins(
     configService.get<string>('ALLOWED_ORIGINS'),

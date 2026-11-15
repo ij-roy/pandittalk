@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, type RedisClientType } from 'redis';
+import { buildRedisUrl } from './redis-url';
 
 @Injectable()
 export class RedisClientService implements OnModuleInit, OnModuleDestroy {
@@ -15,11 +16,7 @@ export class RedisClientService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly config: ConfigService) {}
 
   async onModuleInit(): Promise<void> {
-    const host = this.config.get<string>('REDIS_HOST', 'localhost');
-    const port = this.config.get<string>('REDIS_PORT', '6379');
-    const url = `redis://${host}:${port}`;
-
-    this.client = createClient({ url });
+    this.client = createClient({ url: buildRedisUrl(this.config) });
     this.client.on('error', (err) => {
       this.logger.error('Redis client error', err);
     });
@@ -30,6 +27,10 @@ export class RedisClientService implements OnModuleInit, OnModuleDestroy {
     if (this.client?.isOpen) {
       await this.client.quit();
     }
+  }
+
+  async ping(): Promise<string> {
+    return this.client.ping();
   }
 
   /** Increment key; set TTL on first increment. Returns new count. */
@@ -78,6 +79,30 @@ export class RedisClientService implements OnModuleInit, OnModuleDestroy {
 
   async set(key: string, value: string, ttlMs: number): Promise<void> {
     await this.client.set(key, value, { PX: ttlMs });
+  }
+
+  async setIfAbsent(
+    key: string,
+    value: string,
+    ttlMs: number,
+  ): Promise<boolean> {
+    const result = await this.client.set(key, value, { NX: true, PX: ttlMs });
+    return result === 'OK';
+  }
+
+  async releaseLock(key: string, value: string): Promise<void> {
+    await this.client.eval(
+      `
+        if redis.call('get', KEYS[1]) == ARGV[1] then
+          return redis.call('del', KEYS[1])
+        end
+        return 0
+      `,
+      {
+        keys: [key],
+        arguments: [value],
+      },
+    );
   }
 
   /**

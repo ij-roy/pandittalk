@@ -64,16 +64,6 @@ function resolveAwsCredentials(): { accessKeyId: string; secretAccessKey: string
     };
   }
 
-  const chimeId = process.env.AWS_CHIME_ACCESS_KEY_ID?.trim();
-  const chimeSecret = process.env.AWS_CHIME_SECRET_ACCESS_KEY?.trim();
-  if (chimeId && chimeSecret) {
-    return {
-      accessKeyId: chimeId,
-      secretAccessKey: chimeSecret,
-      source: 'AWS_CHIME_ACCESS_KEY_ID',
-    };
-  }
-
   throw new Error(
     'No valid AWS credentials: set AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY in .env or use an AWS SSO profile',
   );

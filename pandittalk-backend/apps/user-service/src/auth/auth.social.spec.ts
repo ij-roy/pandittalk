@@ -83,7 +83,10 @@ async function createModule() {
     providers: [
       AuthService,
       { provide: PrismaService, useValue: prisma },
-      { provide: JwtService, useValue: { signAsync: jest.fn().mockResolvedValue('jwt-token') } },
+      {
+        provide: JwtService,
+        useValue: { signAsync: jest.fn().mockResolvedValue('jwt-token') },
+      },
       { provide: OtpStoreService, useValue: otpStore },
       { provide: OtpRateLimitService, useValue: otpRateLimit },
       { provide: OtpSmsService, useValue: { sendOtp: jest.fn() } },
@@ -91,7 +94,9 @@ async function createModule() {
       {
         provide: ConfigService,
         useValue: {
-          get: jest.fn((_key: string, defaultValue?: string) => defaultValue ?? 'false'),
+          get: jest.fn(
+            (_key: string, defaultValue?: string) => defaultValue ?? 'false',
+          ),
         },
       },
       { provide: GoogleTokenVerifier, useValue: googleVerifier },
@@ -182,7 +187,10 @@ describe('AuthService.completeSocialAuth', () => {
       otp: '1234',
     });
 
-    expect(ctx.otpStore.verifyAndConsume).toHaveBeenCalledWith(phoneNumber, '1234');
+    expect(ctx.otpStore.verifyAndConsume).toHaveBeenCalledWith(
+      phoneNumber,
+      '1234',
+    );
     expect(ctx.prisma.user.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({

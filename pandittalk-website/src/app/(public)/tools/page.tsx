@@ -6,12 +6,12 @@ import { SiteIcon } from '@/components/site/SiteIcon';
 import type { Metadata } from 'next';
 
 const freeTools = [
-  { route: 'kundli', title: 'Kundli', description: 'Explore your birth chart and planetary placements.' },
-  { route: 'horoscope', title: 'Daily horoscope', description: 'A small pause to reflect on the day.' },
-  { route: 'compatibility', title: 'Compatibility', description: 'Explore connection, communication and harmony.' },
-  { route: 'numerology', title: 'Numerology practices', description: 'Browse visual prompts for your Mulank.' },
-  { route: 'palm-reading', title: 'Palm reading', description: 'An AI interpretation of both palms.' },
-  { route: 'tarot', title: 'Tarot', description: 'A randomly drawn card and a fresh perspective.' },
+  ["kundli","Kundli",'Explore your birth chart and planetary placements.'],
+  ["horoscope","Daily horoscope",'A small pause to reflect on the day.'],
+  ["compatibility","Compatibility",'Explore connection, communication and harmony.'],
+  ["numerology","Numerology practices",'Browse visual prompts for your Mulank.'],
+  ["palm-reading","Palm reading",'An AI interpretation of both palms.'],
+  ["tarot","Tarot",'A randomly drawn card and a fresh perspective.'],
 ] as const;
 
 const pausedTools = [
@@ -44,12 +44,12 @@ export default function Page() {
           <p className="expert-meta" id="free-tools-hint">Free automated tools. No booking required. Nothing here charges your wallet. Arrow keys move between tools; Escape blurs. Skip remains site-content.</p>
         </div>
         <LinkKeyboardGroup className="grid" role="list" aria-label="Free astrology tools" aria-describedby="free-tools-hint">
-          {freeTools.map(tool => (
-            <Link className="panel tool-card" role="listitem" key={tool.route} href={'/tools/' + tool.route} aria-label={`${tool.title}: free to try`}>
+          {freeTools.map(([route, title, description]) => (
+            <Link className="panel tool-card" role="listitem" key={route} href={'/tools/' + route} aria-label={`${title}: free to try`}>
               <p className="info-label">Free to try</p>
-              <h3>{tool.title}</h3>
-              <p>{tool.description}</p>
-              <span className="text-link">Open {tool.title}</span>
+              <h3>{title}</h3>
+              <p>{description}</p>
+              <span className="text-link">Open {title}</span>
             </Link>
           ))}
         </LinkKeyboardGroup>

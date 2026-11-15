@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
+  ServiceUnavailableException,
   Patch,
   Post,
   UploadedFile,
@@ -16,22 +18,63 @@ import { HealthResponseDto } from '@pandittalk/common';
 import { CurrentUser } from './auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import {
-  UserProfilePayload,
-  UserServiceService,
-} from './user-service.service';
+import { UserProfilePayload, UserServiceService } from './user-service.service';
 import { readFeatureFlags } from './config/feature-flags';
+import { PrismaService } from './prisma/prisma.service';
+import { RedisClientService } from './redis/redis-client.service';
+import { CHAT_STORAGE } from './chat/chat-storage.interface';
+import type { ChatStorage } from './chat/chat-storage.interface';
 
 @Controller()
 export class UserServiceController {
   constructor(
     private readonly userServiceService: UserServiceService,
     private readonly config: ConfigService,
+    private readonly prisma: PrismaService,
+    private readonly redis: RedisClientService,
+    @Inject(CHAT_STORAGE) private readonly chatStorage: ChatStorage,
   ) {}
 
   @Get()
   getHealth(): HealthResponseDto {
     return this.userServiceService.getHealth();
+  }
+
+  @Get('readiness')
+  async getReadiness(): Promise<{
+    status: 'ready';
+    service: string;
+    checks: { postgres: 'ok'; redis: 'ok'; mongodb: 'ok' };
+    timestamp: string;
+  }> {
+    const results = await Promise.allSettled([
+      this.prisma.$queryRaw`SELECT 1`,
+      this.redis.ping(),
+      this.chatStorage.ping(),
+    ]);
+    const [postgres, redis, mongodb] = results;
+    if (
+      postgres.status !== 'fulfilled' ||
+      redis.status !== 'fulfilled' ||
+      mongodb.status !== 'fulfilled'
+    ) {
+      throw new ServiceUnavailableException({
+        status: 'not_ready',
+        service: 'user-service',
+        checks: {
+          postgres: postgres.status === 'fulfilled' ? 'ok' : 'error',
+          redis: redis.status === 'fulfilled' ? 'ok' : 'error',
+          mongodb: mongodb.status === 'fulfilled' ? 'ok' : 'error',
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    return {
+      status: 'ready',
+      service: 'user-service',
+      checks: { postgres: 'ok', redis: 'ok', mongodb: 'ok' },
+      timestamp: new Date().toISOString(),
+    };
   }
 
   /**
@@ -41,7 +84,10 @@ export class UserServiceController {
   @Get('public/app-update')
   getAppUpdatePolicy() {
     const iosLatest = this.config.get<string>('IOS_LATEST_VERSION', '1.0.9');
-    const iosMin = this.config.get<string>('IOS_MIN_SUPPORTED_VERSION', '1.0.0');
+    const iosMin = this.config.get<string>(
+      'IOS_MIN_SUPPORTED_VERSION',
+      '1.0.0',
+    );
     const androidLatest = this.config.get<string>(
       'ANDROID_LATEST_VERSION',
       '1.0.9',

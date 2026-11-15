@@ -69,7 +69,7 @@ export function ProfileAvatarPicker({
       setPreparing(true);
       try {
         const compressed = await compressAvatar(localUri);
-        const fileInfo = await FileSystem.getInfoAsync(compressed, { size: true });
+        const fileInfo = await FileSystem.getInfoAsync(compressed);
         if (fileInfo.exists && fileInfo.size != null && fileInfo.size > MAX_AVATAR_BYTES) {
           showToast('Image must be 5 MB or smaller', 'error');
           return;

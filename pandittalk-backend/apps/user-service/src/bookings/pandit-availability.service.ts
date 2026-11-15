@@ -149,7 +149,8 @@ export class PanditAvailabilityService {
     }
 
     const active = await this.getActiveSession(panditId);
-    const dbBusy = active === null && (await this.hasOverlappingConfirmedBooking(panditId));
+    const dbBusy =
+      active === null && (await this.hasOverlappingConfirmedBooking(panditId));
 
     if (active || dbBusy) {
       const estimatedFreeAt = active?.estimatedFreeAt ?? null;

@@ -9,10 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { randomInt } from 'crypto';
 import type { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  AuthSessionService,
-  type SessionMeta,
-} from './auth-session.service';
+import { AuthSessionService, type SessionMeta } from './auth-session.service';
 import { AppleTokenVerifier } from './apple-token.verifier';
 import { GoogleTokenVerifier } from './google-token.verifier';
 import { OtpRateLimitService } from './otp-rate-limit.service';
@@ -25,6 +22,7 @@ import {
 import type { SocialIdentity, SocialPendingRecord } from './social-identity';
 import { SocialPendingStore } from './social-pending.store';
 import { JwtPayload } from './types/jwt-payload';
+import type { UserRole } from './types/user-role';
 
 /** Fixed OTP for automated tests / quick local checks without request-otp. */
 const TEST_OTP = '1234';
@@ -33,7 +31,7 @@ export type VerifyOtpInput = {
   phoneNumber: string;
   otp: string;
   acceptedLegalConsent: boolean;
-  /** When `dashboard`, only linked pandit accounts may sign in. */
+  /** When `dashboard`, only linked Pandit or Admin accounts may sign in. */
   intent?: 'dashboard';
   meta?: SessionMeta;
 };
@@ -46,6 +44,7 @@ export type AuthUserPayload = {
   coinBalance: number;
   createdAt: string;
   profileCompleted: boolean;
+  role: UserRole;
 };
 
 export type TokenPairResponse = {
@@ -99,10 +98,14 @@ export class AuthService {
     private readonly socialPending: SocialPendingStore,
     config: ConfigService,
   ) {
-    this.allowTestOtp = config.get<string>('ALLOW_TEST_OTP', 'false') === 'true';
+    this.allowTestOtp =
+      config.get<string>('ALLOW_TEST_OTP', 'false') === 'true';
+    const configuredAllowlist = [
+      config.get<string>('TEST_OTP_PHONE_ALLOWLIST', ''),
+      config.get<string>('ADMIN_TEST_OTP_PHONE_ALLOWLIST', ''),
+    ].join(',');
     this.testOtpAllowlist = new Set(
-      config
-        .get<string>('TEST_OTP_PHONE_ALLOWLIST', '')
+      configuredAllowlist
         .split(',')
         .map((n) => n.replace(/\D/g, ''))
         .filter((n) => n.length > 0),
@@ -115,7 +118,7 @@ export class AuthService {
     intent?: 'dashboard',
   ): Promise<{ success: true; message: string }> {
     if (intent === 'dashboard') {
-      await this.assertDashboardPanditPhone(phoneNumber);
+      await this.assertDashboardAccess(phoneNumber);
     }
 
     // Reserve SMS quota before send so parallel requests cannot exceed limits.
@@ -161,7 +164,7 @@ export class AuthService {
     await this.assertOtpValid(phoneNumber, otp);
 
     if (intent === 'dashboard') {
-      await this.assertDashboardPanditPhone(phoneNumber);
+      await this.assertDashboardAccess(phoneNumber);
     }
 
     let user = await this.prisma.user.findUnique({
@@ -213,20 +216,21 @@ export class AuthService {
     };
   }
 
-  /** Dashboard login only — phone must belong to a linked pandit account. */
-  private async assertDashboardPanditPhone(phoneNumber: string): Promise<void> {
+  /** Dashboard login only — phone must belong to a linked Pandit or Admin account. */
+  private async assertDashboardAccess(phoneNumber: string): Promise<void> {
     const user = await this.prisma.user.findUnique({
       where: { phoneNumber },
       select: {
         id: true,
         isActive: true,
+        role: true,
         pandit: { select: { id: true } },
       },
     });
 
-    if (!user?.isActive || !user.pandit) {
+    if (!user?.isActive || (user.role !== 'ADMIN' && !user.pandit)) {
       throw new ForbiddenException(
-        'This number is not registered as a PanditTalk expert. Please contact admininfo@pandittalk.com to get dashboard access.',
+        'This number is not registered for PanditTalk dashboard access. Please contact admininfo@pandittalk.com.',
       );
     }
   }
@@ -274,7 +278,9 @@ export class AuthService {
         },
       });
       if (!user.isActive) {
-        throw new UnauthorizedException('User account is inactive or not found');
+        throw new UnauthorizedException(
+          'User account is inactive or not found',
+        );
       }
       return this.toVerifyResponse(user, false, meta);
     }
@@ -366,6 +372,32 @@ export class AuthService {
     return this.authSessions.revokeAllSessions(userId);
   }
 
+  async getAuthenticatedUser(userId: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, isActive: true },
+      select: {
+        id: true,
+        phoneNumber: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        pandit: { select: { id: true } },
+      },
+    });
+    if (!user) {
+      throw new UnauthorizedException('User account is inactive or not found');
+    }
+
+    return {
+      id: user.id,
+      phoneNumber: user.phoneNumber,
+      role: user.role as UserRole,
+      name: user.name || this.composedName(user.firstName, user.lastName),
+      panditId: user.pandit?.id ?? null,
+    };
+  }
+
   private async issueTokens(
     user: User,
     meta: SessionMeta,
@@ -383,15 +415,22 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: user.id,
       phoneNumber: user.phoneNumber,
+      role: user.role,
     };
     return this.jwtService.signAsync(payload);
   }
 
   private isPhoneAllowlisted(phoneNumber: string): boolean {
-    return this.testOtpAllowlist.has(phoneNumber.replace(/\D/g, ''));
+    return (
+      this.allowTestOtp &&
+      this.testOtpAllowlist.has(phoneNumber.replace(/\D/g, ''))
+    );
   }
 
-  private async assertOtpValid(phoneNumber: string, otp: string): Promise<void> {
+  private async assertOtpValid(
+    phoneNumber: string,
+    otp: string,
+  ): Promise<void> {
     const isTestBypass =
       otp === TEST_OTP &&
       (this.allowTestOtp || this.isPhoneAllowlisted(phoneNumber));
@@ -426,7 +465,9 @@ export class AuthService {
     const existing = await this.findUserForSocial(identity);
     if (existing) {
       if (!existing.isActive) {
-        throw new UnauthorizedException('User account is inactive or not found');
+        throw new UnauthorizedException(
+          'User account is inactive or not found',
+        );
       }
       const user = await this.prisma.user.update({
         where: { id: existing.id },
@@ -448,8 +489,11 @@ export class AuthService {
     return { needsPhone: true, pendingToken };
   }
 
-  private async findUserForSocial(identity: SocialIdentity): Promise<User | null> {
-    const or: Array<{ googleSub?: string; appleSub?: string; email?: string }> = [];
+  private async findUserForSocial(
+    identity: SocialIdentity,
+  ): Promise<User | null> {
+    const or: Array<{ googleSub?: string; appleSub?: string; email?: string }> =
+      [];
     if (identity.provider === 'google') {
       or.push({ googleSub: identity.subject });
     } else {
@@ -532,11 +576,11 @@ export class AuthService {
       googleSub:
         pending.provider === 'google'
           ? pending.subject
-          : user.googleSub ?? undefined,
+          : (user.googleSub ?? undefined),
       appleSub:
         pending.provider === 'apple'
           ? pending.subject
-          : user.appleSub ?? undefined,
+          : (user.appleSub ?? undefined),
       email: user.email || pending.email || undefined,
       firstName: user.firstName || pending.firstName || undefined,
       lastName: user.lastName || pending.lastName || undefined,
@@ -570,6 +614,7 @@ export class AuthService {
       coinBalance,
       createdAt: user.createdAt.toISOString(),
       profileCompleted: user.profileCompleted,
+      role: user.role,
     };
   }
 }

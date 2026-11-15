@@ -28,7 +28,7 @@ test('booking filters explain an empty view and let customers recover their hist
   await expect(page.getByRole('heading', { name: 'Pandita Meera' })).toBeVisible();
   await page.getByLabel('Show bookings').selectOption('completed');
   await expect(page.getByRole('heading', { name: 'No bookings in this view' })).toBeVisible();
-  await expect(page.getByRole('status')).toContainText('0 bookings');
+  await expect(page.locator('#bookings-count')).toContainText('0 bookings');
   await page.getByRole('button', { name: 'Show all bookings', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Pandita Meera' })).toBeVisible();
 });
@@ -48,7 +48,7 @@ test('booking cancellation requires the explicit final action and reports the re
   await expect(page.getByRole('button', { name: 'Confirm cancellation', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Cancel booking', exact: true }).click();
   await page.getByRole('button', { name: 'Confirm cancellation', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('Cancellation request submitted');
+  await expect(page.getByRole('status').filter({ hasText: 'Cancellation request submitted' })).toContainText('Cancellation request submitted');
   expect(cancellations).toBe(1);
 });
 
@@ -62,7 +62,7 @@ test('profile save retains entered details and announces success after reloading
   await page.getByLabel('First name', { exact: true }).fill('Anika Rao');
   await page.getByLabel('Birth place', { exact: true }).fill('Pune');
   await page.getByRole('button', { name: 'Save profile', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('Profile saved.');
+  await expect(page.locator('#profile-status')).toContainText('Profile saved.');
   await expect(page.getByLabel('First name', { exact: true })).toHaveValue('Anika Rao');
   expect(saved).toEqual({ firstName: 'Anika Rao', placeOfBirth: 'Pune' });
 });
@@ -74,11 +74,16 @@ test('story sharing uses the selected real booking and its Pandit', async ({ pag
     await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
   });
   await page.goto('/account/story');
-  await page.getByText('Share with your Pandit', { exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Share this version', exact: true })).toBeDisabled();
-  await page.getByLabel('Booking', { exact: true }).selectOption('booking-fixture');
+  const shareDetails = page.locator('details').filter({ hasText: 'Share with your Pandit' });
+  if (!(await shareDetails.getAttribute('open'))) {
+    await shareDetails.locator('summary').click();
+  }
+  await expect(shareDetails.locator('select')).toBeVisible();
+  await expect(shareDetails.getByRole('button', { name: 'Share this version', exact: true })).toBeDisabled();
+  await shareDetails.locator('select').selectOption({ label: 'Pandita Meera · 2 Oct 2026 IST · chat' });
   await page.getByRole('button', { name: 'Share this version', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('This version was shared');
+  await page.getByRole('button', { name: 'Confirm share', exact: true }).click();
+  await expect(page.locator('#story-message')).toContainText('This version was shared');
   expect(shared).toEqual({ bookingId: 'booking-fixture', panditId: 'pandit-fixture' });
 });
 
@@ -89,7 +94,7 @@ test('wallet errors can recover to a clear empty transaction state', async ({ pa
     await route.fulfill({ status: reads === 1 ? 503 : 200, contentType: 'application/json', body: JSON.stringify(reads === 1 ? { message: 'Wallet temporarily unavailable.' } : { coinBalance: 250, transactions: [] }) });
   });
   await page.goto('/wallet');
-  await expect(page.getByRole('alert')).toContainText('Wallet temporarily unavailable.');
+  await expect(page.getByRole('alert').filter({ hasText: 'Wallet temporarily unavailable.' })).toContainText('Wallet temporarily unavailable.');
   await page.getByRole('button', { name: 'Try again', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'No transactions yet' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Available wallet balance' })).toContainText('250');

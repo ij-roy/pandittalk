@@ -1,9 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsString, Matches, MaxLength } from 'class-validator';
-import {
-  INDIA_MOBILE_E164_REGEX,
-  normalizeIndiaPhone,
-} from '../phone.util';
+import { INDIA_MOBILE_E164_REGEX, normalizeIndiaPhone } from '../phone.util';
 
 export class CompleteSocialDto {
   @Transform(({ value }: { value: unknown }) =>

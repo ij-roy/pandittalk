@@ -62,7 +62,7 @@ import {
   canBookAvSessions,
   canJoinAvSessions,
 } from '../../lib/iosStorePolicy';
-import { syncBlockedPanditIds } from '../../lib/blockedPandits';
+import { getBlockedPanditIds, syncBlockedPanditIds } from '../../lib/blockedPandits';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useUserProfile } from '../../hooks/useUserProfile';

@@ -2,7 +2,9 @@ import { ledgerRefundWrite } from './ledger-copy';
 
 describe('ledgerRefundWrite', () => {
   it('labels unused time separately from a full refund', () => {
-    expect(ledgerRefundWrite('partial', 'Partial refund — pandit disconnected')).toEqual({
+    expect(
+      ledgerRefundWrite('partial', 'Partial refund — pandit disconnected'),
+    ).toEqual({
       type: 'partial_refund',
       description: 'Unused session time returned to your wallet',
     });
@@ -16,8 +18,9 @@ describe('ledgerRefundWrite', () => {
   });
 
   it('calls out the trial window', () => {
-    expect(ledgerRefundWrite('full', 'Session refund — user grace period').description).toBe(
-      'Full refund — ended during the trial window',
-    );
+    expect(
+      ledgerRefundWrite('full', 'Session refund — user grace period')
+        .description,
+    ).toBe('Full refund — ended during the trial window');
   });
 });

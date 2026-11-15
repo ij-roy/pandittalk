@@ -1,7 +1,5 @@
 import { AppState } from 'react-native';
 
-import { resumeForegroundMedia } from 'expo-pandit-chime';
-
 import { shouldResumeCall } from '@/lib/callResume';
 import { chatSocket } from '@/lib/chatSocket';
 
@@ -13,11 +11,6 @@ export function watchCallForeground(): void {
   previous = AppState.currentState;
   subscription = AppState.addEventListener('change', (next) => {
     if (shouldResumeCall(previous, next)) {
-      try {
-        resumeForegroundMedia();
-      } catch {
-        // An older dev client does not have the native resume yet.
-      }
       chatSocket.resumeFromForeground();
     }
     previous = next;

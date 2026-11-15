@@ -20,7 +20,11 @@ export function normalizeIndiaPhone(raw: string): string | null {
 
   if (digits.length === 10 && /^[6-9]/.test(digits)) {
     national = digits;
-  } else if (digits.length === 12 && digits.startsWith('91') && /^[6-9]/.test(digits.slice(2))) {
+  } else if (
+    digits.length === 12 &&
+    digits.startsWith('91') &&
+    /^[6-9]/.test(digits.slice(2))
+  ) {
     national = digits.slice(2);
   } else if (
     digits.length === 11 &&

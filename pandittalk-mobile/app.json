@@ -238,6 +238,7 @@
       ],
       "expo-font",
       "expo-apple-authentication",
+      "@config-plugins/react-native-webrtc",
       [
         "@react-native-google-signin/google-signin",
         {

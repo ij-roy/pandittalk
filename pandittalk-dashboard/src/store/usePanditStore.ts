@@ -1,22 +1,24 @@
-import { create } from 'zustand';
-import type { BookingListItem } from '../types';
-import { useNotificationStore } from './useNotificationStore';
+import { create } from "zustand";
+import type { BookingListItem, UserRole } from "../types";
+import { useNotificationStore } from "./useNotificationStore";
 
-const USER_ID_KEY = 'pandit_user_id';
-const PANDIT_ID_KEY = 'pandit_id';
-const PANDIT_NAME_KEY = 'pandit_name';
-const IS_ONLINE_KEY = 'pandit_is_online';
+const USER_ID_KEY = "pandit_user_id";
+const PANDIT_ID_KEY = "pandit_id";
+const PANDIT_NAME_KEY = "pandit_name";
+const IS_ONLINE_KEY = "pandit_is_online";
 
 interface PanditState {
   accessToken: string | null;
   userId: string | null;
+  role: UserRole | null;
   panditId: string | null;
   panditName: string | null;
   isOnline: boolean;
   bookings: BookingListItem[];
   /** False until cookie refresh attempt finishes on boot. */
   authHydrated: boolean;
-  setAuth: (token: string, userId: string) => void;
+  setAccessToken: (token: string) => void;
+  setAuth: (token: string, userId: string, role: UserRole) => void;
   setPanditInfo: (id: string, name: string, isOnline: boolean) => void;
   setOnline: (isOnline: boolean) => void;
   setBookings: (bookings: BookingListItem[]) => void;
@@ -26,22 +28,25 @@ interface PanditState {
 }
 
 function readStoredBoolean(key: string): boolean {
-  return localStorage.getItem(key) === 'true';
+  return localStorage.getItem(key) === "true";
 }
 
 export const usePanditStore = create<PanditState>((set) => ({
   // Access JWT stays in memory only (not localStorage) — see docs/dashboard-auth.md
   accessToken: null,
   userId: localStorage.getItem(USER_ID_KEY),
+  role: null,
   panditId: localStorage.getItem(PANDIT_ID_KEY),
   panditName: localStorage.getItem(PANDIT_NAME_KEY),
   isOnline: readStoredBoolean(IS_ONLINE_KEY),
   bookings: [],
   authHydrated: false,
 
-  setAuth: (token, userId) => {
+  setAccessToken: (token) => set({ accessToken: token }),
+
+  setAuth: (token, userId, role) => {
     localStorage.setItem(USER_ID_KEY, userId);
-    set({ accessToken: token, userId, authHydrated: true });
+    set({ accessToken: token, userId, role, authHydrated: true });
   },
 
   setPanditInfo: (id, name, isOnline) => {
@@ -66,11 +71,12 @@ export const usePanditStore = create<PanditState>((set) => ({
     localStorage.removeItem(PANDIT_NAME_KEY);
     localStorage.removeItem(IS_ONLINE_KEY);
     // Migrate away from legacy JWT key if present
-    localStorage.removeItem('pandit_access_token');
+    localStorage.removeItem("pandit_access_token");
     useNotificationStore.getState().reset();
     set({
       accessToken: null,
       userId: null,
+      role: null,
       panditId: null,
       panditName: null,
       isOnline: false,

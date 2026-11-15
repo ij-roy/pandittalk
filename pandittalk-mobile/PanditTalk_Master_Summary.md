@@ -34,7 +34,7 @@
 
 **Mobile app role:** Consumer-facing iOS/Android app (Expo v**1.0.0**). Pandits use the separate web dashboard at `apps/dashboard/`.
 
-**Implemented on mobile:** Auth, profile, home (with article search/feed), experts, guidance flow, booking, wallet, tools, session history/reviews, Chat Now, live text chat, **live audio**, **live video** (native Chime Android), **articles**, **notifications** (in-app + local), **settings**.
+**Implemented on mobile:** Auth, profile, home (with article search/feed), experts, guidance flow, booking, wallet, tools, session history/reviews, Chat Now, live text chat, **live audio**, **live video** (native WebRTC custom dev client), **articles**, **notifications** (in-app + local), **settings**.
 
 **Not built:** Remote push (FCM/APNs), auth route guards, global 401 interceptor, iOS native video.
 
@@ -51,12 +51,12 @@
 | HTTP | Axios | Bearer passed manually |
 | Real-time | socket.io-client | Chat + audio/video signaling + `newNotification` |
 | Local notifications | expo-notifications | Session reminders on device |
-| Audio/video | **expo-pandit-chime** | Custom native module → Amazon Chime Android SDK |
+| Audio/video | **react-native-webrtc** | Native WebRTC through the Expo config plugin; custom dev client required |
 | Payments | react-native-razorpay | Dev client required |
 | Storage | expo-secure-store | Web: sessionStorage fallback |
 | Language | TypeScript 5.9 | Alias `@/*` |
 
-**Dev client required** for Razorpay and audio (`npx expo run:android`). Not compatible with Expo Go for these features.
+**Dev client required** for Razorpay and native audio/video (`npx expo run:android`). Not compatible with Expo Go for these features.
 
 ---
 
@@ -74,12 +74,9 @@ apps/mobile/
 │   ├── settings/               # Prefs, webview, delete account
 │   ├── booking/, bookings/, guidance/, tools/, wallet/
 │   └── experts/[id].tsx
-├── modules/expo-pandit-chime/  # Native Amazon Chime (Android)
-│   ├── android/.../ExpoPanditChimeModule.kt
-│   └── src/index.ts
 ├── lib/
-│   ├── chimeAudio.ts           # JS wrapper for native audio
-│   ├── chimeVideo.ts           # JS wrapper (waiting-room + enableSessionMedia)
+│   ├── webrtcAudio.ts           # Native WebRTC audio adapter
+│   ├── webrtcVideo.ts           # Native WebRTC video adapter + tiles
 │   ├── chatSocket.ts           # Socket.IO (chat + audio/video + notifications)
 │   ├── articlesApi.ts, notificationApi.ts, notificationPreferences.ts
 │   ├── localNotificationScheduler.ts
@@ -148,24 +145,26 @@ login (+91) → request-otp → verify-otp → JWT in secure store
 
 - `joinSession` → messages, typing, timer, waiting-for-pandit
 - Entry: Chat Now, booking confirmation (chat format)
-- Messages are **not** stored on device; server persists to DynamoDB
+- Messages are **not** stored on device; server persists to MongoDB
 
 ---
 
 ## 8. Live Audio Calls
+
+> **Current implementation note:** The historical paid-meeting-SDK details below are superseded. The active implementation uses `lib/webrtcAudio.ts`, `lib/webrtcVideo.ts`, Socket.IO signaling, free STUN by default, and optional coturn.
 
 ### Architecture
 
 ```
 Mobile                          Backend                    Dashboard
   │                               │                            │
-  ├─ POST /sessions/audio/create ─► ChimeService (AWS)         │
-  ├─ native startMeeting ─────────► AWS Chime Meeting ◄────────├─ POST /sessions/audio/join
-  │   (RTP audio)                 │                            ├─ chime-sdk-js startSession
-  └─ joinAudioSession (WS) ───────► ChatGateway (timer only) ◄──┘
+  ├─ POST /sessions/audio/create ─► WebRtcService (ICE config) │
+  ├─ native getUserMedia ─────────► Peer connection ◄──────────├─ POST /sessions/audio/join
+  │   (P2P audio)                 │                            ├─ browser WebRTC peer
+  └─ joinAudioSession (WS) ───────► ChatGateway (signaling/timer) ◄┘
 ```
 
-**Media** = AWS Chime (peer-to-peer through Chime infrastructure).  
+**Media** = WebRTC peer-to-peer where possible, with optional coturn relay.
 **Signaling** = Socket.IO (`joinAudioSession`, `audioSessionStarted`, `timeRemaining`, etc.).
 
 ### Implementation
@@ -173,25 +172,25 @@ Mobile                          Backend                    Dashboard
 | Layer | File | Role |
 |-------|------|------|
 | Screen | `app/session/audio.tsx` | UI: timer, mute, speaker, remote volume status |
-| JS wrapper | `lib/chimeAudio.ts` | Permissions, start/stop, remote volume handler |
-| Native module | `modules/expo-pandit-chime/` | Chime Android SDK, speaker routing, volume events |
+| JS wrapper | `lib/webrtcAudio.ts` | Permissions, start/stop, signaling, remote track state |
+| Native package | `react-native-webrtc` | Native peer connection and device media |
 | Socket | `lib/chatSocket.ts` | `joinAudioSession`, `endAudioSession` |
 
 ### Startup flow
 
 1. `POST /sessions/audio/create` with `{ bookingId }`
 2. Request `RECORD_AUDIO` at runtime (**only** this permission)
-3. `chimeAudio.startSession(meeting, attendee)`
+3. `webrtcAudio.startSession(config)`
 4. `chatSocket.joinAudioSession(...)` for timer + lifecycle
 5. On leave: `endAudioSession` + `DELETE /sessions/audio/:bookingId`
 
 ### Native module details
 
-- **SDK:** `amazon-chime-sdk:0.25.3`, `amazon-chime-sdk-media-no-video-codecs:0.25.2`
+- **Media:** `react-native-webrtc:124.0.6` with the Expo config plugin
 - **Config:** `AudioVideoConfiguration(Mono16K, VoiceCall)`
 - **Speaker:** `chooseAudioDevice` (builtin speaker vs handset) with 300ms/1s retries after start
 - **Events:** `onRemoteVolumeChanged` → "Receiving pandit audio" UI
-- **Removed:** `react-native-incall-manager` (conflicted with Chime routing)
+- **Removed:** the paid meeting SDK and its native bridge
 
 ### Android permissions (critical)
 
@@ -213,13 +212,13 @@ npx expo run:android   # Required after native module changes
 
 ## 8b. Live Video Calls
 
-Same architecture as audio; media via Chime, signaling via Socket.IO.
+Same architecture as audio; media via WebRTC, signaling via Socket.IO.
 
 | Layer | File | Role |
 |-------|------|------|
 | Screen | `app/session/video.tsx` | PiP UI, draggable corner, flip camera, mute |
-| JS wrapper | `lib/chimeVideo.ts` | `startVideoMeeting`, `VideoSurface`, tile events |
-| Native | `expo-pandit-chime` | `startVideoMeeting`, `ExpoPanditChimeVideoView` |
+| JS wrapper | `lib/webrtcVideo.ts` | `startVideoSession`, `VideoSurface`, tile events |
+| Native | `react-native-webrtc` | Native peer connection and video tracks |
 | Socket | `lib/chatSocket.ts` | `joinVideoSession`, `endVideoSession` |
 
 **Permissions:** `RECORD_AUDIO` + `CAMERA` (runtime). `POST /sessions/video/create` then socket join.
@@ -273,7 +272,7 @@ Same architecture as audio; media via Chime, signaling via Socket.IO.
 3. Cancel/complete booking UI
 4. Home astrology tiles not linked to tool routes
 5. Remove legacy `app/expert/[id].tsx` mock route
-6. iOS Chime native module — Android only today
+6. Physical iOS WebRTC proof — run through the Kali tunnel before presentation
 7. Remote push (FCM/APNs) — local notifications only
 
 ---
@@ -304,9 +303,9 @@ Backend on port **3001**. Physical device: `EXPO_PUBLIC_API_BASE=http://<LAN-IP>
 | Root navigation | `app/_layout.tsx` |
 | Live audio screen | `app/session/audio.tsx` |
 | Live video screen | `app/session/video.tsx` |
-| Chime audio wrapper | `lib/chimeAudio.ts` |
-| Chime video wrapper | `lib/chimeVideo.ts` |
-| Native Chime module | `modules/expo-pandit-chime/` |
+| WebRTC audio wrapper | `lib/webrtcAudio.ts` |
+| WebRTC video wrapper | `lib/webrtcVideo.ts` |
+| Native WebRTC package | `react-native-webrtc` |
 | Chat + audio socket | `lib/chatSocket.ts` |
 | Live chat screen | `app/session/chat.tsx` |
 | Articles | `app/articles/`, `lib/articlesApi.ts` |
@@ -327,7 +326,7 @@ Backend on port **3001**. Physical device: `EXPO_PUBLIC_API_BASE=http://<LAN-IP>
 
 **Planned microservices (future):** user-service (monolith today), pandit-service scaffold, booking-service, chat-video-service, payment-service, notification-service.
 
-**Planned AWS production:** ECS Fargate, RDS, ElastiCache, DynamoDB, S3, API Gateway, Cognito, **Amazon Chime** (audio + video live), CloudFront, SNS, SQS, etc.
+**Historical AWS alternative:** ECS Fargate, RDS, ElastiCache, DynamoDB, S3, API Gateway, Cognito, managed TURN or another media relay only if needed, CloudFront, SNS, SQS, etc. The current deployment direction uses Supabase, Redis Cloud, MongoDB Atlas, Cloudinary, and a Cloudflare Worker front door.
 
 **App store:** EAS Build, privacy policy URLs, real SMS OTP before submission.
 

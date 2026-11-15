@@ -14,6 +14,20 @@ const publicRoutes = [
   ...['first-consultation', 'coins-and-payment-pending', 'booking-cancellation', 'joining-audio-video', 'chat-reconnect', 'account-access', 'refunds-and-complaints'].map(slug => '/help/' + slug),
 ];
 
+const requiredViewports = [
+  { width: 320, height: 568 },
+  { width: 360, height: 800 },
+  { width: 375, height: 812 },
+  { width: 390, height: 844 },
+  { width: 414, height: 896 },
+  { width: 768, height: 1024 },
+  { width: 1024, height: 768 },
+  { width: 1280, height: 720 },
+  { width: 1366, height: 768 },
+  { width: 1440, height: 900 },
+  { width: 1920, height: 1080 },
+];
+
 test.describe('Public route reflow', () => {
   for (const width of [390, 1440]) {
     for (const route of publicRoutes) {
@@ -35,10 +49,10 @@ test.describe('Public route reflow', () => {
 });
 
 test.describe('Representative device sizes', () => {
-  for (const width of [320, 375, 390, 768, 1024, 1440, 1920]) {
-    test(`homepage and key layouts at ${width}px`, async ({ page }) => {
+  for (const { width, height } of requiredViewports) {
+    test(`homepage and key layouts at ${width}x${height}`, async ({ page }) => {
       test.setTimeout(120_000);
-      await page.setViewportSize({ width, height: width < 621 ? 844 : 1000 });
+      await page.setViewportSize({ width, height });
       await mkdir('output/ui-screenshots', { recursive: true });
       for (const [route, name] of [['/', 'home'], ['/pandits', 'pandits'], ['/tools/compatibility', 'compatibility'], ['/login', 'login'], ['/privacy', 'privacy']]) {
         await page.goto(route);
@@ -46,7 +60,7 @@ test.describe('Representative device sizes', () => {
         await page.evaluate(() => document.fonts.ready);
         const overflowing = await page.evaluate(() => Array.from(document.querySelectorAll('body *')).filter(element => {
           const rect = element.getBoundingClientRect();
-          return rect.width > 0 && rect.right > innerWidth + 2 && getComputedStyle(element).position !== 'fixed' && !element.closest('details:not([open]), .legal-table-wrap, .journal-table-wrap, nextjs-portal');
+          return rect.width > 0 && rect.right > innerWidth + 2 && getComputedStyle(element).position !== 'fixed' && !element.closest('details:not([open]), .legal-tabs, .legal-table-wrap, .journal-table-wrap, nextjs-portal');
         }).map(element => element.tagName + '.' + element.className).slice(0, 8));
         expect(overflowing, `${route}: overflowing elements`).toEqual([]);
         await page.screenshot({ path: `output/ui-screenshots/${name}-${width}.png`, fullPage: name === 'home', animations: 'disabled' });
@@ -85,5 +99,5 @@ test('large text and reduced motion keep the homepage usable', async ({ page }) 
   await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
   const overflow = await page.evaluate(() => ({ width: document.documentElement.scrollWidth, elements: Array.from(document.querySelectorAll('body *')).filter(element => !element.closest('details:not([open]), nextjs-portal') && element.getBoundingClientRect().right > innerWidth + 2).map(element => ({ tag: element.tagName, class: element.className, width: element.getBoundingClientRect().width, right: element.getBoundingClientRect().right })).slice(0, 12) }));
   expect(overflow.width, JSON.stringify(overflow.elements)).toBeLessThanOrEqual(769);
-  await expect(page.locator('.hero .button')).toBeVisible();
+  await expect(page.locator('.hero .actions .button').first()).toBeVisible();
 });

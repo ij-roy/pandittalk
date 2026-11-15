@@ -53,11 +53,7 @@ export class ExpertsController {
     @Query('duration') duration: string,
   ): Promise<string[]> {
     const durationMinutes = this.parseSlotQuery(date, duration);
-    return this.expertsService.computeAvailableSlots(
-      id,
-      date,
-      durationMinutes,
-    );
+    return this.expertsService.computeAvailableSlots(id, date, durationMinutes);
   }
 
   @Get(':id/all-slots')
@@ -72,7 +68,9 @@ export class ExpertsController {
 
   private parseSlotQuery(date: string, duration: string): number {
     if (!date || !DATE_PATTERN.test(date)) {
-      throw new BadRequestException('date query param is required (YYYY-MM-DD)');
+      throw new BadRequestException(
+        'date query param is required (YYYY-MM-DD)',
+      );
     }
 
     if (duration === undefined || duration === '') {
@@ -99,10 +97,7 @@ export class ExpertsController {
 
   @Get(':id/follow')
   @UseGuards(JwtAuthGuard)
-  followStatus(
-    @CurrentUser('sub') userId: string,
-    @Param('id') id: string,
-  ) {
+  followStatus(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     return this.expertsService.isFollowing(userId, id);
   }
 

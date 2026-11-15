@@ -8,7 +8,6 @@ dist
 uploads
 coverage
 data
-apps/pandit-service
 *.log
 npm-debug.log*
 .DS_Store

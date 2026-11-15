@@ -19,14 +19,14 @@ describe('parseFamilyMemberInput', () => {
   });
 
   it('rejects an unknown relation', () => {
-    expect(() => parseFamilyMemberInput({ ...valid, relation: 'cousin' })).toThrow(
-      BadRequestException,
-    );
+    expect(() =>
+      parseFamilyMemberInput({ ...valid, relation: 'cousin' }),
+    ).toThrow(BadRequestException);
   });
 
   it('rejects a bad date', () => {
-    expect(() => parseFamilyMemberInput({ ...valid, dob: '01-06-2018' })).toThrow(
-      BadRequestException,
-    );
+    expect(() =>
+      parseFamilyMemberInput({ ...valid, dob: '01-06-2018' }),
+    ).toThrow(BadRequestException);
   });
 });

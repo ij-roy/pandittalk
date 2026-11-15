@@ -24,11 +24,7 @@ export function assertDigitalToolPurchaseAllowed(
   }
 }
 
-/** Gate native A/V until Chime iOS ships. */
+/** Browser-native WebRTC is available on supported web and native clients. */
 export function assertAvBookingAllowed(platform: ClientPlatform): void {
-  if (platform === 'ios') {
-    throw new ForbiddenException(
-      'Audio and video sessions are not available on iPhone yet. Please use live chat.',
-    );
-  }
+  void platform;
 }

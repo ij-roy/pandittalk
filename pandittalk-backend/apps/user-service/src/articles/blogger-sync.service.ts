@@ -93,7 +93,7 @@ export class BloggerSyncService implements OnModuleInit {
   isConfigured(): boolean {
     return Boolean(
       this.config.get<string>('GOOGLE_BLOGGER_API_KEY')?.trim() &&
-        this.config.get<string>('GOOGLE_BLOGGER_BLOG_ID')?.trim(),
+      this.config.get<string>('GOOGLE_BLOGGER_BLOG_ID')?.trim(),
     );
   }
 

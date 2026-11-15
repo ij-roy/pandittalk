@@ -1,6 +1,9 @@
 import type { Prisma } from '@prisma/client';
 import type { BookingAreaId, ExpertAreaId } from './dto/list-experts-query.dto';
-import { BOOKING_AREA_IDS, EXPERT_AREA_IDS } from './dto/list-experts-query.dto';
+import {
+  BOOKING_AREA_IDS,
+  EXPERT_AREA_IDS,
+} from './dto/list-experts-query.dto';
 
 /** Expert-tab filter buckets → guidance booking area keys stored on Pandit. */
 const EXPERT_AREA_TO_GUIDANCE: Record<ExpertAreaId, BookingAreaId[]> = {

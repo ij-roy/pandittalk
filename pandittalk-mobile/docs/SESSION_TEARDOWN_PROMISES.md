@@ -1,6 +1,6 @@
 # Session teardown promise safety
 
-Leaving or ending chat / audio / video sessions runs async cleanup (Chime `stopMeeting`, socket leave/disconnect).
+Leaving or ending chat / audio / video sessions runs async cleanup (WebRTC track/peer shutdown, socket leave/disconnect).
 
 Unhandled rejections from that path can white-screen React Native (issue #279).
 
