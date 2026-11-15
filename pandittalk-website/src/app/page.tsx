@@ -1,22 +1,22 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { EscapeBlurNotice } from '@/components/site/EscapeBlurNotice';
-import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
+import { availabilityCopy } from '@/content/availability';
 import { FocusOnHash } from '@/components/site/FocusOnHash';
 import { HomeFaq } from '@/components/site/HomeFaq';
+import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
+import { RevealOnScroll } from '@/components/site/RevealOnScroll';
 import { SiteIcon, type SiteIconName } from '@/components/site/SiteIcon';
-import { ExpertDirectory } from '@/features/experts/ExpertDirectory';
+import { SpotlightCard } from '@/components/site/SpotlightCard';
 import { SITE_URL } from '@/lib/articles/site';
-import type { Metadata } from 'next';
-import { availabilityCopy } from '@/content/availability';
 
 export const metadata: Metadata = {
   title: { absolute: 'Pandit Talk — You Talk. We Stay.' },
-  description: 'Traditional wisdom, real Pandits and modern technology for thoughtful conversations with room to explain. New conversations are opening soon.',
+  description: 'Explore real Pandit profiles, prepare your question privately, and use free reflection tools while new conversations get ready to open.',
   alternates: { canonical: '/' },
   openGraph: {
     title: 'Pandit Talk — You Talk. We Stay.',
-    description: 'Traditional wisdom, real Pandits and modern technology for thoughtful conversations with room to explain. New conversations are opening soon.',
+    description: 'Explore real Pandit profiles, prepare your question privately, and use free reflection tools while new conversations get ready to open.',
     url: '/',
   },
 };
@@ -32,56 +32,47 @@ const topics: { slug: string; label: string; icon: SiteIconName }[] = [
   { slug: 'finance', label: 'Finances', icon: 'coins' },
 ];
 
-function EditorialArt() {
-  return <svg className="editorial-art" viewBox="0 0 160 120" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden="true" focusable="false">
-    <circle cx="80" cy="55" r="45" opacity=".3" />
-    <circle cx="80" cy="55" r="37" opacity=".3" />
-    <path d="M80 92C50 68 59 38 80 22c21 16 30 46 0 70Z" />
-    <path d="M80 92C45 89 29 63 34 40c27 0 46 18 46 52ZM80 92c35-3 51-29 46-52-27 0-46 18-46 52Z" />
-    <path d="M80 92C47 104 20 88 17 68c28-10 51 0 63 24ZM80 92c33 12 60-4 63-24-28-10-51 0-63 24Z" />
-    <path d="M42 105h76M60 111h40M80 22v70" opacity=".6" />
-    <circle cx="80" cy="8" r="2" fill="currentColor" stroke="none" />
-  </svg>;
-}
-
 const homeFaqs = [
   {
-    q: 'What should I bring to a conversation?',
-    a: 'You do not need a perfect question. Bring the topic that feels closest, and only the details you are comfortable sharing. New conversations are opening soon — you can prepare a private draft now without creating a charge.',
-    linkHref: '/help/first-consultation',
-    linkLabel: 'Preparing while bookings stay closed →',
+    q: 'Can I book a conversation right now?',
+    a: `${availabilityCopy.publicStatus} You can explore profiles, prepare a private draft, try free tools, and leave one email for an availability update. Nothing on this page starts a booking or charge.`,
+    linkHref: '/how-it-works#booking-availability-how',
+    linkLabel: 'See the current booking status →',
   },
   {
-    q: 'How do coins and pricing work?',
-    a: 'Coins and INR are separate units. New purchases are paused while service terms are finalized. Existing bookings keep their agreed terms.',
-    linkHref: '/pricing',
-    linkLabel: 'See pricing details →',
+    q: 'What should I bring to a conversation?',
+    a: 'You do not need a perfect question. Bring the topic that feels closest and only the details you are comfortable sharing. You can prepare a private draft now.',
+    linkHref: '/help/first-consultation',
+    linkLabel: 'See how to prepare →',
   },
   {
     q: 'Are astrology tools the same as talking to a Pandit?',
-    a: 'No. Tools are automated and labelled as such. A live conversation is with a person — and new conversations are opening soon.',
+    a: 'No. Tools are automated and clearly labelled. A conversation is with a person whose profile, practice areas, and languages you can review first.',
     linkHref: '/tools',
     linkLabel: 'Explore labelled tools →',
   },
   {
-    q: 'Is my saved story shared automatically?',
-    a: 'No. Signed-in notes stay private until you choose to share them for a specific booking and Pandit.',
+    q: 'Is my saved draft shared automatically?',
+    a: 'No. Your draft stays private. You choose whether to keep it on this browser, manage it in your account, or share it for a future booking.',
     linkHref: '/how-it-works#your-story',
     linkLabel: 'How your story stays with you →',
   },
-  {
-    q: 'What if something goes wrong?',
-    a: 'Keep your booking or payment reference and contact support. Formal grievances have a dedicated redressal path.',
-    linkHref: '/help/refunds-and-complaints',
-    linkLabel: 'Refunds and complaints →',
-  },
-  {
-    q: 'Can I book a conversation right now?',
-    a: `${availabilityCopy.publicStatus} You can explore Pandits, try tools, prepare a draft, and leave your email for updates.`,
-    linkHref: '/how-it-works#booking-availability-how',
-    linkLabel: 'Get notified →',
-  },
 ] as const;
+
+function HeroOrbitArt() {
+  return <div className="hero-orbit-art" aria-hidden="true">
+    <span className="hero-orbit-ring hero-orbit-ring-one" />
+    <span className="hero-orbit-ring hero-orbit-ring-two" />
+    <span className="hero-orbit-dot" />
+    <svg viewBox="0 0 120 94" fill="none" stroke="currentColor" strokeWidth="1.25" focusable="false">
+      <path d="M60 76C38 58 44 34 60 21c16 13 22 37 0 55Z" />
+      <path d="M60 76C34 74 23 55 27 38c19 1 33 14 33 38ZM60 76c26-2 37-21 33-38-19 1-33 14-33 38Z" />
+      <path d="M60 76C35 85 15 73 13 58c21-7 38 1 47 18ZM60 76c25 9 45-3 47-18-21-7-38 1-47 18Z" />
+      <path d="M31 86h58M44 91h32M60 21v55" opacity=".55" />
+      <circle cx="60" cy="10" r="2" fill="currentColor" stroke="none" />
+    </svg>
+  </div>;
+}
 
 export default function Home() {
   const faqSchema = {
@@ -92,10 +83,7 @@ export default function Home() {
       return {
         '@type': 'Question',
         name: item.q,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: `${item.a} See ${SITE_URL}${path} for more detail.`,
-        },
+        acceptedAnswer: { '@type': 'Answer', text: `${item.a} See ${SITE_URL}${path} for more detail.` },
         url: `${SITE_URL}/#faq`,
       };
     }),
@@ -104,137 +92,148 @@ export default function Home() {
   return <main id="main-content" className="page home-page">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
     <FocusOnHash hash="#booking-availability" targetId="booking-availability" />
+
     <section className="hero" aria-labelledby="home-title">
-      <div>
-        <p className="eyebrow">Traditional wisdom · Real Pandits · Modern technology</p>
-        <p className="hero-brand">Pandit Talk</p>
+      <div className="hero-copy">
+        <p className="eyebrow">Traditional wisdom · Real people · Your pace</p>
         <h1 id="home-title">Find a calmer next step for the question on your mind.</h1>
-        <p className="supporting">Real Pandits, free reflection tools, and a private place to prepare. Explore the people and topics that feel relevant now; new conversations are opening soon.</p>
-        <p className="sr-only" id="home-hero-hint">Arrow keys move between hero actions. Escape blurs the focused link. Skip remains site-content. NotifyOpenForm still requires source.</p>
+        <p className="supporting">Meet Pandits through their own profiles, put your thoughts into words privately, and explore free tools before deciding what feels right.</p>
+        <p className="sr-only" id="home-hero-hint">Arrow keys move between the two main choices. Escape blurs the focused link.</p>
         <LinkKeyboardGroup className="actions" aria-label="Home hero actions" aria-describedby="home-hero-hint">
           <Link className="button" href="/pandits">Explore Pandits<SiteIcon name="right" size={18} /></Link>
-          <Link className="button secondary" href="/tools">Try a free tool</Link>
-          <Link className="hero-secondary" href="/guidance/start">Prepare a private draft<SiteIcon name="right" size={17} /></Link>
+          <Link className="button secondary" href="/guidance/start">Prepare a private draft</Link>
         </LinkKeyboardGroup>
-        <EscapeBlurNotice
-          className="hero-availability"
-          id="booking-availability"
-          role="region"
-          aria-label="Booking availability"
-        >
-          <p><strong>{availabilityCopy.publicStatus}</strong> {availabilityCopy.publicDetail} {availabilityCopy.noTimerExplanation}</p>
-          <NotifyOpenForm source="website_home_hero" submitLabel="Get one email" fieldLabel={availabilityCopy.waitlistLabel} helpText={availabilityCopy.waitlistHelp} />
-        </EscapeBlurNotice>
+        <p className="hero-status"><span aria-hidden="true" />{availabilityCopy.publicStatus} <Link href="#booking-availability">Get one email when that changes</Link></p>
       </div>
-      <aside className="editorial-mark" aria-label="The Pandit Talk philosophy">
-        <EditorialArt />
-        <p className="devanagari" lang="hi">बात आपकी।<br />ध्यान हमारा।</p>
-        <div><p>You Talk. We Stay.</p><span className="small">Aapki baat. Dhyaan se.</span></div>
-        <span className="editorial-caption"><SiteIcon name="spark" size={15} />Reflect. Prepare. Decide.</span>
+
+      <aside className="hero-guide-card panel" aria-labelledby="hero-guide-title">
+        <HeroOrbitArt />
+        <div className="hero-guide-content">
+          <p className="eyebrow">A thoughtful way to begin</p>
+          <h2 id="hero-guide-title">You do not need the perfect question.</h2>
+          <ol className="hero-guide-steps">
+            <li><span>1</span><div><strong>Start with a topic</strong><small>Choose what feels closest today.</small></div></li>
+            <li><span>2</span><div><strong>Know the person</strong><small>Read their introduction and languages.</small></div></li>
+            <li><span>3</span><div><strong>Decide in your own time</strong><small>Prepare first; choose a next step later.</small></div></li>
+          </ol>
+          <ul className="hero-trust-list" aria-label="What you can expect">
+            <li><SiteIcon name="user" size={17} />Real profiles</li>
+            <li><SiteIcon name="lock" size={17} />Private preparation</li>
+            <li><SiteIcon name="spark" size={17} />Free to explore</li>
+            <li><SiteIcon name="info" size={17} />No charge today</li>
+          </ul>
+        </div>
       </aside>
     </section>
 
-    <section className="section split-section" aria-labelledby="home-conversation-title">
-      <div className="section-copy">
-        <p className="eyebrow">A conversation, with room</p>
-        <h2 id="home-conversation-title">Three things that make a conversation useful.</h2>
-        <p className="lede">You should leave with clarity about your question and a next step — not a race against a clock.</p>
-        <p className="sr-only" id="home-conversation-hint">Arrow keys move between conversation links. Escape blurs the focused link. Skip remains site-content.</p>
-        <LinkKeyboardGroup as="p" aria-label="Home conversation links" aria-describedby="home-conversation-hint">
-          <Link className="text-link" href="/how-it-works">See how conversations work<SiteIcon name="right" size={18} /></Link>
-          {' · '}
-          <Link className="text-link" href="/pricing">Pricing and service terms<SiteIcon name="right" size={18} /></Link>
-          {' · '}
-          <Link className="text-link" href="/tools">Try free tools<SiteIcon name="right" size={18} /></Link>
-        </LinkKeyboardGroup>
-      </div>
-      <div>
-        <ol className="numbered-lines"><li>Room to explain.</li><li>Time to understand.</li><li>A next step you choose.</li></ol>
-        <p className="expert-meta">Resolution means clarity about your question and a next step. Your choices and life&apos;s outcomes remain your own.</p>
-      </div>
-    </section>
-
-    <section className="panel story-section split-section" aria-labelledby="home-story-title">
-      <div>
-        <p className="eyebrow">Your words matter</p>
-        <h2 id="home-story-title">Your story shouldn&apos;t have to start from zero every time.</h2>
-        <p className="lede">Keep what matters from your last conversation. Choose what you want to share, and pick up from there.</p>
-        <p className="sr-only" id="home-story-hint">Arrow keys move between story links. Escape blurs the focused link. Skip remains site-content.</p>
-        <LinkKeyboardGroup as="p" aria-label="Home story links" aria-describedby="home-story-hint">
-          <Link className="text-link" href="/how-it-works#your-story">How your story stays with you<SiteIcon name="right" size={18} /></Link>
-          {' · '}
-          <Link className="text-link" href="/login?returnTo=%2Faccount%2Fstory&reason=auth">Sign in to manage your story</Link>
-          {' · '}
-          <Link className="text-link" href="/guidance/start">Prepare a draft</Link>
-        </LinkKeyboardGroup>
-      </div>
-      <div>
-        <ol className="story-sequence" aria-label="How your story carries forward">
-          <li><SiteIcon name="chat" size={17} />Your words</li>
-          <li>Your saved context</li>
-          <li>When booking opens</li>
-        </ol>
-        <blockquote className="story-note">
-          <span className="story-note-label"><SiteIcon name="note" size={17} />A note to come back to</span>
-          “Last time, I wanted to talk about a change at work.”
-          <p className="expert-meta">Example of a user-authored note · not a testimonial</p>
-        </blockquote>
-        <p className="story-privacy">Your saved context is private. Choose the booking and Pandit before sharing anything.</p>
-      </div>
-    </section>
-
-    <section className="section split-section" aria-labelledby="home-topics-title">
-      <div className="section-copy">
-        <p className="eyebrow">Start where you are</p>
-        <h2 id="home-topics-title">What would you like to talk about?</h2>
-        <p className="lede">A big decision. A small worry. Or something you haven&apos;t quite found the words for.</p>
-        <p>You don&apos;t need to have the perfect question.</p>
-      </div>
-      <p className="sr-only" id="home-topics-keys">Arrow keys move between topic chips. Escape blurs the focused link. Skip remains site-content.</p>
-      <LinkKeyboardGroup as="nav" className="topic-links" aria-label="Guidance topics" aria-describedby="home-topics-keys">
-        {topics.map(topic => <Link key={topic.slug} href={'/guidance/' + topic.slug}><SiteIcon name={topic.icon} /><span>{topic.label}</span><SiteIcon name="right" size={17} /></Link>)}
-      </LinkKeyboardGroup>
-    </section>
-
-    <section className="section" aria-labelledby="home-pandits-title">
-      <div className="section-heading"><div>
-        <p className="eyebrow">Know the person</p>
-        <h2 id="home-pandits-title">Meet Pandits before booking opens.</h2>
-        <p className="lede">Read their own introduction, explore their practice and choose a language that feels comfortable. Profiles are for preparation — not an open booking button.</p>
-      </div></div>
-      <ExpertDirectory compact />
-    </section>
-
-    <section className="section split-section learning-section" aria-labelledby="home-learning-title">
-      <div>
-        <p className="eyebrow">A little space to explore</p>
-        <h2 id="home-learning-title">A profile to explore.<br />A thought to read.</h2>
-        <p className="lede">Some days you want to meet a Pandit for later. Other days, a journal piece or free tool is enough for now.</p>
-      </div>
-      <p className="sr-only" id="home-learning-keys">Arrow keys move between journal and tools cards. Escape blurs the focused card. Skip remains site-content.</p>
-      <LinkKeyboardGroup className="learning-cards" aria-label="Journal and tools" aria-describedby="home-learning-keys">
-        <Link href="/articles" className="panel learning-card"><SiteIcon name="book" size={28} /><h3>The journal</h3><p>Thoughtful reading, with a named author behind every article.</p><span className="text-link">Find a new perspective <SiteIcon name="right" size={17} /></span></Link>
-        <Link href="/tools" className="panel learning-card"><SiteIcon name="spark" size={28} /><h3>A moment of reflection</h3><p>Explore automated astrology tools, separate from a personal consultation.</p><span className="text-link">Explore the tools <SiteIcon name="right" size={17} /></span></Link>
-      </LinkKeyboardGroup>
-    </section>
-
-    <section className="section" id="faq" aria-labelledby="home-faq-title">
-      <p className="eyebrow">Feel a little more prepared</p>
-      <h2 id="home-faq-title">A few things you might be wondering.</h2>
-      <HomeFaq items={homeFaqs} />
-      <div className="closing-note">
-        <div>
-          <h3>Start with a little curiosity.</h3>
-          <p>Explore Pandits, try a tool, and prepare your questions. New conversations are opening soon — nothing here creates a charge.</p>
+    <RevealOnScroll>
+      <section className="section home-topics-section" aria-labelledby="home-topics-title">
+        <div className="home-section-intro">
+          <p className="eyebrow">Start where you are</p>
+          <h2 id="home-topics-title">What would you like to talk about?</h2>
+          <p className="lede">A decision, a relationship, or something you have not quite found the words for yet.</p>
         </div>
-        <p className="sr-only" id="home-closing-hint">Arrow keys move between closing actions. Escape blurs the focused link. Skip remains site-content.</p>
-        <LinkKeyboardGroup className="actions" aria-label="Home closing actions" style={{ margin: 0 }} aria-describedby="home-closing-hint">
-          <Link className="button" href="/pandits">Explore Pandits<SiteIcon name="right" size={18} /></Link>
-          <Link className="button secondary" href="/tools">Try a free tool</Link>
-          <Link className="button secondary" href="/guidance/start">Prepare a private draft</Link>
-          <Link className="text-link" href="/how-it-works#booking-availability-how">Booking updates →</Link>
+        <p className="sr-only" id="home-topics-keys">Arrow keys move between topic choices. Escape blurs the focused link.</p>
+        <LinkKeyboardGroup as="nav" className="topic-links" aria-label="Guidance topics" aria-describedby="home-topics-keys">
+          {topics.map(topic => <Link key={topic.slug} href={`/guidance/${topic.slug}`}><SiteIcon name={topic.icon} /><span>{topic.label}</span><SiteIcon name="right" size={17} /></Link>)}
         </LinkKeyboardGroup>
-      </div>
-    </section>
+      </section>
+    </RevealOnScroll>
+
+    <RevealOnScroll>
+      <section className="section home-assurance-section" aria-labelledby="home-assurance-title">
+        <div className="home-section-intro">
+          <p className="eyebrow">Clarity before commitment</p>
+          <h2 id="home-assurance-title">A human service with clear boundaries.</h2>
+          <p className="lede">Understand the person, protect your words, and know what each next step does before you choose it.</p>
+        </div>
+        <div className="trust-card-grid">
+          <SpotlightCard className="panel trust-card">
+            <span className="trust-card-icon"><SiteIcon name="user" size={23} /></span>
+            <h3>Know who you are meeting</h3>
+            <p>Read each Pandit&apos;s own introduction, practice areas, languages, and published profile details.</p>
+          </SpotlightCard>
+          <SpotlightCard className="panel trust-card">
+            <span className="trust-card-icon"><SiteIcon name="lock" size={23} /></span>
+            <h3>Prepare in private</h3>
+            <p>Write a draft on your own device. You decide whether it becomes part of a future conversation.</p>
+          </SpotlightCard>
+          <SpotlightCard className="panel trust-card">
+            <span className="trust-card-icon"><SiteIcon name="spark" size={23} /></span>
+            <h3>Move at your pace</h3>
+            <p>Browse profiles and free tools without starting a booking, payment, or conversation.</p>
+          </SpotlightCard>
+        </div>
+        <p className="sr-only" id="home-assurance-hint">Arrow keys move between process and trust links. Escape blurs the focused link.</p>
+        <LinkKeyboardGroup className="home-inline-links" aria-label="Learn about the service" aria-describedby="home-assurance-hint">
+          <Link className="text-link" href="/how-it-works">See how it works<SiteIcon name="right" size={17} /></Link>
+          <Link className="text-link" href="/trust">Read our trust and care approach<SiteIcon name="right" size={17} /></Link>
+        </LinkKeyboardGroup>
+      </section>
+    </RevealOnScroll>
+
+    <RevealOnScroll>
+      <section className="section pandit-preview-section" aria-labelledby="home-pandits-title">
+        <div className="pandit-preview-copy">
+          <p className="eyebrow">Know the person first</p>
+          <h2 id="home-pandits-title">Meet Pandits before you decide.</h2>
+          <p className="lede">The directory is built for comparison, not pressure. Look at the details that help you feel comfortable, then return when you are ready.</p>
+          <ul className="profile-check-list">
+            <li><SiteIcon name="chat" size={19} />Their own introduction</li>
+            <li><SiteIcon name="book" size={19} />Practice areas and approach</li>
+            <li><SiteIcon name="family" size={19} />Languages they list</li>
+          </ul>
+          <Link className="button" href="/pandits">Explore Pandit profiles<SiteIcon name="right" size={18} /></Link>
+        </div>
+        <div className="profile-preview-visual panel" aria-label="What a Pandit profile helps you review">
+          <div className="profile-preview-heading">
+            <span className="profile-preview-avatar"><SiteIcon name="user" size={26} /></span>
+            <div><strong>Profile at a glance</strong><small>Details before any future booking</small></div>
+          </div>
+          <div className="profile-preview-row"><SiteIcon name="chat" size={19} /><div><strong>Introduction</strong><span>Hear how the Pandit describes their work.</span></div></div>
+          <div className="profile-preview-row"><SiteIcon name="book" size={19} /><div><strong>Practice and approach</strong><span>See the topics and methods they list.</span></div></div>
+          <div className="profile-preview-row"><SiteIcon name="family" size={19} /><div><strong>Languages</strong><span>Choose a language that feels comfortable.</span></div></div>
+          <p className="profile-preview-note"><SiteIcon name="info" size={17} />Profiles are for exploration. Availability is shown honestly.</p>
+        </div>
+      </section>
+    </RevealOnScroll>
+
+    <RevealOnScroll>
+      <section className="section split-section learning-section" aria-labelledby="home-learning-title">
+        <div>
+          <p className="eyebrow">Explore at your pace</p>
+          <h2 id="home-learning-title">A useful next step can still be small.</h2>
+          <p className="lede">Read a thoughtful article or try a clearly labelled automated tool. Neither one starts a booking.</p>
+        </div>
+        <p className="sr-only" id="home-learning-keys">Arrow keys move between journal and tools cards. Escape blurs the focused card.</p>
+        <LinkKeyboardGroup className="learning-cards" aria-label="Journal and tools" aria-describedby="home-learning-keys">
+          <Link href="/articles" className="panel learning-card"><SiteIcon name="book" size={28} /><h3>The journal</h3><p>Thoughtful reading with a named author behind every article.</p><span className="text-link">Find a new perspective <SiteIcon name="right" size={17} /></span></Link>
+          <Link href="/tools" className="panel learning-card"><SiteIcon name="spark" size={28} /><h3>Free reflection tools</h3><p>Automated experiences that stay separate from a personal conversation.</p><span className="text-link">Explore the tools <SiteIcon name="right" size={17} /></span></Link>
+        </LinkKeyboardGroup>
+      </section>
+    </RevealOnScroll>
+
+    <RevealOnScroll>
+      <section className="section home-faq-section" id="faq" aria-labelledby="home-faq-title">
+        <div className="home-section-intro">
+          <p className="eyebrow">Know before you begin</p>
+          <h2 id="home-faq-title">A few honest answers.</h2>
+        </div>
+        <HomeFaq items={homeFaqs} />
+      </section>
+    </RevealOnScroll>
+
+    <RevealOnScroll>
+      <section className="section home-update" id="booking-availability" aria-labelledby="home-update-title" tabIndex={-1}>
+        <div className="home-update-panel panel">
+          <div>
+            <p className="eyebrow">One useful update</p>
+            <h2 id="home-update-title">Know when new conversations open.</h2>
+            <p>Leave one email and we will write when availability changes. You can keep exploring without joining a marketing list.</p>
+          </div>
+          <NotifyOpenForm source="website_home_update" submitLabel="Email me once" fieldLabel={availabilityCopy.waitlistLabel} helpText={availabilityCopy.waitlistHelp} />
+        </div>
+      </section>
+    </RevealOnScroll>
   </main>;
 }

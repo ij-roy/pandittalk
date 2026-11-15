@@ -92,6 +92,33 @@ test('mobile primary action stays in the initial screen and skip link reaches co
   await expect(page.locator('#site-content')).toBeFocused();
 });
 
+for (const viewport of [
+  { width: 390, height: 844, topicColumns: 2 },
+  { width: 1440, height: 900, topicColumns: 4 },
+]) {
+  test(`homepage keeps a compact form and deliberate grid at ${viewport.width}px`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+
+    const inputHeight = await page.locator('.home-update input[type="email"]').evaluate(element => element.getBoundingClientRect().height);
+    expect(inputHeight).toBeGreaterThanOrEqual(44);
+    expect(inputHeight).toBeLessThanOrEqual(56);
+    const rowHeight = await page.locator('.home-update .notify-open-row').evaluate(element => element.getBoundingClientRect().height);
+    expect(rowHeight).toBeLessThanOrEqual(viewport.width < 900 ? 150 : 100);
+
+    const columns = await page.locator('.topic-links').evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
+    expect(columns).toBe(viewport.topicColumns);
+
+    const heroGuide = await page.locator('.hero-guide-card').boundingBox();
+    const heroCopy = await page.locator('.hero-copy').boundingBox();
+    expect(heroGuide).not.toBeNull();
+    expect(heroCopy).not.toBeNull();
+    if (viewport.width < 900) expect(heroGuide!.y).toBeGreaterThan(heroCopy!.y);
+    else expect(heroGuide!.x).toBeGreaterThan(heroCopy!.x);
+  });
+}
+
 test('large text and reduced motion keep the homepage usable', async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 1024 });
   await page.emulateMedia({ reducedMotion: 'reduce' });

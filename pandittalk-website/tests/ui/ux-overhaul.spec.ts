@@ -9,22 +9,68 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test('homepage leads with customer value and one concise availability action', async ({ page }) => {
+test('homepage hero leads with value, two choices and a useful guide', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Find a calmer next step for the question on your mind.');
-  await expect(page.locator('.hero .button').first()).toHaveText(/Explore Pandits/);
-  await expect(page.locator('.hero .button').nth(1)).toHaveText(/Try a free tool/);
-  await expect(page.getByText('New conversations are opening soon.', { exact: true })).toBeVisible();
-  await expect(page.locator('.hero .notify-open-form')).toHaveCount(1);
-  await expect(page.locator('.home-page').getByText('No Timer isn\'t open yet.', { exact: true })).toHaveCount(0);
+  await expect(page.locator('.hero-brand')).toHaveCount(0);
+  await expect(page.locator('.hero .actions a')).toHaveCount(2);
+  await expect(page.locator('.hero .actions a').first()).toHaveText(/Explore Pandits/);
+  await expect(page.locator('.hero .actions a').nth(1)).toHaveText(/Prepare a private draft/);
+  await expect(page.locator('.hero-guide-card')).toBeVisible();
+  await expect(page.locator('.hero-trust-list li')).toHaveCount(4);
+  await expect(page.locator('.hero .notify-open-form')).toHaveCount(0);
+});
+
+test('homepage asks for an email once, after explaining the service', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.locator('.home-update .notify-open-form')).toHaveCount(1);
+  await expect(page.locator('.home-page .notify-open-form')).toHaveCount(1);
+  const updateTop = await page.locator('.home-update').evaluate(element => element.getBoundingClientRect().top);
+  expect(updateTop).toBeGreaterThan(await page.evaluate(() => innerHeight));
+  await expect(page.locator('.home-page')).not.toContainText(/no timer|countdown|minute-by-minute/i);
+});
+
+test('homepage does not look unfinished while the Pandit API is unavailable', async ({ page }) => {
+  await page.route('**/api/backend/experts**', async route => {
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+  });
+
+  await page.goto('/');
+  await expect(page.getByText('Finding Pandits…', { exact: true })).toHaveCount(0);
+  await expect(page.locator('.expert-row-skeleton')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /Explore Pandit profiles/i })).toBeVisible();
+});
+
+test('homepage enhancement remains decorative and motion-aware', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+
+  await expect(page.locator('.reveal-on-scroll').first()).toBeVisible();
+  await expect(page.locator('.spotlight-card')).toHaveCount(3);
+  await expect(page.locator('.hero-orbit-art')).toHaveAttribute('aria-hidden', 'true');
+  const motion = await page.locator('.hero-orbit-art').evaluate(element => {
+    const ring = element.querySelector('.hero-orbit-ring');
+    return ring ? getComputedStyle(ring).animationName : null;
+  });
+  expect(motion).toBe('none');
+});
+
+test('homepage reveal content cannot remain hidden indefinitely', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForTimeout(2200);
+
+  const hidden = await page.locator('.reveal-on-scroll').evaluateAll(elements => elements.filter(element => element.getAttribute('data-reveal-visible') !== 'true').length);
+  expect(hidden).toBe(0);
 });
 
 test('normal homepage content does not expose keyboard implementation instructions', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.locator('#home-faq-hint')).toHaveClass(/sr-only/);
-  await expect(page.locator('.hero-availability').getByText('Press Escape to leave this region.', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Press Escape to leave this region.', { exact: true })).toHaveCount(0);
 });
 
 test('header keeps a useful guest path while session checking is slow', async ({ page }) => {
