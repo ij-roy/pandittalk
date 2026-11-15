@@ -48,9 +48,11 @@ records (no fake reviews or payments) and use OTP `1234` for the two phones in
 docker compose exec -T api node scripts/ensure-local-demo-data.cjs
 ```
 
-The script creates one customer, one linked pandit, and confirmed chat, audio,
-and video bookings. It is not part of application startup and is intended only
-for local verification. Use the printed media booking IDs to open the real
+The script creates one customer, one linked pandit, one local Admin, and
+confirmed chat, audio, and video bookings. It is not part of application
+startup and is intended only for local verification. The local Admin demo phone
+is `+919999999996` and uses the fixed OTP `1234` only while
+`ALLOW_TEST_OTP=true`. Use the printed media booking IDs to open the real
 audio/video routes; with blank Chime credentials they should show the provider
 unavailable state rather than a fake connected call.
 
@@ -117,12 +119,18 @@ Copy-Item pandittalk-website/.env.example pandittalk-website/.env.local
 Push-Location pandittalk-website; npm ci; npm run dev; Pop-Location
 ```
 
-Dashboard:
+Dashboard (Pandit and Admin workspaces):
 
 ```powershell
 Copy-Item pandittalk-dashboard/.env.example pandittalk-dashboard/.env
 Push-Location pandittalk-dashboard; npm ci; npm run dev; Pop-Location
 ```
+
+The same dashboard login accepts the linked Pandit demo phone
+`+919999999997` and the local Admin demo phone `+919999999996`. Pandits are
+sent to `/dashboard`; Admins are sent to `/admin`. The browser never chooses
+its own role: `/auth/me` supplies the persisted role and every `/admin/*` API
+route checks `ADMIN` server-side.
 
 Mobile:
 

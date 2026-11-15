@@ -22,6 +22,11 @@ being graded.
    curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
    ```
 
+   The fixture also creates the local Admin account `+919999999996`. Use OTP
+   `1234` only with `ALLOW_TEST_OTP=true`, then open the dashboard and show the
+   `/admin` overview plus one status update in Bookings or Applications. The
+   Pandit fixture remains `+919999999997` and must still route to `/dashboard`.
+
 4. Have the GitHub Actions run open in one browser tab and the Vercel website,
    dashboard, and mobile dev client ready in the others.
 5. If audio/video is part of the live demonstration, configure valid Chime
@@ -48,7 +53,7 @@ signaling and API traffic.
 | 1:30–4:00 | Aman Singh | System design and why local-first | PostgreSQL source of truth, Redis shared state, DynamoDB Local compatibility, Caddy front door, optional TURN |
 | 4:00–6:00 | User | Docker and stateless scaling | `docker compose ps`, private dependency ports, `--scale api=2`, health endpoint |
 | 6:00–8:00 | Aman Singh | CI/CD and repository discipline | GitHub Actions push/PR checks, branch/PR history, secret hygiene, Docker build |
-| 8:00–11:30 | User | Live application demonstration | Website route, dashboard route, mobile route, text chat, responsive layout, error handling |
+| 8:00–11:30 | User | Live application demonstration | Website route, Admin `/admin` route, Pandit `/dashboard` route, mobile route, text chat, responsive layout, error handling |
 | 11:30–13:30 | Aman Singh | Deployment and failure plan | HTTPS tunnel to port 3001, Vercel env vars, Redis-backed replica behavior, backup/restart after power cut |
 | 13:30–15:00 | Both | Questions and limitations | Explain provider credentials, TURN, scaling limits, and the AWS upgrade path |
 
@@ -70,6 +75,10 @@ cd pandittalk-website && npm run test:local-replica && cd ..
 curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
 ```
 
+The local API smoke also calls `/auth/me`, every read-only `/admin/*` endpoint,
+the booking status mutation, and verifies that a customer token receives 403
+from `/admin/overview`.
+
 Use the local demo phones from `TEST_OTP_PHONE_ALLOWLIST` with OTP `1234`, then
 show the browser clients. Exchange a chat message, reconnect one client, and
 show that the message history and session state return. Explain that the
@@ -85,6 +94,10 @@ sessions. Do not run `docker compose down` during the presentation.
   replaced by the managed AWS service later.
 - Caddy is the only exposed local service; it upgrades WebSockets and balances
   API replicas.
+- Admin authorization is enforced in the API guard and reloaded from
+  PostgreSQL; the dashboard role is only a routing hint and cannot grant
+  access. The Admin workspace is available at `/admin` and the Pandit workspace
+  at `/dashboard`.
 - The tunnel exposes HTTPS/WSS to Vercel and physical devices. Localhost must
   never be placed in a physical mobile build.
 - TURN is optional infrastructure. It does not create signaling or media by

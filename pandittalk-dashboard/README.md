@@ -1,4 +1,32 @@
-# React + TypeScript + Vite
+# PanditTalk dashboard
+
+This Vite app contains two server-authorized workspaces:
+
+- Pandits use `/dashboard` for sessions, articles, notifications, clients, and
+  audio/video session controls.
+- Admins use `/admin` for overview metrics, users, Pandits, bookings,
+  applications, articles, notifications, transactions, and reports.
+
+Both roles use the same OTP login and refresh-cookie flow. The dashboard calls
+`GET /auth/me` after refresh and routes from the server-provided role. Keep
+`VITE_API_BASE` pointed at the local reverse proxy (`http://localhost:3001`) or
+the public HTTPS tunnel; do not hardcode a tunnel URL in source.
+
+Local Admin demo: `+919999999996`, OTP `1234`, only when the backend has
+`ALLOW_TEST_OTP=true`. This is a development fixture, not a production
+credential.
+
+## Development
+
+```powershell
+Copy-Item .env.example .env
+npm ci
+npm run dev
+```
+
+Production checks are `npm run lint` and `npm run build`.
+
+## Original Vite template notes
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

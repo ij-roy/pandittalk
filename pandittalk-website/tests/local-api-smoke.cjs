@@ -42,6 +42,21 @@ async function expectStatus(name, path, expected, init = {}) {
   return name;
 }
 
+async function patchJson(name, path, token, body, expected = 200) {
+  const response = await fetch(`${base}${path}`, {
+    method: 'PATCH',
+    headers: {
+      authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (response.status !== expected) {
+    throw new Error(`${name} returned HTTP ${response.status}, expected ${expected}`);
+  }
+  return response.json();
+}
+
 async function verifyLocalAvatar(customerToken) {
   const png = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
@@ -70,6 +85,13 @@ async function verifyLocalAvatar(customerToken) {
 async function main() {
   const customerToken = await verify('+919999999998');
   const panditToken = await verify('+919999999997', 'dashboard');
+  const adminToken = await verify('+919999999996', 'dashboard');
+  const adminMe = await fetch(`${base}/auth/me`, {
+    headers: { authorization: `Bearer ${adminToken}` },
+  });
+  if (!adminMe.ok || (await adminMe.json()).role !== 'ADMIN') {
+    throw new Error(`admin-auth-me returned HTTP ${adminMe.status} or wrong role`);
+  }
   const checks = [
     ['liveness', '/', undefined],
     ['readiness', '/readiness', undefined],
@@ -98,11 +120,32 @@ async function main() {
     ['pandit-articles', '/pandit/articles', panditToken],
     ['pandit-article-stats', '/pandit/articles/stats', panditToken],
     ['pandit-notifications', '/notifications', panditToken],
+    ['admin-overview', '/admin/overview', adminToken],
+    ['admin-users', '/admin/users?page=1&pageSize=10', adminToken],
+    ['admin-pandits', '/admin/pandits?page=1&pageSize=10', adminToken],
+    ['admin-bookings', '/admin/bookings?page=1&pageSize=10', adminToken],
+    ['admin-applications', '/admin/applications?page=1&pageSize=10', adminToken],
+    ['admin-articles', '/admin/articles?page=1&pageSize=10', adminToken],
+    ['admin-notifications', '/admin/notifications?page=1&pageSize=10', adminToken],
+    ['admin-transactions', '/admin/transactions?page=1&pageSize=10', adminToken],
+    ['admin-reports', '/admin/reports?page=1&pageSize=10', adminToken],
   ];
   for (const [name, path, token] of checks) await request(name, path, token);
   await expectStatus('unauthenticated-profile', '/users/profile', 401);
+  await expectStatus('customer-admin-forbidden', '/admin/overview', 403, {
+    headers: { authorization: `Bearer ${customerToken}` },
+  });
+  const updatedBooking = await patchJson(
+    'admin-booking-status-update',
+    `/admin/bookings/${demoBookingId}/status`,
+    adminToken,
+    { status: 'confirmed' },
+  );
+  if (updatedBooking.status !== 'confirmed') {
+    throw new Error('admin-booking-status-update did not preserve confirmed status');
+  }
   await verifyLocalAvatar(customerToken);
-  console.log(JSON.stringify({ ok: true, checks: checks.length + 2, base }, null, 2));
+  console.log(JSON.stringify({ ok: true, checks: checks.length + 5, base }, null, 2));
 }
 
 main().catch((error) => {
