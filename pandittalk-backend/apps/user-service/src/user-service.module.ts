@@ -18,6 +18,7 @@ import { ToolsModule } from './tools/tools.module';
 import { WalletModule } from './wallet/wallet.module';
 import { AvatarModule } from './avatar/avatar.module';
 import { CustomerContractsModule } from './customer/customer-contracts.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { CustomerContractsModule } from './customer/customer-contracts.module';
     ChatModule,
     AvatarModule,
     CustomerContractsModule,
+    AdminModule,
   ],
   controllers: [UserServiceController],
   providers: [UserServiceService],
