@@ -3,10 +3,18 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 
-type Google = { accounts: { id: { initialize: (options: { client_id: string; callback: (result: { credential: string }) => void }) => void; renderButton: (element: HTMLElement, options: { theme: string; size: string }) => void } } };
+type Google = { accounts: { id: { initialize: (options: { client_id: string; callback: (result: { credential: string }) => void }) => void; renderButton: (element: HTMLElement, options: { theme: string; size: string; width?: number }) => void } } };
 type Apple = { auth: { init: (options: { clientId: string; scope: string; redirectURI: string; state: string; usePopup: boolean }) => void; signIn: () => Promise<{ authorization: { id_token: string; state: string } }> } };
 type Config = { googleClientId?: string; appleClientId?: string; appleRedirectUri?: string };
 declare global { interface Window { google?: Google; AppleID?: Apple } }
+
+function AppleMark() {
+  return <svg className="social-brand-icon" data-brand-logo="apple" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M19.67 13.19c-.03-2.52 2.06-3.74 2.15-3.8-1.18-1.72-3.02-1.96-3.67-1.98-1.55-.16-3.05.92-3.84.92-.8 0-2.04-.9-3.35-.87-1.72.03-3.3 1-4.18 2.52-1.8 3.11-.46 7.68 1.27 10.2.84 1.24 1.84 2.63 3.15 2.58 1.27-.05 1.75-.82 3.29-.82 1.53 0 1.96.82 3.29.79 1.36-.02 2.23-1.23 3.04-2.48.96-1.44 1.35-2.84 1.37-2.91-.03-.01-2.61-1-2.64-4.15zM17.14 5.76c.7-.86 1.17-2.04 1.04-3.22-1.01.04-2.23.68-2.95 1.53-.64.74-1.2 1.94-1.06 3.08 1.12.09 2.27-.57 2.97-1.39z" /></svg>;
+}
+
+function GoogleMark() {
+  return <svg className="social-brand-icon" data-brand-logo="google" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M21.35 12.27c0-.71-.06-1.4-.18-2.05H12v3.88h5.22a4.46 4.46 0 0 1-1.94 2.93v2.43h3.14c1.84-1.69 2.93-4.18 2.93-7.19z" /><path fill="#34A853" d="M12 21.75c2.63 0 4.84-.87 6.45-2.36l-3.14-2.43c-.87.58-1.98.92-3.31.92-2.54 0-4.69-1.72-5.46-4.03H3.29v2.51A9.75 9.75 0 0 0 12 21.75z" /><path fill="#FBBC05" d="M6.54 13.85A5.85 5.85 0 0 1 6.25 12c0-.64.11-1.26.29-1.85V7.64H3.29A9.75 9.75 0 0 0 2.25 12c0 1.57.38 3.05 1.04 4.36l3.25-2.51z" /><path fill="#EA4335" d="M12 6.12c1.43 0 2.72.49 3.73 1.45l2.8-2.8C16.84 3.17 14.63 2.25 12 2.25a9.75 9.75 0 0 0-8.71 5.39l3.25 2.51C7.31 7.84 9.46 6.12 12 6.12z" /></svg>;
+}
 
 async function loadScript(src: string) {
   await new Promise<void>((resolve, reject) => {
@@ -93,7 +101,8 @@ export function SocialSignIn({ consent, disabled = false, onResult }: {
           },
         });
         googleBox.current.replaceChildren();
-        window.google!.accounts.id.renderButton(googleBox.current, { theme: 'outline', size: 'large' });
+        const slotWidth = Math.round(Math.min(400, googleBox.current.parentElement?.getBoundingClientRect().width || 400));
+        window.google!.accounts.id.renderButton(googleBox.current, { theme: 'outline', size: 'large', width: slotWidth });
       } catch {
         if (!cancelled) announce('Google sign-in could not load. You can still use phone sign-in.', true);
       }
@@ -136,12 +145,12 @@ export function SocialSignIn({ consent, disabled = false, onResult }: {
   if (!hasGoogle && !hasApple) return message ? <p role={failed ? 'alert' : 'status'} tabIndex={-1} ref={messageRef}>{message}</p> : null;
   return <div className="stack" aria-busy={busy || undefined}>
     <p className="eyebrow">Or continue with</p>
-    <p className="expert-meta" id="social-consent-help" aria-live="polite" aria-atomic="true">{consent ? 'Consent accepted. Google and Apple are enabled. Phone Send code remains available without this checkbox.' : 'Accept the age, terms and privacy statement above to enable Google or Apple. Phone Send code works without this checkbox.'}</p>
+    <p className="expert-meta" id="social-consent-help" aria-live="polite" aria-atomic="true">{consent ? 'Consent accepted. Google and Apple are enabled. Phone sign-in remains available without this checkbox.' : 'Accept the age, terms and privacy statement above to enable Google or Apple. Phone sign-in remains available without this checkbox.'}</p>
     <p className="sr-only" id="social-keys-hint">Arrow keys move between Google and Apple sign-in when shown. Escape blurs. Consent never blocks Send code.</p>
     <LinkKeyboardGroup className="actions" aria-label="Social sign-in options" aria-describedby={[!consent ? 'social-consent-help' : '', 'social-keys-hint'].filter(Boolean).join(' ') || undefined}>
-      {hasApple && <button type="button" className="button secondary" disabled={busy || disabled || !consent} aria-busy={busy || undefined} aria-describedby={!consent ? 'social-consent-help' : undefined} onClick={() => void start('apple')}>{busy ? 'Continuing with Apple…' : 'Continue with Apple'}</button>}
-      {hasGoogle && <div className="social-google-slot">
-        {(!consent || disabled) && <button type="button" className="button secondary social-google-placeholder" disabled aria-describedby={!consent ? 'social-consent-help' : undefined}>Sign in with Google</button>}
+      {hasApple && <button type="button" data-provider="apple" className="button secondary social-provider-button" disabled={busy || disabled || !consent} aria-busy={busy || undefined} aria-describedby={!consent ? 'social-consent-help' : undefined} onClick={() => void start('apple')}><AppleMark />{busy ? 'Continuing with Apple…' : 'Continue with Apple'}</button>}
+      {hasGoogle && <div className="social-google-slot" data-provider="google">
+        {(!consent || disabled) && <button type="button" className="button secondary social-google-placeholder social-provider-button" disabled aria-describedby={!consent ? 'social-consent-help' : undefined}><GoogleMark />Continue with Google</button>}
         <div ref={googleBox} className="social-google-widget" hidden={!consent || disabled} role="group" aria-label="Google sign-in" />
       </div>}
     </LinkKeyboardGroup>

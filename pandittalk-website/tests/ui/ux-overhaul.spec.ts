@@ -379,3 +379,36 @@ test('practitioner application keeps keyboard shortcuts out of visible field gui
     await expect(page.locator(`#${id}-keyboard-hint`)).toHaveClass(/sr-only/);
   }
 });
+
+test('interactive tools keep keyboard implementation help out of visible instructions', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  await page.goto('/tools/kundli');
+  for (const id of ['dob-help', 'tob-help', 'coordinates-help']) {
+    await expect(page.locator(`#${id}`)).not.toContainText('Press Escape');
+    await expect(page.locator(`#${id}-keyboard-hint`)).toHaveClass(/sr-only/);
+  }
+
+  await page.goto('/tools/horoscope');
+  await expect(page.locator('.expert-meta[role="status"]')).not.toContainText(/Arrow keys|Press Escape/);
+
+  await page.goto('/tools/palm-reading');
+  await expect(page.locator('#palm-photo-help')).not.toContainText('Press Escape');
+  await expect(page.locator('#palm-photo-keyboard-hint')).toHaveClass(/sr-only/);
+
+  await page.goto('/tools/tarot');
+  await expect(page.locator('.expert-meta[role="status"]')).not.toContainText(/Arrow keys|Press Escape/);
+});
+
+test('login keeps social sign-in copy and brand marks consistent', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/login');
+
+  await expect(page.locator('#social-consent-help')).toContainText('Phone sign-in remains available without this checkbox.');
+  await expect(page.getByText('Needed for Google or Apple.', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Continue with Google', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).toHaveCount(0);
+
+  await expect(page.locator('[data-provider="apple"] [data-brand-logo="apple"]')).toBeVisible();
+  await expect(page.locator('[data-provider="google"] [data-brand-logo="google"]')).toBeVisible();
+});

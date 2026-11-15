@@ -25,12 +25,14 @@ export function BirthFields({ prefix = "", title = "Birth details" }: { prefix?:
     <legend>{title}</legend>
     <label className="field">{prefix ? "Name" : "First name"}<input name={prefix + (prefix ? "name" : "firstName")} autoComplete={prefix ? "off" : "given-name"} autoCapitalize="words" enterKeyHint="next" required maxLength={100} onKeyDown={clearOnEscape} /></label>
     {!prefix && <label className="field">Last name<input name="lastName" autoComplete="family-name" autoCapitalize="words" enterKeyHint="next" maxLength={100} required onKeyDown={clearOnEscape} /></label>}
-    <label className="field">Birth date (IST calendar day)<input type="date" name={prefix + "dob"} max={todayIstIso()} required enterKeyHint="next" aria-describedby={prefix + "dob-help"} onKeyDown={clearOnEscape} /></label>
-    <small id={prefix + "dob-help"}>Use the calendar day in Indian Standard Time. Press Escape to clear a focused field.</small>
-    <label className="field">Birth time (Indian Standard Time)<input type="time" name={prefix + "timeOfBirth"} required enterKeyHint="next" aria-describedby={prefix + "tob-help"} onKeyDown={clearOnEscape} /></label>
-    <small id={prefix + "tob-help"}>Enter the known birth time in IST. Do not guess — unknown time or births outside India cannot be fixed by this free tool. A Pandit can help when No Timer opens; prepare a draft meanwhile. Press Escape to clear.</small>
+    <label className="field">Birth date (IST calendar day)<input type="date" name={prefix + "dob"} max={todayIstIso()} required enterKeyHint="next" aria-describedby={`${prefix}dob-help ${prefix}dob-help-keyboard-hint`} onKeyDown={clearOnEscape} /></label>
+    <small id={prefix + "dob-help"}>Use the calendar day in Indian Standard Time.</small>
+    <span className="sr-only" id={prefix + "dob-help-keyboard-hint"}>Press Escape to clear the focused field.</span>
+    <label className="field">Birth time (Indian Standard Time)<input type="time" name={prefix + "timeOfBirth"} required enterKeyHint="next" aria-describedby={`${prefix}tob-help ${prefix}tob-help-keyboard-hint`} onKeyDown={clearOnEscape} /></label>
+    <small id={prefix + "tob-help"}>Enter the known birth time in IST. Do not guess — unknown time or births outside India cannot be fixed by this free tool. A Pandit can help when No Timer opens; prepare a draft meanwhile.</small>
+    <span className="sr-only" id={prefix + "tob-help-keyboard-hint"}>Press Escape to clear the focused field.</span>
     <label className="field">Birth city, India<input name={prefix + "placeOfBirth"} required maxLength={255} placeholder="e.g. Delhi" autoComplete="address-level2" autoCapitalize="words" enterKeyHint="next" onKeyDown={clearOnEscape} /></label>
-    <label className="field">Coordinates (optional)<input name={prefix + "coordinates"} maxLength={50} placeholder="28.6139, 77.2090" autoComplete="off" enterKeyHint="done" inputMode="decimal" aria-describedby={coordError ? `${helpId} ${errorId}` : helpId} aria-invalid={coordError ? true : undefined} onKeyDown={event => {
+    <label className="field">Coordinates (optional)<input name={prefix + "coordinates"} maxLength={50} placeholder="28.6139, 77.2090" autoComplete="off" enterKeyHint="done" inputMode="decimal" aria-describedby={coordError ? `${helpId} ${helpId}-keyboard-hint ${errorId}` : `${helpId} ${helpId}-keyboard-hint`} aria-invalid={coordError ? true : undefined} onKeyDown={event => {
       if (event.key !== 'Escape') return;
       if (!event.currentTarget.value && !coordError) return;
       event.preventDefault();
@@ -43,7 +45,8 @@ export function BirthFields({ prefix = "", title = "Birth details" }: { prefix?:
       if (parts.length !== 2 || !parts.every(Number.isFinite) || Math.abs(parts[0]) > 90 || Math.abs(parts[1]) > 180) setCoordError("Enter latitude, then longitude, within valid bounds.");
       else setCoordError("");
     }} /></label>
-    <small id={helpId}>If known, enter latitude, then longitude, separated by a comma. Press Escape to clear.</small>
+    <small id={helpId}>If known, enter latitude, then longitude, separated by a comma.</small>
+    <span className="sr-only" id={`${helpId}-keyboard-hint`}>Press Escape to clear the coordinates field.</span>
     {coordError && <p id={errorId} className="error" role="alert" aria-label="Coordinates field error" aria-atomic="true" tabIndex={-1} ref={coordErrorRef} onKeyDown={event => {
       if (event.key !== 'Escape') return;
       event.preventDefault();
@@ -52,7 +55,7 @@ export function BirthFields({ prefix = "", title = "Birth details" }: { prefix?:
         const field = document.querySelector<HTMLInputElement>(`input[name="${prefix}coordinates"]`);
         field?.focus();
       });
-    }}>{coordError} Press Escape to clear and return to the coordinates field.</p>}
+    }}>{coordError} Use the field above to correct the coordinates.</p>}
     <p className="expert-meta">Birth calculations currently support Indian Standard Time. Unknown time or births outside India cannot be fixed by this free tool — please do not guess. A Pandit can help when No Timer opens; prepare a draft meanwhile. <span className="sr-only" id={`${prefix}birth-next-hint`}>Arrow keys move between Explore Pandits, Prepare a draft and free tools. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Birth details next steps" aria-describedby={`${prefix}birth-next-hint`}><Link className="text-link" href="/pandits">Explore Pandits</Link> · <Link className="text-link" href="/guidance/start">Prepare a draft</Link> · <Link className="text-link" href="/tools">Other free tools</Link></LinkKeyboardGroup>.</p>
   </fieldset>;
 }
@@ -340,14 +343,15 @@ export default function ToolForm({ kind }: { kind: ToolKind }) {
           ))}
         </div>
         <p className="sr-only" id="zodiac-sign-keys">Arrow keys move between signs. Home and End jump to the first or last. Escape clears a selected sign. Skip remains site-content.</p>
-        <p className="expert-meta" role="status" aria-live="polite">{sign ? `${sign.charAt(0).toUpperCase() + sign.slice(1)} selected. Press Escape to clear.` : "Choose one of the twelve signs. Arrow keys move between options."}</p>
+        <p className="expert-meta" role="status" aria-live="polite">{sign ? `${sign.charAt(0).toUpperCase() + sign.slice(1)} selected.` : "Choose one of the twelve signs."}</p>
         <p id="zodiac-sign-help" className="expert-meta">Share a direct link like <code>/tools/horoscope?sign=aries</code>. Paid monthly reports remain <Link className="text-link" href="/tools/monthly-horoscope">paused</Link>.</p>
       </>}
       {kind === "palm-reading" && <>
-        <p className="notice" id="palm-photo-help">Both photos are sent for AI image processing when you request a reading. Clear palm photos work best (JPEG, PNG or WebP). Large phone photos are compressed automatically before upload. No medical or lifespan prediction is offered. Press Escape on a chosen photo to clear it.</p>
+        <p className="notice" id="palm-photo-help">Both photos are sent for AI image processing when you request a reading. Clear palm photos work best (JPEG, PNG or WebP). Large phone photos are compressed automatically before upload. No medical or lifespan prediction is offered.</p>
+        <p className="sr-only" id="palm-photo-keyboard-hint">Press Escape on a chosen photo to clear it.</p>
         <div className="grid">
           {["left", "right"].map(side => <div className="panel stack" key={side}>
-            <label className="field">{side === "left" ? "Left" : "Right"} palm photo<input ref={node => { palmInputs.current[side] = node; }} type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" capture="environment" aria-describedby={error.includes("palm") ? "palm-photo-help tool-form-error" : "palm-photo-help"} aria-invalid={error.toLowerCase().includes(side) || (error.includes("palm") && !palms[side]) ? true : undefined} onChange={event => imageFile(side, event)} onKeyDown={event => {
+            <label className="field">{side === "left" ? "Left" : "Right"} palm photo<input ref={node => { palmInputs.current[side] = node; }} type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" capture="environment" aria-describedby={error.includes("palm") ? "palm-photo-help palm-photo-keyboard-hint tool-form-error" : "palm-photo-help palm-photo-keyboard-hint"} aria-invalid={error.toLowerCase().includes(side) || (error.includes("palm") && !palms[side]) ? true : undefined} onChange={event => imageFile(side, event)} onKeyDown={event => {
               if (event.key !== 'Escape' || (!palms[side] && !event.currentTarget.value)) return;
               event.preventDefault();
               clearPalm(side);
@@ -409,7 +413,7 @@ export default function ToolForm({ kind }: { kind: ToolKind }) {
           ))}
         </div>
         <p className="sr-only" id="tarot-card-keys">Arrow keys move between card backs. Home and End jump to the first or last. Escape clears a selection. Skip remains site-content.</p>
-        <p className="expert-meta" role="status" aria-live="polite">{card ? `Card back ${card} selected. Your Major Arcana draw stays random — ready to reveal. Escape clears the selection.` : "Select one of the three card backs to begin. Arrow keys move between backs."}</p>
+            <p className="expert-meta" role="status" aria-live="polite">{card ? `Card back ${card} selected. Your Major Arcana draw stays random — ready to reveal.` : "Select one of the three card backs to begin."}</p>
       </>}
     </fieldset>
     {error && <p id="tool-form-error" className="error" role="alert" aria-label="Reading form error" aria-atomic="true" data-form-error="tool" tabIndex={-1} ref={errorRef} onKeyDown={event => {

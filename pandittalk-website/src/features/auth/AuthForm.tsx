@@ -236,7 +236,7 @@ export function AuthForm() {
       </form>
       {!pending && !sent && <>
         <label className="check"><input type="checkbox" checked={consent} disabled={busy} onChange={event => setConsent(event.target.checked)} aria-describedby="auth-phone-consent-help" /><span>I am 18 or older and agree to the <span className="sr-only" id="auth-legal-phone-hint">Arrow keys move between Terms and Privacy. Escape blurs. Consent never blocks Send code.</span><LinkKeyboardGroup as="span" aria-label="Sign-in legal links" aria-describedby="auth-legal-phone-hint"><Link href="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions<span className="sr-only"> (opens in a new tab)</span></Link> and <Link href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy<span className="sr-only"> (opens in a new tab)</span></Link></LinkKeyboardGroup>.</span></label>
-        <p className="expert-meta" id="auth-phone-consent-help">Needed for Google or Apple. <strong>Send code</strong> by phone works without this checkbox.</p>
+        <p className="expert-meta" id="auth-phone-consent-help">Phone sign-in remains available without this checkbox.</p>
         <SocialSignIn consent={consent} disabled={busy} onResult={finish} />
       </>}
     </div>
