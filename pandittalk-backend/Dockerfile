@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Local-first production-like image for both Nest services.
+# Production image for both Nest services; data services remain managed outside Docker.
 # Compose runs migrations before starting user-service; the image itself remains
 # reusable for a one-off migration task or another process command.
 

@@ -1,5 +1,5 @@
 export type Message={senderId:string;senderRole:'user'|'pandit';message:string;timestamp:number};
 export function parseMessage(x:unknown):Message|null{if(!x||typeof x!=='object')return null;const m=x as Message;return typeof m.senderId==='string'&&['user','pandit'].includes(m.senderRole)&&typeof m.message==='string'&&Number.isFinite(m.timestamp)?m:null;}
-// Legacy DynamoDB primary key is (sessionId, timestamp); the gateway omits sessionId.
+// Reconnect history is reconciled by timestamp so duplicate deliveries are harmless.
 export function reconcileMessages(previous:Message[],incoming:Message[]){const map=new Map(previous.map(m=>[m.timestamp,m]));incoming.forEach(m=>map.set(m.timestamp,m));return [...map.values()].sort((a,b)=>a.timestamp-b.timestamp);}
 export function sessionEvents(format:'chat'|'audio'|'video'){const suffix=format==='chat'?'':format[0].toUpperCase()+format.slice(1);return {join:`join${suffix}Session`,leave:`leave${suffix}Session`,end:`end${suffix}Session`,started:format==='chat'?'sessionStarted':`${format}SessionStarted`,ended:format==='chat'?'sessionEnded':`${format}SessionEnded`,timeUp:format==='chat'?'sessionTimeUp':`${format}SessionTimeUp`};}

@@ -7,25 +7,24 @@ being graded.
 
 ## Before the presentation
 
-1. On Kali, clone the repository and create `.env` from `.env.example`.
-2. Set `ALLOWED_ORIGINS` to the Vercel website/dashboard origins and set the
-   website, dashboard, and mobile API variables to the HTTPS tunnel origin.
+1. On Kali, clone the repository and copy the real ignored `.env` securely.
+2. Confirm Supabase, Redis Cloud, MongoDB Atlas, Cloudinary, MSG91, Razorpay,
+   TURN, and `ALLOW_TEST_OTP=false` are configured. Set `ALLOWED_ORIGINS` to
+   the deployed website/dashboard origins.
 3. Start the stack and verify health:
 
    ```bash
    docker compose up -d --build
    docker compose ps
-   docker compose exec -T api node scripts/ensure-local-demo-data.cjs
    cd pandittalk-website && npm run test:local-api && cd ..
    curl --fail http://localhost:3001/
    curl --fail http://localhost:3001/readiness
    curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
    ```
 
-   The fixture also creates the local Admin account `+919999999996`. Use OTP
-   `1234` only with `ALLOW_TEST_OTP=true`, then open the dashboard and show the
-   `/admin` overview plus one status update in Bookings or Applications. The
-   Pandit fixture remains `+919999999997` and must still route to `/dashboard`.
+   For a disposable demo fixture, use the explicit local override described in
+   the root README. Never enable the fixed demo OTP on the production managed
+   runtime.
 
 4. Have the GitHub Actions run open in one browser tab and the Vercel website,
    dashboard, and mobile dev client ready in the others.
@@ -50,7 +49,7 @@ signaling and API traffic.
 | Time | Speaker | Content | Evidence |
 | --- | --- | --- | --- |
 | 0:00–1:30 | User | Problem, users, and the four clients | Website, dashboard, mobile, backend folder layout |
-| 1:30–4:00 | Aman Singh | System design and why local-first | PostgreSQL source of truth, Redis shared state, MongoDB Local compatibility, Caddy front door, optional TURN |
+| 1:30–4:00 | Aman Singh | System design and managed runtime | Supabase PostgreSQL source of truth, Redis Cloud shared state, MongoDB Atlas chat history, Caddy front door, optional TURN |
 | 4:00–6:00 | User | Docker and stateless scaling | `docker compose ps`, private dependency ports, `--scale api=2`, health endpoint |
 | 6:00–8:00 | Aman Singh | CI/CD and repository discipline | GitHub Actions push/PR checks, branch/PR history, secret hygiene, Docker build |
 | 8:00–11:30 | User | Live application demonstration | Website route, Admin `/admin` route, Pandit `/dashboard` route, mobile route, text chat, responsive layout, error handling |
@@ -59,17 +58,14 @@ signaling and API traffic.
 
 ## Live command sequence
 
-Run these in order, keeping the output visible:
+Run these in order for the managed production runtime, keeping the output visible:
 
 ```bash
 docker compose ps
 curl --fail http://localhost:3001/
 curl --fail http://localhost:3001/readiness
-docker compose exec -T redis redis-cli ping
-docker compose exec -T postgres pg_isready -U pandittalk -d pandittalk
 docker compose up -d --scale api=2 --no-recreate api proxy
 docker compose ps
-docker compose exec -T api node scripts/ensure-local-demo-data.cjs
 cd pandittalk-website && npm run test:local-api && cd ..
 cd pandittalk-website && npm run test:local-replica && cd ..
 curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
@@ -79,18 +75,18 @@ The local API smoke also calls `/auth/me`, every read-only `/admin/*` endpoint,
 the booking status mutation, and verifies that a customer token receives 403
 from `/admin/overview`.
 
-Use the local demo phones from `TEST_OTP_PHONE_ALLOWLIST` with OTP `1234`, then
-show the browser clients. Exchange a chat message, reconnect one client, and
-show that the message history and session state return. Explain that the
-message/room coordination uses Redis and that Caddy does not require sticky
-sessions. Do not run `docker compose down` during the presentation.
+Use real test accounts and provider flows, then show the browser clients.
+Exchange a chat message, reconnect one client, and show that the message
+history and session state return. Explain that the message/room coordination
+uses Redis Cloud and that Caddy does not require sticky sessions. Do not run
+`docker compose down` during the presentation.
 
 ## Architecture answers to prepare
 
 - PostgreSQL stores durable users, bookings, and application data.
 - Redis stores ephemeral state, rate limits, Socket.IO fan-out, and distributed
   locks so any API replica can handle the next request.
-- MongoDB Local is the chat-history fallback; production uses MongoDB Atlas.
+- MongoDB Atlas stores chat history in the production runtime.
 - Caddy is the only exposed local service; it upgrades WebSockets and balances
   API replicas.
 - Admin authorization is enforced in the API guard and reloaded from
@@ -102,13 +98,13 @@ sessions. Do not run `docker compose down` during the presentation.
 - WebRTC signaling runs through Socket.IO/Redis on the stateless API replicas;
   media is peer-to-peer where possible. Free public STUN is the default, and
   coturn is an optional self-hosted relay for restrictive networks.
-- PostgreSQL and named Docker volumes survive a container restart. Use the
-  backup command in the root README before destructive maintenance.
+- Docker owns only media and Caddy configuration volumes in production. Use
+  Supabase and MongoDB Atlas managed backup/export tools before maintenance.
 
 ## Exact handoff after the project is graded
 
-On Kali: `git clone <repo>`, copy `.env.example` to `.env`, set the tunnel and
-origins, then run `docker compose up -d --build`. In Vercel, set the website and
+On Kali: `git clone <repo>`, copy the real `.env` securely, configure the tunnel
+and origins, then run `docker compose up -d --build`. In Vercel, set the website and
 dashboard API variables to the same HTTPS tunnel URL and redeploy. In the Expo
 dev-client/EAS environment, set `EXPO_PUBLIC_API_BASE` to that URL. Finally,
 verify the live health endpoint, Socket.IO handshake, chat, and audio/video from

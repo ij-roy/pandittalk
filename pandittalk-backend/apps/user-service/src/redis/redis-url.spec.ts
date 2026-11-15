@@ -23,6 +23,14 @@ describe('buildRedisUrl', () => {
     expect(buildRedisUrl(config)).toBe('redis://redis.internal:6380');
   });
 
+  it('rejects a missing Redis URL in production instead of using localhost', () => {
+    const config = new ConfigService({ NODE_ENV: 'production' });
+
+    expect(() => buildRedisUrl(config)).toThrow(
+      'REDIS_URL is required in production',
+    );
+  });
+
   it('preserves TLS credentials and query parameters without rebuilding them', () => {
     const url = 'rediss://:s3cr%40t@redis.example.com:6380/0?tls=true';
 

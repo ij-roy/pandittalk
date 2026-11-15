@@ -132,7 +132,7 @@ async function main() {
       transport: 'websocket through Caddy proxy',
       crossReplicaMessageBroadcast: true,
       reconnectResumedFromRedis: true,
-      reconnectHistoryFromDynamo: true,
+      reconnectHistoryFromMongoDB: true,
       historyMessages: history.messages.length,
     }, null, 2));
 

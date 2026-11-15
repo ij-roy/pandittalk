@@ -1,8 +1,8 @@
 # PanditTalk Backend — Progress Summary
 
 > **CURRENT STATE:** For work after Jun 26 (reports/`SavedReport`, `Pandit.guidanceAreas`, avatar uploads, coin-gated tool guards, `config/cors-origins.ts`, Dockerfile, ~15 migrations) see **`apps/MASTER_SUMMARY.md` §0**. This doc is the v1.0.0 baseline (duplicate of `apps/BACKEND_PROGRESS_SUMMARY.md`).  
-> **Purpose:** Handoff for planning agents (frontend, dashboard, DevOps). Describes what exists today, what is stubbed, and what is not built yet.  
-> **Last updated:** June 26, 2026 (VERSION 1.0.0; delta in MASTER §0 dated Jul 2)  
+> **Purpose:** Handoff for planning agents (frontend, dashboard, DevOps). Describes the active managed-service runtime, what is stubbed, and what is not built yet.
+> **Last updated:** November 15, 2026 (managed runtime alignment)
 > **Monorepo path:** `apps/backend/`  
 > **Repository:** [PanditTalk-Monorepo](https://github.com/pandittalk/PanditTalk-Monorepo)
 
@@ -14,7 +14,7 @@
 
 **Current maturity:** **user-service** (port 3001) — users, pandits, bookings, wallet/Razorpay, astrology tools, live text chat (Socket.IO + MongoDB), **live audio + video** (WebRTC media + Socket.IO/Redis signaling), Chat Now, Redis pandit queues, **articles/blog**, **in-app notifications**, account soft-delete. **pandit-service** (3002) = health scaffold only.
 
-> **Local-first media note:** The old paid-meeting design notes later in this historical handoff are superseded. The active runtime returns provider-neutral WebRTC session configuration, uses free STUN by default, and supports optional coturn when a relay is needed.
+> **WebRTC media note:** The old paid-meeting design notes later in this handoff are superseded. The active runtime returns provider-neutral WebRTC session configuration, uses free STUN by default, and supports optional coturn when a relay is needed.
 
 ---
 
@@ -26,18 +26,17 @@
 | Framework | NestJS | ^11.0.1 |
 | Language | TypeScript | ^5.7.3 |
 | ORM | Prisma | ^6.19.3 |
-| Database | PostgreSQL | Supabase managed in production; 16 (Docker) locally |
+| Database | PostgreSQL | Supabase managed |
 | Auth | JWT + Passport | `@nestjs/jwt` ^11 |
 | Real-time | Socket.IO | `@nestjs/platform-socket.io` — namespace `/chat` |
 | Cache / Queue | Redis 7 | `cache-manager-redis-yet` — **wired** (queue + cache) |
-| Chat storage | MongoDB | `mongodb` driver — MongoDB Atlas managed in production; MongoDB 7 locally |
+| Chat storage | MongoDB | `mongodb` driver — MongoDB Atlas managed |
 | Audio/video media | WebRTC | Browser/native peer connection; Socket.IO/Redis signaling |
 | Payments | Razorpay Node SDK | ^2.9.6 |
 | Astrology | Prokerala REST API | OAuth2 client credentials |
 | AI | OpenAI GPT-4o | `openai` ^6.42.0 |
-| Message broker | RabbitMQ 3.13 | Docker only — **not wired in code** |
 | Testing | Jest + Supertest | ^30 |
-| Local infra | Docker Compose | Postgres, Redis, MongoDB, RabbitMQ |
+| Runtime packaging | Docker Compose | API, pandit service, Caddy, optional coturn; managed data services stay external |
 
 **Monorepo tooling:** Nest CLI (`nest-cli.json`), path alias `@pandittalk/common` → `libs/common/src`.
 
@@ -66,7 +65,8 @@ apps/backend/
 │   │       └── user-service.module.ts
 │   └── pandit-service/        # Scaffold — port 3002
 ├── libs/common/
-├── docker-compose.yml
+├── docker-compose.yml          # managed production/runtime services
+├── docker-compose.local.yml    # explicit disposable local-demo override
 ├── .env.example
 ├── ngrok.exe
 └── BACKEND_PROGRESS_SUMMARY.md
@@ -74,39 +74,43 @@ apps/backend/
 
 ---
 
-## 4. Infrastructure (`docker-compose.yml`)
+## 4. Infrastructure
 
 | Service | Image | Ports | Used in code? |
 |---------|-------|-------|---------------|
-| **postgres** | postgres:16-alpine | 5432 | ✅ Prisma |
-| **redis** | redis:7-alpine | 6379 | ✅ Cache + pandit queue |
-| **mongo** | mongo:7 | 27017 | ✅ Chat messages |
-| **rabbitmq** | rabbitmq:3.13-management | 5672, 15672 | ❌ Not wired |
+| **api** | `pandittalk-api` | 3001 | ✅ Primary API |
+| **pandit-service** | `pandittalk-pandit-service` | 3002 | ✅ Health scaffold |
+| **proxy** | `caddy:2-alpine` | 3001 | ✅ WebSocket/API front door |
+| **turn** | `coturn/coturn` | 3478 TCP/UDP | Optional WebRTC relay |
 
-Credentials: Postgres/RabbitMQ user/pass/db = `pandittalk`.
+Production data services are managed outside Docker: Supabase PostgreSQL,
+Redis Cloud, MongoDB Atlas, and Cloudinary. The explicit
+`docker-compose.local.yml` override supplies disposable Postgres, Redis, and
+MongoDB containers for offline demos and CI only. RabbitMQ is not part of the
+active runtime because no application module consumes it.
 
 ---
 
 ## 5. Environment configuration
 
-Copy `.env.example` → `.env` at `apps/backend/`.
+Copy the repository `.env.example` to `.env` at the repository root. The backend
+also has a service-local template for direct development.
 
 | Variable | Default | Used by |
 |----------|---------|---------|
 | `USER_SERVICE_PORT` | `3001` | user-service |
-| `DATABASE_URL` | `postgresql://pandittalk:pandittalk@localhost:5432/pandittalk` | Prisma |
-| `REDIS_HOST`, `REDIS_PORT` | localhost / 6379 | Cache + queue |
-| `MONGODB_URI`, `MONGODB_DATABASE` | local MongoDB / `pandittalk` | Chat messages |
+| `DATABASE_URL`, `DIRECT_URL` | Supabase pooler/direct URLs | Prisma |
+| `REDIS_URL` | Redis Cloud URL | Cache, Socket.IO adapter, and locks |
+| `MONGODB_URI`, `MONGODB_DATABASE` | MongoDB Atlas URI / `pandittalk` | Chat messages |
 | `WEBRTC_STUN_URLS` | `stun:stun.l.google.com:19302,...` | Default ICE discovery for browser/native WebRTC |
 | `WEBRTC_TURN_URL`, `WEBRTC_TURN_USERNAME`, `WEBRTC_TURN_CREDENTIAL` | — | Optional coturn relay credentials |
-| `MONGODB_URI` | `mongodb://localhost:27017` | Local MongoDB |
 | `MONGODB_COLLECTION_CHAT` | `chat_messages` | Chat messages |
 | `CHAT_WAITING_TIMEOUT_MS` | `600000` (10 min) | Pandit join timeout before refund |
 | `JWT_SECRET`, `JWT_EXPIRES_IN` | — / `7d` | Auth |
 | `RAZORPAY_*` | — | Payments |
 | `PROKERALA_*`, `OPENAI_API_KEY` | — | Tools |
 | `GOOGLE_BLOGGER_*`, `BLOGGER_SYNC_*` | — | Optional article sync |
-| `RABBITMQ_*` | — | **Not used** |
+| `AVATAR_STORAGE`, `CLOUDINARY_*` | `cloudinary` / provider credentials | Avatar/media storage |
 
 `ConfigModule` loads: `apps/<service>/.env.local`, `apps/<service>/.env`, `.env`.
 
@@ -254,7 +258,7 @@ Supported birth cities: Delhi, Mumbai, Pune, Jaipur, Ludhiana, Chennai, Kolkata,
 
 ### 7.10 Live chat (`/chat` WebSocket namespace)
 
-**Module:** `apps/user-service/src/chat/` — `ChatGateway`, `DynamoService`.
+**Module:** `apps/user-service/src/chat/` — `ChatGateway`, `MongoChatService`.
 
 **Client → Server:**
 - `joinSession` — `{ bookingId }`
@@ -293,7 +297,8 @@ Supported birth cities: Delhi, Mumbai, Pune, Jaipur, Ludhiana, Chennai, Kolkata,
 
 **WebRtcService:**
 - Returns `provider: "webrtc"`, booking/format, default free STUN URLs, and optional TURN credentials.
-- No media vendor credentials are required for the local-first path.
+- No paid media vendor is required for the default WebRTC path; Cloudinary is
+  used for persistent avatars/media.
 - Media itself is peer-to-peer; Socket.IO carries only signaling messages.
 
 ### 7.12 Audio WebSocket (`/chat` namespace)
@@ -383,14 +388,17 @@ Supported birth cities: Delhi, Mumbai, Pune, Jaipur, Ludhiana, Chennai, Kolkata,
 ## 11. Development workflow
 
 ```bash
-cd apps/backend
-docker compose up -d
-cp .env.example .env   # JWT_SECRET, Razorpay, Prokerala, OpenAI, AWS keys
+cp .env.example .env
 npm install
-npm run prisma:migrate
-npx prisma db seed --schema apps/user-service/prisma/schema.prisma
+docker compose up -d --build
 npm run start:user-service:dev
 ```
+
+The root Compose file is the managed production/runtime path. For an offline
+demo or CI-only fixture, combine it with `docker-compose.local.yml`; that
+override starts disposable Postgres, Redis, and MongoDB containers and must not
+be used with production credentials. Supabase is the production migration and
+seed target; do not run the local demo-data script against it.
 
 **Quick test:** `POST /auth/verify-otp` with `{ "phoneNumber": "+919999999999", "otp": "1234", "acceptedLegalConsent": true }`.
 
@@ -456,9 +464,8 @@ DELETE /sessions/video/:bookingId
 ## 13. What is NOT built yet
 
 ### Infrastructure
-- [ ] RabbitMQ producers/consumers
 - [ ] API gateway / service discovery
-- [ ] CI/CD, production Dockerfiles, observability
+- [ ] Observability beyond health/readiness and bounded Docker logs
 
 ### Auth & security
 - [x] OTP in Redis with rate limiting (per-phone 3/10 min + 60s cooldown, per-IP 10/hr)

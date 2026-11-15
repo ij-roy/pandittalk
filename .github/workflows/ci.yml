@@ -91,11 +91,11 @@ jobs:
         shell: bash
         run: cp .env.example .env
       - name: Validate Compose configuration
-        run: docker compose config --quiet
+        run: docker compose -f docker-compose.yml -f docker-compose.local.yml config --quiet
       - name: Build backend runtime image
-        run: docker compose build api pandit-service
+        run: docker compose -f docker-compose.yml -f docker-compose.local.yml build api pandit-service
       - name: Start the local stack
-        run: docker compose up -d
+        run: docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
       - name: Wait for the API through Caddy
         shell: bash
         run: |
@@ -108,19 +108,19 @@ jobs:
           curl --fail http://localhost:3001/readiness
       - name: Verify dependencies and Socket.IO handshake
         run: |
-          docker compose exec -T redis redis-cli ping
-          docker compose exec -T postgres pg_isready -U pandittalk -d pandittalk
+          docker compose -f docker-compose.yml -f docker-compose.local.yml exec -T redis redis-cli ping
+          docker compose -f docker-compose.yml -f docker-compose.local.yml exec -T postgres pg_isready -U pandittalk -d pandittalk
           curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
       - name: Verify two API replicas remain reachable
         run: |
-          docker compose up -d --scale api=2 --no-recreate api proxy
+          docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --scale api=2 --no-recreate api proxy
           curl --fail http://localhost:3001/
       - name: Show service state
         if: always()
-        run: docker compose ps
+        run: docker compose -f docker-compose.yml -f docker-compose.local.yml ps
       - name: Tear down local stack
         if: always()
-        run: docker compose down -v
+        run: docker compose -f docker-compose.yml -f docker-compose.local.yml down -v
 
   secret-hygiene:
     runs-on: ubuntu-latest

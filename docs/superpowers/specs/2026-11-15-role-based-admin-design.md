@@ -6,7 +6,7 @@ Keep the existing Pandit workspace working while adding a real, server-authorize
 
 ## Context and constraints
 
-The current dashboard authenticates only linked Pandit accounts. The Prisma `User` model has no role field, and the dashboard store, routes, and API helpers assume Pandit identity. The local-first Docker runtime, Redis-backed sessions, and existing Pandit UI must remain unchanged for Pandit users. The admin surface must work without AWS credentials and must not rely on client-side role checks alone.
+The current dashboard authenticates only linked Pandit accounts. The Prisma `User` model has no role field, and the dashboard store, routes, and API helpers assume Pandit identity. The managed Docker runtime, Redis-backed sessions, and existing Pandit UI must remain unchanged for Pandit users. The admin surface must work without AWS credentials and must not rely on client-side role checks alone.
 
 This design uses the existing OTP/session flow and the same Vite dashboard deployment. It does not introduce a second frontend, a new identity provider, or a production user-management system beyond the required role and permission boundary.
 

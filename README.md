@@ -26,27 +26,56 @@ Cloudinary stores uploaded media. The backend does not use sticky sessions.
 Payment, astrology, and AI providers remain optional environment-controlled
 integrations; no real credentials belong in this repository.
 
-## Local startup
+## Startup modes
 
-Prerequisites: Docker Desktop or Docker Engine with Compose, Node 24 for client
-checks, and a copy of the repository.
+Prerequisites: Docker Engine with Compose, Node 24 for client checks, and a
+copy of the repository.
+
+### Production/Kali managed runtime
+
+Copy the real root `.env` securely onto the host. It must contain the
+Supabase PostgreSQL pooler URL, Redis Cloud URL, MongoDB Atlas URI, Cloudinary
+credentials, provider credentials, and `ALLOW_TEST_OTP=false`. Then run:
+
+```bash
+docker compose up -d --build
+docker compose ps
+curl http://localhost:3001/
+curl http://localhost:3001/readiness
+```
+
+The production Compose file starts only the API, Pandit service, Caddy proxy,
+and optional TURN service. PostgreSQL, Redis, MongoDB, and media are managed by
+Supabase, Redis Cloud, MongoDB Atlas, and Cloudinary. A missing `REDIS_URL`
+fails production startup instead of silently selecting localhost.
+
+### Isolated local demo/CI runtime
+
+Use the explicit local override when you intentionally want disposable local
+databases:
 
 ```powershell
 Copy-Item .env.example .env
-# For the isolated local demo only, set AVATAR_STORAGE=local and add the
-# demo phones to TEST_OTP_PHONE_ALLOWLIST before starting the stack.
-docker compose up -d --build
-docker compose ps
-Invoke-WebRequest http://localhost:3001/
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.local.yml ps
 Invoke-WebRequest http://localhost:3001/readiness
 ```
 
+For the fixed-OTP fixture only, set these values in the local `.env` before
+starting it (never use them on the managed runtime):
+
+```dotenv
+ALLOW_TEST_OTP=true
+TEST_OTP_PHONE_ALLOWLIST=+919999999998,+919999999997
+ADMIN_TEST_OTP_PHONE_ALLOWLIST=+919999999996
+```
+
 For a repeatable local customer/dashboard smoke test, seed only the demo
-records (no fake reviews or payments) and use OTP `1234` for the two phones in
-`TEST_OTP_PHONE_ALLOWLIST`:
+records (no fake reviews or payments) and use OTP `1234` for the allowlisted
+demo phones:
 
 ```powershell
-docker compose exec -T api node scripts/ensure-local-demo-data.cjs
+docker compose -f docker-compose.yml -f docker-compose.local.yml exec -T api node scripts/ensure-local-demo-data.cjs
 ```
 
 The script creates one customer, one linked pandit, one local Admin, and
@@ -54,36 +83,33 @@ confirmed chat, audio, and video bookings. It is not part of application
 startup and is intended only for local verification. The local Admin demo phone
 is `+919999999996` and uses the fixed OTP `1234` only while
 `ALLOW_TEST_OTP=true`. Use the printed media booking IDs to open the real
-audio/video routes; the browser and native clients negotiate peer-to-peer
-WebRTC sessions using the configured STUN/TURN servers.
+audio/video routes.
 
-The API is available at `http://localhost:3001`. The Pandit service, Redis,
-PostgreSQL, and MongoDB stay on the private Compose network so they do not
-collide with software already using ports on the host. Migrations run when the
-API container starts. If the root `.env` contains managed `DATABASE_URL`,
-`REDIS_URL`, or `MONGODB_URI` values, the API uses those exact values; the local
-companion containers are still started as an explicit fallback but are not
-silently substituted for the managed URLs.
-
-`/` is a liveness check. `/readiness` verifies PostgreSQL, Redis, and MongoDB
-before returning `ready`; use it as the Worker/load-balancer health check.
-Compose applies bounded Docker JSON logs to every service (10 MB per file,
-three retained files) so a long-running Kali host does not fill its disk.
-
-Useful commands:
+Useful production commands:
 
 ```powershell
 docker compose logs -f api
 docker compose up -d --scale api=2 --no-recreate api proxy
-docker compose exec -T api node scripts/ensure-local-demo-data.cjs
 docker compose exec -T api npx prisma migrate deploy --schema apps/user-service/prisma/schema.prisma
 Push-Location pandittalk-website; npm run test:local-replica; Pop-Location
 Push-Location pandittalk-website; npm run test:local-api; Pop-Location
-docker compose exec -T redis redis-cli ping
-docker compose exec -T postgres pg_isready -U pandittalk -d pandittalk
 docker compose down
-docker compose down -v  # deletes local database/cache volumes; use deliberately
+docker compose down -v  # removes only Compose media/proxy volumes
 ```
+
+For local dependency checks, add both Compose files to each command:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.local.yml exec -T redis redis-cli ping
+docker compose -f docker-compose.yml -f docker-compose.local.yml exec -T postgres pg_isready -U pandittalk -d pandittalk
+docker compose -f docker-compose.yml -f docker-compose.local.yml down -v
+```
+
+The API is available at `http://localhost:3001`. Migrations run when the API
+container starts. `/readiness` verifies PostgreSQL, Redis, and MongoDB before
+returning `ready`; use it as the Worker/load-balancer health check. Compose
+applies bounded Docker JSON logs to every service (10 MB per file, three
+retained files) so a long-running Kali host does not fill its disk.
 
 The optional TURN server is started with `docker compose --profile webrtc up -d`.
 A public tunnel or Worker route must support HTTPS and WebSockets. Set
@@ -92,9 +118,9 @@ dashboard origins in `ALLOWED_ORIGINS`; do not commit those values.
 
 The current deployed Worker hostname is
 `https://pandittalk-load-balancer.admininfo-6d6.workers.dev`. For a quick
-HTTPS/WSS tunnel during development, install `cloudflared` on Kali
-and run `cloudflared tunnel --url http://127.0.0.1:3001` (or use an equivalent
-named tunnel/ngrok deployment). For the stable production path, configure the
+HTTPS/WSS tunnel during development, install `cloudflared` on Kali and run
+`cloudflared tunnel --url http://127.0.0.1:3001` (or use an equivalent named
+tunnel/ngrok deployment). For the stable production path, configure the
 Cloudflare Worker to route `/` and `/chat` to the healthy Asus/Kali backend
 origins, with WebSocket pass-through enabled. Put only the Worker hostname in
 website, dashboard, and mobile API variables. A normal HTTP tunnel does not
@@ -188,9 +214,9 @@ local green output is not a substitute for the CI check.
 
 ## Kali deployment and recovery
 
-1. Clone the repository on Kali and create `.env` from `.env.example`.
-2. Set the stable `API_PUBLIC_URL`, managed service URLs, `ALLOWED_ORIGINS`, and
-   provider credentials.
+1. Clone the repository on Kali and copy the real ignored `.env` securely.
+2. Confirm the Supabase, Redis Cloud, MongoDB Atlas, Cloudinary, TURN, MSG91,
+   and Razorpay values are present; keep `ALLOW_TEST_OTP=false`.
 3. Run `docker compose up -d --build` and confirm `docker compose ps` is healthy.
 4. Configure the Cloudflare Worker to route the public hostname to the healthy
    Asus/Kali origins, then put only that public URL into the website, dashboard,
@@ -198,11 +224,10 @@ local green output is not a substitute for the CI check.
 5. Keep the host on a UPS or automatic-resume configuration and back up
    Supabase PostgreSQL and MongoDB Atlas before upgrades.
 
-`docker compose stop` pauses the stack without removing volumes; `docker compose
-down` stops and removes containers while preserving named data volumes. To reset
-only this isolated development project, use `docker compose down -v` and then
-start it again with `docker compose up -d --build`; never use that reset command
-on a production Compose project.
+`docker compose stop` pauses the stateless runtime; `docker compose down` stops
+and removes containers while preserving the managed databases. The production
+Compose file has no local database volumes. Use the local override only for
+disposable demos and never run its `down -v` against a production project.
 
 Docker restart policies and named volumes allow recovery after a power cut:
 
@@ -212,17 +237,10 @@ docker compose ps
 docker compose logs --tail=100 api proxy
 ```
 
-For a simple PostgreSQL backup and restore:
-
-```powershell
-docker compose exec -T postgres pg_dump -U pandittalk pandittalk > pandittalk-backup.sql
-Get-Content pandittalk-backup.sql | docker compose exec -T postgres psql -U pandittalk pandittalk
-```
-
-Do not use `docker compose down -v` during routine restarts because it removes
-the local database, Redis AOF, MongoDB data, and media volume. Rotate or
-replace any credential that was ever exposed before using the repository on a
-public tunnel.
+Back up Supabase PostgreSQL and MongoDB Atlas using their managed backup/export
+tools before upgrades. Docker only owns the media and Caddy configuration
+volumes in production. Rotate or replace any credential that was ever exposed
+before using the repository on a public tunnel.
 
 The live Vercel and tunnel URLs are deployment values, so they are intentionally
 not hardcoded in source. The presentation should show the GitHub Actions run,

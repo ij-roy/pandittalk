@@ -7,7 +7,7 @@ describe('chronologicalWindow', () => {
     expect(page.hasMore).toBe(true);
   });
 
-  it('reports no further page when Dynamo has no continuation key', () => {
+  it('reports no further page when MongoDB has no continuation key', () => {
     const page = chronologicalWindow([{ id: 1 }], false);
     expect(page.items).toEqual([{ id: 1 }]);
     expect(page.hasMore).toBe(false);

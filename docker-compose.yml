@@ -6,57 +6,12 @@ x-logging: &default-logging
     max-size: 10m
     max-file: '3'
 
+# Production/runtime Compose file.
+# PostgreSQL, Redis, MongoDB, and media are managed outside Docker:
+# Supabase, Redis Cloud, MongoDB Atlas, and Cloudinary respectively.
+# Use docker-compose.local.yml only for an explicit disposable local demo.
+
 services:
-  postgres:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    logging: *default-logging
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-pandittalk}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pandittalk-local-only}
-      POSTGRES_DB: ${POSTGRES_DB:-pandittalk}
-    expose:
-      - '5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    logging: *default-logging
-    command: ['redis-server', '--appendonly', 'yes', '--save', '60', '1000']
-    expose:
-      - '6379'
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
-  mongo:
-    image: mongo:7-jammy
-    restart: unless-stopped
-    logging: *default-logging
-    command: ['mongod', '--bind_ip_all']
-    expose:
-      - '27017'
-    volumes:
-      - mongo_data:/data/db
-    healthcheck:
-      test: ['CMD-SHELL', 'mongosh --quiet --eval "db.adminCommand({ ping: 1 }).ok" | grep 1']
-      interval: 5s
-      timeout: 5s
-      retries: 12
-      start_period: 10s
-
   api:
     build:
       context: ./pandittalk-backend
@@ -68,12 +23,12 @@ services:
     environment:
       NODE_ENV: production
       USER_SERVICE_PORT: 3001
-      DATABASE_URL: ${DATABASE_URL:-postgresql://pandittalk:pandittalk-local-only@postgres:5432/pandittalk?schema=public&connection_limit=10&pool_timeout=20}
-      DIRECT_URL: ${DIRECT_URL:-postgresql://pandittalk:pandittalk-local-only@postgres:5432/pandittalk?schema=public&connection_limit=10&pool_timeout=20}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
-      REDIS_HOST: ${REDIS_HOST:-redis}
-      REDIS_PORT: ${REDIS_PORT:-6379}
-      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017}
+      DATABASE_URL: ${DATABASE_URL:-}
+      DIRECT_URL: ${DIRECT_URL:-}
+      REDIS_URL: ${REDIS_URL:-}
+      REDIS_HOST: ${REDIS_HOST:-}
+      REDIS_PORT: ${REDIS_PORT:-}
+      MONGODB_URI: ${MONGODB_URI:-}
       MONGODB_DATABASE: ${MONGODB_DATABASE:-pandittalk}
       WEBRTC_STUN_URLS: ${WEBRTC_STUN_URLS:-stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302}
       WEBRTC_TURN_URL: ${WEBRTC_TURN_URL:-}
@@ -82,27 +37,20 @@ services:
       CLOUDFLARE_TURN_KEY_ID: ${CLOUDFLARE_TURN_KEY_ID:-}
       CLOUDFLARE_TURN_API_TOKEN: ${CLOUDFLARE_TURN_API_TOKEN:-}
       CLOUDFLARE_TURN_CREDENTIAL_TTL_SECONDS: ${CLOUDFLARE_TURN_CREDENTIAL_TTL_SECONDS:-86400}
-      AVATAR_STORAGE: ${AVATAR_STORAGE:-local}
+      AVATAR_STORAGE: ${AVATAR_STORAGE:-cloudinary}
       AVATAR_UPLOAD_DIR: /app/uploads/avatars
-      AVATAR_PUBLIC_BASE_URL: ${AVATAR_PUBLIC_BASE_URL:-http://localhost:3001/static/avatars}
+      AVATAR_PUBLIC_BASE_URL: ${AVATAR_PUBLIC_BASE_URL:-}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
       CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER:-pandittalk}
-      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:3001}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8081}
-      JWT_SECRET: ${JWT_SECRET:-replace-with-a-long-local-development-secret}
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      JWT_SECRET: ${JWT_SECRET:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
       ALLOW_TEST_OTP: ${ALLOW_TEST_OTP:-false}
     volumes:
       - media_data:/app/uploads
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      mongo:
-        condition: service_healthy
     command: ['sh', '-c', 'npx prisma migrate deploy --schema apps/user-service/prisma/schema.prisma && node dist/apps/user-service/main.js']
     expose:
       - '3001'
@@ -164,9 +112,6 @@ services:
       - '${TURN_PORT:-3478}:3478/udp'
 
 volumes:
-  postgres_data:
-  redis_data:
-  mongo_data:
   media_data:
   caddy_data:
   caddy_config:
