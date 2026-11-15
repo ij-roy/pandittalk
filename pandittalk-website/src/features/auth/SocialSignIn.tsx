@@ -26,10 +26,11 @@ async function loadScript(src: string) {
   });
 }
 
-export function SocialSignIn({ consent, disabled = false, onResult }: {
+export function SocialSignIn({ consent, disabled = false, onResult, onConsentRequired }: {
   consent: boolean;
   disabled?: boolean;
   onResult: (result: { needsPhone?: boolean; pendingToken?: string; hasProfile?: boolean }) => void;
+  onConsentRequired: (provider: 'google' | 'apple') => void;
 }) {
   const [config, setConfig] = useState<Config>();
   const [message, setMessage] = useState('');
@@ -113,11 +114,7 @@ export function SocialSignIn({ consent, disabled = false, onResult }: {
   async function start(provider: 'google' | 'apple') {
     if (busy || disabled) return;
     if (!consent) {
-      announce('Please accept the age, terms and privacy statement first.', true);
-      requestAnimationFrame(() => {
-        const checkbox = document.querySelector<HTMLInputElement>('.auth-panel input[type="checkbox"]');
-        checkbox?.focus();
-      });
+      onConsentRequired(provider);
       return;
     }
     if (provider === 'google') {
@@ -145,12 +142,13 @@ export function SocialSignIn({ consent, disabled = false, onResult }: {
   if (!hasGoogle && !hasApple) return message ? <p role={failed ? 'alert' : 'status'} tabIndex={-1} ref={messageRef}>{message}</p> : null;
   return <div className="stack" aria-busy={busy || undefined}>
     <p className="eyebrow">Or continue with</p>
-    <p className="expert-meta" id="social-consent-help" aria-live="polite" aria-atomic="true">{consent ? 'Consent accepted. Google and Apple are enabled. Phone sign-in remains available without this checkbox.' : 'Accept the age, terms and privacy statement above to enable Google or Apple. Phone sign-in remains available without this checkbox.'}</p>
-    <p className="sr-only" id="social-keys-hint">Arrow keys move between Google and Apple sign-in when shown. Escape blurs. Consent never blocks Send code.</p>
-    <LinkKeyboardGroup className="actions" aria-label="Social sign-in options" aria-describedby={[!consent ? 'social-consent-help' : '', 'social-keys-hint'].filter(Boolean).join(' ') || undefined}>
-      {hasApple && <button type="button" data-provider="apple" className="button secondary social-provider-button" disabled={busy || disabled || !consent} aria-busy={busy || undefined} aria-describedby={!consent ? 'social-consent-help' : undefined} onClick={() => void start('apple')}><AppleMark />{busy ? 'Continuing with Apple…' : 'Continue with Apple'}</button>}
+    <p className="sr-only" id="social-keys-hint">Arrow keys move between Google and Apple sign-in when shown. Escape blurs.</p>
+    <LinkKeyboardGroup className="actions" aria-label="Social sign-in options" aria-describedby="social-keys-hint">
+      {hasApple && <button type="button" data-provider="apple" className="button secondary social-provider-button" disabled={busy || disabled} aria-disabled={!consent || undefined} aria-busy={busy || undefined} onClick={() => void start('apple')}><AppleMark />{busy ? 'Signing in with Apple…' : 'Sign in with Apple'}</button>}
       {hasGoogle && <div className="social-google-slot" data-provider="google">
-        {(!consent || disabled) && <button type="button" className="button secondary social-google-placeholder social-provider-button" disabled aria-describedby={!consent ? 'social-consent-help' : undefined}><GoogleMark />Continue with Google</button>}
+        {(!consent || disabled) && <button type="button" className="button secondary social-google-placeholder social-provider-button" disabled={busy || disabled} aria-disabled={!consent || disabled || busy || undefined} onClick={() => {
+          if (!consent) onConsentRequired('google');
+        }}><GoogleMark />Sign in with Google</button>}
         <div ref={googleBox} className="social-google-widget" hidden={!consent || disabled} role="group" aria-label="Google sign-in" />
       </div>}
     </LinkKeyboardGroup>

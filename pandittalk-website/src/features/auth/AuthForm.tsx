@@ -14,6 +14,8 @@ export function AuthForm() {
   const [otp, setOtp] = useState('');
   const [sent, setSent] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [socialConsentAttempted, setSocialConsentAttempted] = useState(false);
+  const [socialConsentToast, setSocialConsentToast] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [failed, setFailed] = useState(false);
@@ -23,7 +25,9 @@ export function AuthForm() {
   const [destination, setDestination] = useState('/home');
   const otpRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
+  const socialConsentRef = useRef<HTMLInputElement>(null);
   const messageRef = useRef<HTMLParagraphElement>(null);
+  const socialConsentToastTimer = useRef<number | null>(null);
   const action = sent ? pending ? 'complete-social' : 'verify-otp' : 'request-otp';
   const secondsLeft = (target: Action) => Math.max(0, Math.ceil(((retryAt[target] || 0) - now) / 1000));
   const destinationLabel = (() => {
@@ -42,6 +46,28 @@ export function AuthForm() {
     setMessage(note);
     requestAnimationFrame(() => messageRef.current?.focus());
   }
+
+  function requireSocialConsent(provider: 'google' | 'apple') {
+    const providerName = provider === 'google' ? 'Google' : 'Apple';
+    setSocialConsentAttempted(true);
+    setSocialConsentToast(`Please confirm the checkbox above before continuing with ${providerName}.`);
+    if (socialConsentToastTimer.current !== null) window.clearTimeout(socialConsentToastTimer.current);
+    socialConsentToastTimer.current = window.setTimeout(() => {
+      setSocialConsentToast('');
+      socialConsentToastTimer.current = null;
+    }, 5000);
+    requestAnimationFrame(() => {
+      const checkbox = socialConsentRef.current;
+      if (!checkbox) return;
+      checkbox.focus({ preventScroll: true });
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      checkbox.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+    });
+  }
+
+  useEffect(() => () => {
+    if (socialConsentToastTimer.current !== null) window.clearTimeout(socialConsentToastTimer.current);
+  }, []);
 
   function resetToPhoneEntry(note = '') {
     setSent(false);
@@ -235,11 +261,22 @@ export function AuthForm() {
         </LinkKeyboardGroup>
       </form>
       {!pending && !sent && <>
-        <label className="check"><input type="checkbox" checked={consent} disabled={busy} onChange={event => setConsent(event.target.checked)} aria-describedby="auth-phone-consent-help" /><span>I am 18 or older and agree to the <span className="sr-only" id="auth-legal-phone-hint">Arrow keys move between Terms and Privacy. Escape blurs. Consent never blocks Send code.</span><LinkKeyboardGroup as="span" aria-label="Sign-in legal links" aria-describedby="auth-legal-phone-hint"><Link href="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions<span className="sr-only"> (opens in a new tab)</span></Link> and <Link href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy<span className="sr-only"> (opens in a new tab)</span></Link></LinkKeyboardGroup>.</span></label>
-        <p className="expert-meta" id="auth-phone-consent-help">Phone sign-in remains available without this checkbox.</p>
-        <SocialSignIn consent={consent} disabled={busy} onResult={finish} />
+        <label className="check"><input ref={socialConsentRef} id="auth-social-consent" type="checkbox" checked={consent} disabled={busy} aria-invalid={socialConsentAttempted && !consent ? true : undefined} aria-describedby={socialConsentToast ? 'auth-social-consent-toast' : undefined} onChange={event => {
+          const checked = event.target.checked;
+          setConsent(checked);
+          if (checked) {
+            setSocialConsentAttempted(false);
+            setSocialConsentToast('');
+            if (socialConsentToastTimer.current !== null) {
+              window.clearTimeout(socialConsentToastTimer.current);
+              socialConsentToastTimer.current = null;
+            }
+          }
+        }} /><span>I am 18 or older and agree to the <span className="sr-only" id="auth-legal-phone-hint">Arrow keys move between Terms and Privacy. Escape blurs. Consent never blocks Send code.</span><LinkKeyboardGroup as="span" aria-label="Sign-in legal links" aria-describedby="auth-legal-phone-hint"><Link href="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions<span className="sr-only"> (opens in a new tab)</span></Link> and <Link href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy<span className="sr-only"> (opens in a new tab)</span></Link></LinkKeyboardGroup>.{socialConsentAttempted && !consent && <span className="auth-consent-required" aria-hidden="true">*</span>}</span></label>
+        <SocialSignIn consent={consent} disabled={busy} onResult={finish} onConsentRequired={requireSocialConsent} />
       </>}
     </div>
+    {socialConsentToast && <div id="auth-social-consent-toast" className="auth-consent-toast" role="alert" aria-atomic="true">{socialConsentToast}</div>}
     <aside className="notice auth-availability" role="status">
       <p><strong>{availabilityCopy.publicStatus}</strong> Signing in opens your existing private space; it does not create a booking or charge.</p>
       <p className="expert-meta">While you wait: <Link href="/tools">try free tools</Link> · <Link href="/guidance/start">prepare a draft</Link> · <Link href="/how-it-works#booking-availability-how">get booking updates</Link>.</p>

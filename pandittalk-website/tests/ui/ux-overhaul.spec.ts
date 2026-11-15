@@ -405,10 +405,10 @@ test('login keeps social sign-in copy and brand marks consistent', async ({ page
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/login');
 
-    await expect(page.locator('#social-consent-help')).toContainText('Phone sign-in remains available without this checkbox.');
     await expect(page.getByText('Needed for Google or Apple.', { exact: true })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Continue with Google', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Sign in with Apple', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue with Google', exact: true })).toHaveCount(0);
     await expect(page.locator('[data-provider="apple"] [data-brand-logo="apple"]')).toBeVisible();
     await expect(page.locator('[data-provider="google"] [data-brand-logo="google"]')).toBeVisible();
 
@@ -424,4 +424,38 @@ test('login keeps social sign-in copy and brand marks consistent', async ({ page
     expect(sizes.buttons.map(button => button.width)).toEqual([sizes.actionWidth, sizes.actionWidth]);
     expect(sizes.buttons[0].height).toBe(sizes.buttons[1].height);
   }
+});
+
+test('login keeps provider buttons visually matched after consent', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/login');
+  await page.locator('.auth-panel input[type="checkbox"]').check();
+
+  const google = page.locator('.social-google-widget [role="button"]');
+  await expect(page.getByRole('button', { name: 'Sign in with Apple', exact: true })).toBeVisible();
+  await expect(google).toBeVisible();
+
+  const styles = await page.evaluate(() => {
+    const apple = document.querySelector<HTMLButtonElement>('[data-provider="apple"].social-provider-button');
+    const googleButton = document.querySelector<HTMLElement>('.social-google-widget [role="button"]');
+    if (!apple || !googleButton) throw new Error('Provider buttons did not render.');
+    const read = (node: HTMLElement) => {
+      const rect = node.getBoundingClientRect();
+      const computed = getComputedStyle(node);
+      return { width: Math.round(rect.width), height: Math.round(rect.height), background: computed.backgroundColor, borderRadius: computed.borderRadius };
+    };
+    return { apple: read(apple), google: read(googleButton) };
+  });
+
+  expect(styles.apple).toEqual(styles.google);
+});
+
+test('download waitlist links never render separators as standalone rows', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/download');
+
+  const followUps = page.locator('.actions').filter({ hasText: 'Prefer booking updates instead?' });
+  await expect(followUps).toBeVisible();
+  const lines = (await followUps.innerText()).split('\n').map(line => line.trim()).filter(Boolean);
+  expect(lines).not.toContain('·');
 });

@@ -83,15 +83,12 @@ export function DownloadPlatform() {
         helpText="App Store launch emails only. Separate from booking or recharge updates. See our"
       />
       <p className="sr-only" id="download-ios-hint">Arrow keys move between waitlist follow-up links. Escape blurs.</p>
-      <LinkKeyboardGroup className="actions" style={{ marginTop: 12 }} aria-label="iOS waitlist follow-up links" aria-describedby="download-ios-hint" as="p">
-        Prefer booking updates instead? <Link href="/how-it-works#booking-availability-how">Join the No Timer list</Link>
-        {' · '}
+      <LinkKeyboardGroup className="actions download-ios-actions" style={{ marginTop: 12 }} aria-label="iOS waitlist follow-up links" aria-describedby="download-ios-hint" as="p">
+        <span>Prefer booking updates instead? <Link href="/how-it-works#booking-availability-how">Join the No Timer list</Link></span>
         <Link href="/guidance/start">Prepare a draft</Link>
-        {' · '}
         <Link href="/tools">Try free tools</Link>
         {ios ? (
           <>
-            {' · '}
             <a href={PLAY_STORE_URL} rel="noopener noreferrer" target="_blank">
               Google Play is available now
               <span className="sr-only"> (opens in a new tab)</span>
