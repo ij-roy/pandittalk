@@ -14,6 +14,8 @@ import { SocialPendingStore } from './social-pending.store';
 import { ConsoleOtpSmsProvider } from './sms/console-otp-sms.provider';
 import { Msg91OtpSmsProvider } from './sms/msg91-otp-sms.provider';
 import { OtpSmsService } from './sms/otp-sms.service';
+import { AdminGuard } from './guards/admin.guard';
+import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [
@@ -48,7 +50,16 @@ import { OtpSmsService } from './sms/otp-sms.service';
     ConsoleOtpSmsProvider,
     Msg91OtpSmsProvider,
     OtpSmsService,
+    AdminGuard,
+    RolesGuard,
   ],
-  exports: [AuthService, AuthSessionService, JwtStrategy, OtpSmsService],
+  exports: [
+    AuthService,
+    AuthSessionService,
+    JwtStrategy,
+    OtpSmsService,
+    AdminGuard,
+    RolesGuard,
+  ],
 })
 export class AuthModule {}

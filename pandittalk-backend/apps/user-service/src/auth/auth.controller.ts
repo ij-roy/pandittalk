@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import {
@@ -167,6 +175,12 @@ export class AuthController {
     @Body() body: LinkGoogleDto,
   ) {
     return this.authService.linkGoogle(userId, body.idToken);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async me(@CurrentUser('sub') userId: string) {
+    return this.authService.getAuthenticatedUser(userId);
   }
 
   @Post('refresh')
