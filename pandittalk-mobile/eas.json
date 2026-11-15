@@ -9,7 +9,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE": "https://api.pandittalk.com"
+        "EXPO_PUBLIC_API_BASE": "https://pandittalk-load-balancer.admininfo-6d6.workers.dev"
       }
     },
     "production": {
@@ -22,7 +22,7 @@
         "autoIncrement": "versionCode"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE": "https://api.pandittalk.com"
+        "EXPO_PUBLIC_API_BASE": "https://pandittalk-load-balancer.admininfo-6d6.workers.dev"
       }
     }
   },

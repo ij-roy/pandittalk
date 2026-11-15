@@ -90,7 +90,9 @@ A public tunnel or Worker route must support HTTPS and WebSockets. Set
 `API_PUBLIC_URL` to the stable Worker hostname and put the deployed website and
 dashboard origins in `ALLOWED_ORIGINS`; do not commit those values.
 
-For a quick HTTPS/WSS tunnel during development, install `cloudflared` on Kali
+The current deployed Worker hostname is
+`https://pandittalk-load-balancer.admininfo-6d6.workers.dev`. For a quick
+HTTPS/WSS tunnel during development, install `cloudflared` on Kali
 and run `cloudflared tunnel --url http://127.0.0.1:3001` (or use an equivalent
 named tunnel/ngrok deployment). For the stable production path, configure the
 Cloudflare Worker to route `/` and `/chat` to the healthy Asus/Kali backend
@@ -102,11 +104,11 @@ relay WebRTC media; expose TURN separately when real audio/video is enabled.
 
 | Consumer | Local value | Tunnel/Vercel value | Variable |
 | --- | --- | --- | --- |
-| API through Caddy | `http://localhost:3001` | `https://api.example.com` | `API_PUBLIC_URL` |
-| Socket.IO chat | `http://localhost:3001/chat` | `https://api.example.com/chat` | Website `SOCKET_URL`; clients append `/chat` |
+| API through Caddy | `http://localhost:3001` | `https://pandittalk-load-balancer.admininfo-6d6.workers.dev` | `API_PUBLIC_URL` |
+| Socket.IO chat | `http://localhost:3001/chat` | `https://pandittalk-load-balancer.admininfo-6d6.workers.dev/chat` | Website `SOCKET_URL`; clients append `/chat` |
 | Website dev server | `http://localhost:3000` | Vercel website origin | `API_BASE`, `NEXT_PUBLIC_API_BASE`, `BACKEND_URL`, `SOCKET_URL` |
 | Dashboard dev server | `http://localhost:5173` | Vercel dashboard origin | `VITE_API_BASE` |
-| Expo web/dev client | `http://localhost:8081` | `https://<tunnel-host>` for a device | `EXPO_PUBLIC_API_BASE` |
+| Expo web/dev client | `http://localhost:8081` | `https://pandittalk-load-balancer.admininfo-6d6.workers.dev` for a device | `EXPO_PUBLIC_API_BASE` |
 | TURN | `localhost:3478` with the `webrtc` profile | Public UDP/TCP 3478 endpoint | `TURN_REALM`, `TURN_USERNAME`, `TURN_PASSWORD` |
 | Media provider | Browser/native WebRTC with free STUN | Optional coturn or another TURN service | `WEBRTC_STUN_URLS`, `WEBRTC_TURN_URL`, `WEBRTC_TURN_USERNAME`, `WEBRTC_TURN_CREDENTIAL` |
 

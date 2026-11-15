@@ -24,3 +24,7 @@ tmp/
 
 # Local Codex attachments
 .codex-attachments/
+
+# Cloudflare Worker deployment payload (contains live origin URLs)
+infra/cloudflare-worker/backends-config.json
+infra/cloudflare-worker/.wrangler/

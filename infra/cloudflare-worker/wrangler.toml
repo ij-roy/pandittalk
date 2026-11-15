@@ -1,0 +1,21 @@
+name = "pandittalk-load-balancer"
+main = "src/index.mjs"
+compatibility_date = "2026-11-15"
+workers_dev = true
+preview_urls = false
+
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+
+[triggers]
+crons = ["*/1 * * * *"]
+
+# This is the namespace already bound to the production Worker. KV namespace
+# IDs are identifiers, not credentials; keep origin URLs and provider secrets
+# out of this file.
+[[kv_namespaces]]
+binding = "PANDITTALK_BACKEND_CONFIG"
+id = "1ee73e5d765c4ebfa024bbd97dd9be40"

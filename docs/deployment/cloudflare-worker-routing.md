@@ -1,9 +1,9 @@
 # Cloudflare Worker/API front door
 
-The website, dashboard, and mobile app must use one stable HTTPS/WSS hostname,
-for example `https://api.example.com`. Replace the example with the actual
-Worker route in the environment files. Do not put `backend1` or `backend2`
-origins in a client bundle.
+The website, dashboard, and mobile app must use one stable HTTPS/WSS hostname.
+The current Worker URL is
+`https://pandittalk-load-balancer.admininfo-6d6.workers.dev`. Do not put
+`backend1` or `backend2` origins in a client bundle.
 
 The Worker is an infrastructure component, not application state. Configure it
 to route API and Socket.IO requests to the currently healthy backend origins:
@@ -25,7 +25,14 @@ Redis Cloud, MongoDB Atlas, Cloudinary, JWT, and provider configuration. The
 Worker only chooses an origin; it does not synchronize databases, sessions, or
 uploaded files.
 
-For simple active/passive routing, use a Worker origin list and health checks.
+The repository implementation is a KV-backed Worker modeled on the supplied
+Touch example. Create the `PANDITTALK_BACKEND_CONFIG` KV namespace, put the
+real origin list in `backends_config`, and deploy
+`infra/cloudflare-worker/src/index.mjs`. The scheduled handler writes
+`backends_status` after probing `/readiness`; see
+`infra/cloudflare-worker/README.md` for the commands.
+
+For simple active/passive routing, use the Worker origin list and health checks.
 For Cloudflare-managed health-aware load balancing, configure the equivalent
 Cloudflare Load Balancing pool/monitor and route the Worker to that pool. Keep
 the backend origin URLs and any provider credentials in Cloudflare/server-side

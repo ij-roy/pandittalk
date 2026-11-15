@@ -1,0 +1,12 @@
+name = "pandittalk-load-balancer"
+main = "src/index.mjs"
+compatibility_date = "2026-11-15"
+
+[triggers]
+crons = ["*/1 * * * *"]
+
+# Create the namespace first, then replace the placeholder with its ID:
+#   npx wrangler kv namespace create PANDITTALK_BACKEND_CONFIG
+[[kv_namespaces]]
+binding = "PANDITTALK_BACKEND_CONFIG"
+id = "00000000000000000000000000000000"
