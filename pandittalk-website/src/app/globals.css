@@ -371,9 +371,10 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
 .social-brand-icon { width:18px; height:18px; flex:0 0 18px; max-width:none }
 .social-google-widget > div { width:100%!important; min-width:0!important; flex:1 1 100%!important }
 .social-google-widget [role="button"] { width:100%!important; max-width:none!important; height:49px!important; min-height:49px!important; display:flex!important; align-items:center!important; justify-content:center!important; gap:9px!important; padding:12px 23px!important; border:1px solid #e4d3a8!important; border-radius:12px!important; background:var(--brand-gold-pale)!important; color:var(--ink)!important; box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 12px -8px rgba(125,86,0,.24)!important; font-family:inherit!important; font-size:.94rem!important; font-weight:650!important; line-height:1.5!important }
-.social-google-widget [role="button"] > div:last-child { display:flex!important; align-items:center!important; justify-content:center!important; gap:9px!important; width:100%!important; height:100%!important }
+.social-google-widget [role="button"] > div:last-child { display:flex!important; align-items:center!important; justify-content:center!important; gap:9px!important; width:auto!important; height:100%!important; flex:0 0 auto!important }
+.social-google-widget [role="button"] > div:last-child > div { flex:0 0 auto!important; width:auto!important }
 .social-google-widget [role="button"] svg { width:18px!important; height:18px!important; flex:0 0 18px!important }
-.social-google-widget [role="button"] span:first-of-type { color:var(--ink)!important; font-family:inherit!important; font-size:.94rem!important; font-weight:650!important; line-height:1.5!important }
+.social-google-widget [role="button"] span:first-of-type { color:var(--ink)!important; flex:0 0 auto!important; width:auto!important; font-family:inherit!important; font-size:.94rem!important; font-weight:650!important; line-height:1.5!important }
 .download-ios-actions { align-items:center; gap:8px 16px }
 .download-ios-actions > span { flex:1 1 100%; min-width:0 }
 @media(min-width:901px) { .download-ios-actions > span { flex:0 1 auto } }

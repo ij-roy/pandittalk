@@ -445,10 +445,24 @@ test('login keeps provider buttons visually matched after consent', async ({ pag
         const computed = getComputedStyle(node);
         return { width: Math.round(rect.width), height: Math.round(rect.height), background: computed.backgroundColor, borderRadius: computed.borderRadius };
       };
-      return { apple: read(apple), google: read(googleButton) };
+      const googleLabel = googleButton.querySelector<HTMLElement>('span:first-of-type');
+      const googleMark = googleButton.querySelector<SVGElement>('svg');
+      if (!googleLabel || !googleMark) throw new Error('Google provider mark did not render.');
+      const googleRect = googleButton.getBoundingClientRect();
+      const markRect = googleMark.getBoundingClientRect();
+      const labelRect = googleLabel.getBoundingClientRect();
+      return {
+        apple: read(apple),
+        google: read(googleButton),
+        googleLabelWidth: Math.round(labelRect.width),
+        googleContentCenter: Math.round((markRect.left + labelRect.right) / 2),
+        googleButtonCenter: Math.round((googleRect.left + googleRect.right) / 2),
+      };
     });
 
     expect(styles.apple).toEqual(styles.google);
+    expect(styles.googleLabelWidth).toBeLessThan(260);
+    expect(Math.abs(styles.googleContentCenter - styles.googleButtonCenter)).toBeLessThanOrEqual(1);
   }
 });
 
