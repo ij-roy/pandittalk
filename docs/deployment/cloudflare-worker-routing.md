@@ -12,8 +12,11 @@ to route API and Socket.IO requests to the currently healthy backend origins:
 - Kali origin: the HTTPS tunnel or public origin for the Kali backend.
 - Health path: `/readiness` (it must report PostgreSQL, Redis, and MongoDB as
   healthy before an origin receives traffic).
-- WebSockets: pass through the `/chat` namespace and preserve the `Upgrade` and
-  `Connection` headers.
+- WebSockets: pass through the Socket.IO transport path `/socket.io/` for both
+  polling and WebSocket upgrades, preserve query strings, and preserve the
+  `Upgrade` and `Connection` headers. The application namespace is `/chat`, so
+  clients connect to the `/chat` namespace over that `/socket.io/` transport;
+  `/chat` is not the transport path itself.
 - Payments: configure Razorpay webhooks to call the stable Worker URL, never an
   individual laptop origin.
 

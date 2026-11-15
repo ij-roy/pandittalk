@@ -12,7 +12,7 @@ export interface ChatStorage {
     senderRole: SenderRole,
     message: string,
     timestamp: number,
-  ): Promise<void>;
+  ): Promise<number>;
   getMessageWindow(
     sessionId: string,
     options?: { beforeTimestamp?: number; limit?: number },

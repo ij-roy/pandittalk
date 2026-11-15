@@ -45,13 +45,21 @@ services:
       timeout: 5s
       retries: 5
 
-  dynamodb:
-    image: amazon/dynamodb-local:latest
-    container_name: pandittalk-dynamodb
+  mongo:
+    image: mongo:7-jammy
+    container_name: pandittalk-mongo
     restart: unless-stopped
-    command: ['-jar', 'DynamoDBLocal.jar', '-sharedDb', '-inMemory']
+    command: ['mongod', '--bind_ip_all']
     ports:
-      - '8000:8000'
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ['CMD-SHELL', 'mongosh --quiet --eval "db.adminCommand({ ping: 1 }).ok" | grep 1']
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_data:
+  mongo_data:

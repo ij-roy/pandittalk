@@ -44,17 +44,14 @@ describe('MongoChatService', () => {
     );
 
     await service.onModuleInit();
-    await service.saveMessage(
-      'booking-1',
-      'user-1',
-      'user',
-      'Namaste',
-      100,
-    );
+    await service.saveMessage('booking-1', 'user-1', 'user', 'Namaste', 100);
     await service.ping();
 
     expect(connect).toHaveBeenCalledTimes(1);
-    expect(createIndex).toHaveBeenCalledWith({ sessionId: 1, timestamp: -1 });
+    expect(createIndex).toHaveBeenCalledWith(
+      { sessionId: 1, timestamp: -1 },
+      { unique: true },
+    );
     expect(insertOne).toHaveBeenCalledWith({
       sessionId: 'booking-1',
       senderId: 'user-1',
@@ -63,6 +60,41 @@ describe('MongoChatService', () => {
       timestamp: 100,
     });
     expect(dbCommand).toHaveBeenCalledWith({ ping: 1 });
+  });
+
+  it('advances a colliding timestamp so pagination has a unique boundary', async () => {
+    insertOne
+      .mockRejectedValueOnce({ code: 11000 })
+      .mockResolvedValueOnce({ acknowledged: true });
+
+    const service = new MongoChatService(
+      new ConfigService({ MONGODB_URI: 'mongodb://mongo.example.test:27017' }),
+    );
+    await service.onModuleInit();
+
+    const effectiveTimestamp = await service.saveMessage(
+      'booking-1',
+      'user-1',
+      'user',
+      'Namaste',
+      100,
+    );
+
+    expect(effectiveTimestamp).toBe(101);
+    expect(insertOne).toHaveBeenNthCalledWith(1, {
+      sessionId: 'booking-1',
+      senderId: 'user-1',
+      senderRole: 'user',
+      message: 'Namaste',
+      timestamp: 100,
+    });
+    expect(insertOne).toHaveBeenNthCalledWith(2, {
+      sessionId: 'booking-1',
+      senderId: 'user-1',
+      senderRole: 'user',
+      message: 'Namaste',
+      timestamp: 101,
+    });
   });
 
   it('returns an older window chronologically and reports whether more messages exist', async () => {
@@ -102,10 +134,13 @@ describe('MongoChatService', () => {
       limit: 2,
     });
 
-    expect(find).toHaveBeenCalledWith({
-      sessionId: 'booking-1',
-      timestamp: { $lt: 400 },
-    });
+    expect(find).toHaveBeenCalledWith(
+      {
+        sessionId: 'booking-1',
+        timestamp: { $lt: 400 },
+      },
+      { projection: { _id: 0 } },
+    );
     expect(sort).toHaveBeenCalledWith({ timestamp: -1 });
     expect(limit).toHaveBeenCalledWith(3);
     expect(result).toEqual({

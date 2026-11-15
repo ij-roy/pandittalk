@@ -276,12 +276,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
         return;
       }
-      const history = await this.chatStorage.getMessageWindow(
-        data.bookingId,
-        {
-          beforeTimestamp: before,
-        },
-      );
+      const history = await this.chatStorage.getMessageWindow(data.bookingId, {
+        beforeTimestamp: before,
+      });
       client.emit('earlierMessages', {
         bookingId: data.bookingId,
         messages: history.messages,
@@ -352,14 +349,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       const senderRole = this.resolveSenderRole(userId, booking);
-      const timestamp = Date.now();
-
-      await this.chatStorage.saveMessage(
+      const requestedTimestamp = Date.now();
+      const timestamp = await this.chatStorage.saveMessage(
         data.bookingId,
         userId,
         senderRole,
         data.message,
-        timestamp,
+        requestedTimestamp,
       );
 
       this.server.to(room).emit('newMessage', {

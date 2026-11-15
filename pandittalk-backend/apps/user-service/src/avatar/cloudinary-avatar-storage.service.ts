@@ -8,7 +8,9 @@ export class CloudinaryAvatarStorageService implements AvatarStorage {
   private readonly folder: string;
 
   constructor(configService: ConfigService) {
-    const cloudName = configService.get<string>('CLOUDINARY_CLOUD_NAME')?.trim();
+    const cloudName = configService
+      .get<string>('CLOUDINARY_CLOUD_NAME')
+      ?.trim();
     const apiKey = configService.get<string>('CLOUDINARY_API_KEY')?.trim();
     const apiSecret = configService
       .get<string>('CLOUDINARY_API_SECRET')
@@ -46,7 +48,7 @@ export class CloudinaryAvatarStorageService implements AvatarStorage {
         },
         (error, result) => {
           if (error) {
-            reject(error);
+            reject(this.toError(error));
             return;
           }
           if (!result?.secure_url) {
@@ -82,5 +84,15 @@ export class CloudinaryAvatarStorageService implements AvatarStorage {
 
   private normalizeFolder(folder: string): string {
     return folder.trim().replace(/^\/+|\/+$/g, '') || 'pandittalk';
+  }
+
+  private toError(error: unknown): Error {
+    if (error instanceof Error) {
+      return error;
+    }
+    if (typeof error === 'string') {
+      return new Error(error);
+    }
+    return new Error('Cloudinary upload failed');
   }
 }

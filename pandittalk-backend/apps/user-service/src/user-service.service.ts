@@ -188,7 +188,10 @@ export class UserServiceService {
       throw new NotFoundException('User not found');
     }
 
-    if (this.avatarStorageMode === 's3') {
+    if (
+      this.avatarStorageMode === 's3' ||
+      this.avatarStorageMode === 'cloudinary'
+    ) {
       await this.avatarStorage.delete(userAvatarObjectKey(userId));
     } else if (user.profileImageUrl) {
       const localKey = localAvatarKeyFromUrl(

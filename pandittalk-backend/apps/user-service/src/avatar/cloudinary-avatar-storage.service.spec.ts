@@ -36,7 +36,8 @@ describe('CloudinaryAvatarStorageService', () => {
     const end = jest.fn();
     uploadStream.mockImplementation((_options, callback) => {
       callback(null, {
-        secure_url: 'https://res.cloudinary.com/demo/image/upload/v1/avatar.jpg',
+        secure_url:
+          'https://res.cloudinary.com/demo/image/upload/v1/avatar.jpg',
       });
       return { end };
     });
@@ -86,7 +87,11 @@ describe('CloudinaryAvatarStorageService', () => {
     });
 
     await expect(
-      createService().put('avatars/users/user-1.jpg', Buffer.from('x'), 'image/jpeg'),
+      createService().put(
+        'avatars/users/user-1.jpg',
+        Buffer.from('x'),
+        'image/jpeg',
+      ),
     ).rejects.toThrow('Cloudinary unavailable');
   });
 });

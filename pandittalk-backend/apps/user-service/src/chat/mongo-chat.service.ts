@@ -40,7 +40,10 @@ export class MongoChatService
     this.collection = this.client
       .db(this.databaseName)
       .collection<ChatMessage>(CHAT_COLLECTION);
-    await this.collection.createIndex({ sessionId: 1, timestamp: -1 });
+    await this.collection.createIndex(
+      { sessionId: 1, timestamp: -1 },
+      { unique: true },
+    );
     this.logger.log(
       `MongoDB chat collection "${this.databaseName}.${CHAT_COLLECTION}" is ready`,
     );
@@ -60,14 +63,27 @@ export class MongoChatService
     senderRole: SenderRole,
     message: string,
     timestamp: number,
-  ): Promise<void> {
-    await this.getCollection().insertOne({
-      sessionId,
-      senderId,
-      senderRole,
-      message,
-      timestamp,
-    });
+  ): Promise<number> {
+    let effectiveTimestamp = timestamp;
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      try {
+        await this.getCollection().insertOne({
+          sessionId,
+          senderId,
+          senderRole,
+          message,
+          timestamp: effectiveTimestamp,
+        });
+        return effectiveTimestamp;
+      } catch (error: unknown) {
+        if (!this.isDuplicateKeyError(error)) {
+          throw error;
+        }
+        effectiveTimestamp += 1;
+      }
+    }
+
+    throw new Error('Could not allocate a unique chat message timestamp');
   }
 
   async getMessageWindow(
@@ -82,7 +98,7 @@ export class MongoChatService
       : { sessionId };
 
     const newestFirst = await this.getCollection()
-      .find(filter)
+      .find(filter, { projection: { _id: 0 } })
       .sort({ timestamp: -1 })
       .limit(limit + 1)
       .toArray();
@@ -111,5 +127,14 @@ export class MongoChatService
       return DEFAULT_MESSAGE_LIMIT;
     }
     return Math.min(limit, 500);
+  }
+
+  private isDuplicateKeyError(error: unknown): boolean {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 11000
+    );
   }
 }
