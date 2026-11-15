@@ -20,7 +20,7 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: pandittalk-backend/package-lock.json
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run prisma:generate
       - run: npm run lint:check
       - run: npm test -- --runInBand
@@ -39,7 +39,7 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: pandittalk-website/package-lock.json
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - name: Run browser journeys and responsive checks
@@ -61,7 +61,7 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: pandittalk-dashboard/package-lock.json
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run lint
       - run: npm run build
 
@@ -77,7 +77,7 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: pandittalk-mobile/package-lock.json
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test:webview-allowlist
