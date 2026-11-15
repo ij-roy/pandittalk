@@ -100,9 +100,12 @@ export class AuthService {
   ) {
     this.allowTestOtp =
       config.get<string>('ALLOW_TEST_OTP', 'false') === 'true';
+    const configuredAllowlist = [
+      config.get<string>('TEST_OTP_PHONE_ALLOWLIST', ''),
+      config.get<string>('ADMIN_TEST_OTP_PHONE_ALLOWLIST', ''),
+    ].join(',');
     this.testOtpAllowlist = new Set(
-      config
-        .get<string>('TEST_OTP_PHONE_ALLOWLIST', '')
+      configuredAllowlist
         .split(',')
         .map((n) => n.replace(/\D/g, ''))
         .filter((n) => n.length > 0),

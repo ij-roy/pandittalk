@@ -26,7 +26,11 @@ const mockUser = {
   role: 'CUSTOMER',
 };
 
-function createModule(allowTestOtp: string, testOtpAllowlist = '') {
+function createModule(
+  allowTestOtp: string,
+  testOtpAllowlist = '',
+  adminTestOtpAllowlist = '',
+) {
   const prisma = {
     user: {
       findUnique: jest.fn().mockResolvedValue(mockUser),
@@ -74,6 +78,9 @@ function createModule(allowTestOtp: string, testOtpAllowlist = '') {
       }
       if (key === 'TEST_OTP_PHONE_ALLOWLIST') {
         return testOtpAllowlist;
+      }
+      if (key === 'ADMIN_TEST_OTP_PHONE_ALLOWLIST') {
+        return adminTestOtpAllowlist;
       }
       return defaultValue;
     }),
@@ -295,6 +302,17 @@ describe('AuthService.requestOtp', () => {
     const otpSms = module.get(OtpSmsService);
 
     await authService.requestOtp(allowlistedPhone, '127.0.0.1');
+
+    expect(otpSms.sendOtp).not.toHaveBeenCalled();
+  });
+
+  it('supports the dedicated Admin test allowlist only in test OTP mode', async () => {
+    const adminPhone = '+919999999996';
+    const module = await createModule('true', '', adminPhone);
+    const authService = module.get(AuthService);
+    const otpSms = module.get(OtpSmsService);
+
+    await authService.requestOtp(adminPhone, '127.0.0.1');
 
     expect(otpSms.sendOtp).not.toHaveBeenCalled();
   });
