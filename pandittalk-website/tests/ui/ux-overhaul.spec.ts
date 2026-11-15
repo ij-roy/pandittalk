@@ -20,6 +20,17 @@ test('homepage hero leads with value, two choices and a useful guide', async ({ 
   await expect(page.locator('.hero-guide-card')).toBeVisible();
   await expect(page.locator('.hero-trust-list li')).toHaveCount(4);
   await expect(page.locator('.hero .notify-open-form')).toHaveCount(0);
+  await expect(page.locator('.home-page .eyebrow')).toHaveCount(0);
+  await expect(page.locator('.site-footer .eyebrow')).toHaveCount(0);
+});
+
+test('homepage explains the first-time visitor path in concrete language', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.getByText('Choose a topic, compare Pandit profiles, and prepare your question privately before you decide whether to talk.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Start with what feels closest.', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'See who you may speak with.', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Start with a reading or a tool.', exact: true })).toBeVisible();
 });
 
 test('homepage asks for an email once, after explaining the service', async ({ page }) => {
@@ -64,25 +75,54 @@ test('homepage hero uses a calm decorative aurora with a reduced-motion fallback
   const aurora = page.locator('.hero-aurora');
   await expect(aurora).toHaveCount(1);
   await expect(aurora).toHaveAttribute('aria-hidden', 'true');
-  await expect(aurora.locator('.hero-aurora-glow')).toHaveCount(3);
-  expect(await aurora.locator('.hero-aurora-glow').first().evaluate(element => getComputedStyle(element).animationName)).not.toBe('none');
+  await expect(aurora.locator('canvas.hero-aurora-canvas')).toHaveCount(1);
+  await expect(aurora.locator('.hero-aurora-fallback')).toHaveCount(1);
+  await expect(aurora).toHaveAttribute('data-aurora-engine', /^(webgl|fallback)$/);
+  await expect.poll(async () => aurora.locator('canvas').evaluate(element => ({ width: element.width, height: element.height }))).toMatchObject({ width: expect.any(Number), height: expect.any(Number) });
+  expect(await aurora.getAttribute('data-aurora-running')).toBe('true');
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.reload();
-  expect(await page.locator('.hero-aurora-glow').first().evaluate(element => getComputedStyle(element).animationName)).toBe('none');
+  await expect(page.locator('.hero-aurora')).toHaveAttribute('data-aurora-running', 'false');
 });
 
-test('eyebrow labels use a compact brand marker instead of repeated divider lines', async ({ page }) => {
+test('homepage avoids decorative eyebrow labels that compete with its message', async ({ page }) => {
   await page.goto('/');
 
-  const marker = page.locator('.eyebrow').first().evaluate(element => {
-    const style = getComputedStyle(element, '::before');
-    return { width: parseFloat(style.width), height: parseFloat(style.height), radius: style.borderRadius };
-  });
+  await expect(page.locator('.home-page .eyebrow')).toHaveCount(0);
+  await expect(page.locator('.site-footer .eyebrow')).toHaveCount(0);
+});
 
-  expect((await marker).width).toBeLessThanOrEqual(8);
-  expect((await marker).height).toBeLessThanOrEqual(8);
-  expect((await marker).radius).toBe('50%');
+test('footer gives first-time visitors one clear next step', async ({ page }) => {
+  await page.goto('/');
+
+  const footer = page.locator('.site-footer');
+  await expect(footer.getByRole('heading', { name: 'Choose where to begin.', exact: true })).toBeVisible();
+  await expect(footer.locator('.footer-top-actions .button')).toHaveCount(2);
+  await expect(footer.locator('.footer-top-actions')).not.toContainText('Booking updates');
+  await expect(footer.getByText('Explore profiles, choose a topic, or prepare a private draft before you decide what comes next.', { exact: true })).toBeVisible();
+});
+
+test('footer navigation collapses into readable groups on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  const footer = page.locator('.site-footer');
+  const firstGroup = footer.locator('.footer-nav-group').first();
+  await expect(firstGroup.locator('summary')).toHaveText('Discover');
+  await expect(firstGroup.locator('nav')).not.toBeVisible();
+
+  await firstGroup.locator('summary').click();
+  await expect(firstGroup.locator('nav')).toBeVisible();
+  await expect(firstGroup.getByRole('link', { name: 'Explore Pandits', exact: true })).toBeVisible();
+});
+
+test('footer navigation remains expanded on desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+
+  const footer = page.locator('.site-footer');
+  await expect(footer.locator('.footer-nav-group').first().getByRole('link', { name: 'Explore Pandits', exact: true })).toBeVisible();
 });
 
 test('homepage reveal content cannot remain hidden indefinitely', async ({ page }) => {
