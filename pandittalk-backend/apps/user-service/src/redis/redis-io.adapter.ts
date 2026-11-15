@@ -4,12 +4,9 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient, type RedisClientType } from 'redis';
 import type { Server, ServerOptions } from 'socket.io';
+import { buildRedisUrl } from './redis-url';
 
-export function buildRedisUrl(config: ConfigService): string {
-  const host = config.get<string>('REDIS_HOST', 'localhost');
-  const port = config.get<string>('REDIS_PORT', '6379');
-  return `redis://${host}:${port}`;
-}
+export { buildRedisUrl } from './redis-url';
 
 export class RedisIoAdapter extends IoAdapter {
   private readonly logger = new Logger(RedisIoAdapter.name);

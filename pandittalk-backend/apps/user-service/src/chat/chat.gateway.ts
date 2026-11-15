@@ -24,7 +24,8 @@ import type { NotificationPayload } from '../notifications/notifications.service
 import { PrismaService } from '../prisma/prisma.service';
 import { parseAllowedOrigins } from '../config/cors-origins';
 import { RedisClientService } from '../redis/redis-client.service';
-import { DynamoService } from './dynamo.service';
+import { CHAT_STORAGE } from './chat-storage.interface';
+import type { ChatStorage } from './chat-storage.interface';
 import type {
   AudioParticipantLeftPayload,
   AudioParticipantRejoinedPayload,
@@ -109,7 +110,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
-    private readonly dynamoService: DynamoService,
+    @Inject(CHAT_STORAGE) private readonly chatStorage: ChatStorage,
     private readonly bookingsService: BookingsService,
     private readonly panditAvailability: PanditAvailabilityService,
     private readonly panditQueue: PanditQueueService,
@@ -196,7 +197,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const queueRoom = this.panditQueue.queueRoom(booking.panditId);
       await client.join(queueRoom);
 
-      const history = await this.dynamoService.getMessageWindow(data.bookingId);
+      const history = await this.chatStorage.getMessageWindow(data.bookingId);
       const messages = history.messages;
       const hasMore = history.hasMore;
       const sessionStartedAt = await this.cacheManager.get<number>(
@@ -275,7 +276,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
         return;
       }
-      const history = await this.dynamoService.getMessageWindow(
+      const history = await this.chatStorage.getMessageWindow(
         data.bookingId,
         {
           beforeTimestamp: before,
@@ -353,7 +354,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const senderRole = this.resolveSenderRole(userId, booking);
       const timestamp = Date.now();
 
-      await this.dynamoService.saveMessage(
+      await this.chatStorage.saveMessage(
         data.bookingId,
         userId,
         senderRole,
@@ -1157,7 +1158,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     bookingId: string,
     booking: Booking,
     room: string,
-    messages: Awaited<ReturnType<DynamoService['getMessages']>>,
+    messages: Awaited<ReturnType<ChatStorage['getMessages']>>,
     hasMore = false,
   ): Promise<void> {
     this.clearWaitingTimeout(bookingId);
@@ -1196,7 +1197,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     userId: string,
     bookingId: string,
     booking: Booking,
-    messages: Awaited<ReturnType<DynamoService['getMessages']>>,
+    messages: Awaited<ReturnType<ChatStorage['getMessages']>>,
     hasMore = false,
     _existingEndTime: number | null | undefined,
   ): Promise<void> {

@@ -26,18 +26,18 @@
 | Framework | NestJS | ^11.0.1 |
 | Language | TypeScript | ^5.7.3 |
 | ORM | Prisma | ^6.19.3 |
-| Database | PostgreSQL | 16 (Docker) |
+| Database | PostgreSQL | Supabase managed in production; 16 (Docker) locally |
 | Auth | JWT + Passport | `@nestjs/jwt` ^11 |
 | Real-time | Socket.IO | `@nestjs/platform-socket.io` — namespace `/chat` |
 | Cache / Queue | Redis 7 | `cache-manager-redis-yet` — **wired** (queue + cache) |
-| Chat storage | DynamoDB | `@aws-sdk/client-dynamodb` — local via DynamoDB Local |
+| Chat storage | MongoDB | `mongodb` driver — MongoDB Atlas managed in production; MongoDB 7 locally |
 | Audio/video media | WebRTC | Browser/native peer connection; Socket.IO/Redis signaling |
 | Payments | Razorpay Node SDK | ^2.9.6 |
 | Astrology | Prokerala REST API | OAuth2 client credentials |
 | AI | OpenAI GPT-4o | `openai` ^6.42.0 |
 | Message broker | RabbitMQ 3.13 | Docker only — **not wired in code** |
 | Testing | Jest + Supertest | ^30 |
-| Local infra | Docker Compose | Postgres, Redis, RabbitMQ, DynamoDB Local |
+| Local infra | Docker Compose | Postgres, Redis, MongoDB, RabbitMQ |
 
 **Monorepo tooling:** Nest CLI (`nest-cli.json`), path alias `@pandittalk/common` → `libs/common/src`.
 

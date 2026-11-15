@@ -41,18 +41,17 @@ services:
       timeout: 3s
       retries: 10
 
-  dynamodb:
-    image: amazon/dynamodb-local:latest
+  mongo:
+    image: mongo:7-jammy
     restart: unless-stopped
     logging: *default-logging
-    user: root
-    command: ['-jar', 'DynamoDBLocal.jar', '-sharedDb', '-dbPath', './data']
+    command: ['mongod', '--bind_ip_all']
     expose:
-      - '8000'
+      - '27017'
     volumes:
-      - dynamodb_data:/home/dynamodblocal/data
+      - mongo_data:/data/db
     healthcheck:
-      test: ['CMD-SHELL', 'curl -s http://127.0.0.1:8000/ >/dev/null']
+      test: ['CMD-SHELL', 'mongosh --quiet --eval "db.adminCommand({ ping: 1 }).ok" | grep 1']
       interval: 5s
       timeout: 5s
       retries: 12
@@ -70,22 +69,28 @@ services:
       NODE_ENV: production
       USER_SERVICE_PORT: 3001
       DATABASE_URL: ${DATABASE_URL:-postgresql://pandittalk:pandittalk-local-only@postgres:5432/pandittalk?schema=public&connection_limit=10&pool_timeout=20}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      DYNAMODB_ENDPOINT: http://dynamodb:8000
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-local}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-local}
-      AWS_REGION: ${AWS_REGION:-ap-south-1}
-      DYNAMODB_TABLE_CHAT: ${DYNAMODB_TABLE_CHAT:-pandittalk-chat-messages}
+      DIRECT_URL: ${DIRECT_URL:-}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-pandittalk}
       WEBRTC_STUN_URLS: ${WEBRTC_STUN_URLS:-stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302}
       WEBRTC_TURN_URL: ${WEBRTC_TURN_URL:-}
       WEBRTC_TURN_USERNAME: ${WEBRTC_TURN_USERNAME:-}
       WEBRTC_TURN_CREDENTIAL: ${WEBRTC_TURN_CREDENTIAL:-}
       AVATAR_STORAGE: ${AVATAR_STORAGE:-local}
       AVATAR_UPLOAD_DIR: /app/uploads/avatars
+      AVATAR_PUBLIC_BASE_URL: ${AVATAR_PUBLIC_BASE_URL:-http://localhost:3001/static/avatars}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER:-pandittalk}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:3001}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8081}
       JWT_SECRET: ${JWT_SECRET:-replace-with-a-long-local-development-secret}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      ALLOW_TEST_OTP: ${ALLOW_TEST_OTP:-false}
     volumes:
       - media_data:/app/uploads
     depends_on:
@@ -93,7 +98,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      dynamodb:
+      mongo:
         condition: service_healthy
     command: ['sh', '-c', 'npx prisma migrate deploy --schema apps/user-service/prisma/schema.prisma && node dist/apps/user-service/main.js']
     expose:
@@ -158,7 +163,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  dynamodb_data:
+  mongo_data:
   media_data:
   caddy_data:
   caddy_config:

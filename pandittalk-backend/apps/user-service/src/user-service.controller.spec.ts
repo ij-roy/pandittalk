@@ -5,7 +5,7 @@ import { UserServiceService } from './user-service.service';
 import { ConfigService } from '@nestjs/config';
 import { AVATAR_STORAGE } from './avatar/avatar-storage.interface';
 import { RedisClientService } from './redis/redis-client.service';
-import { DynamoService } from './chat/dynamo.service';
+import { CHAT_STORAGE } from './chat/chat-storage.interface';
 
 describe('UserServiceController', () => {
   let userServiceController: UserServiceController;
@@ -22,7 +22,7 @@ describe('UserServiceController', () => {
         UserServiceService,
         { provide: PrismaService, useValue: prismaMock },
         { provide: RedisClientService, useValue: { ping: jest.fn() } },
-        { provide: DynamoService, useValue: { ping: jest.fn() } },
+        { provide: CHAT_STORAGE, useValue: { ping: jest.fn() } },
         {
           provide: ConfigService,
           useValue: {
@@ -59,7 +59,7 @@ describe('UserServiceController', () => {
       expect(body.checks).toEqual({
         postgres: 'ok',
         redis: 'ok',
-        dynamodb: 'ok',
+        mongodb: 'ok',
       });
     });
   });

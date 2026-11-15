@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   ServiceUnavailableException,
   Patch,
   Post,
@@ -21,7 +22,8 @@ import { UserProfilePayload, UserServiceService } from './user-service.service';
 import { readFeatureFlags } from './config/feature-flags';
 import { PrismaService } from './prisma/prisma.service';
 import { RedisClientService } from './redis/redis-client.service';
-import { DynamoService } from './chat/dynamo.service';
+import { CHAT_STORAGE } from './chat/chat-storage.interface';
+import type { ChatStorage } from './chat/chat-storage.interface';
 
 @Controller()
 export class UserServiceController {
@@ -30,7 +32,7 @@ export class UserServiceController {
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
     private readonly redis: RedisClientService,
-    private readonly dynamo: DynamoService,
+    @Inject(CHAT_STORAGE) private readonly chatStorage: ChatStorage,
   ) {}
 
   @Get()
@@ -42,19 +44,19 @@ export class UserServiceController {
   async getReadiness(): Promise<{
     status: 'ready';
     service: string;
-    checks: { postgres: 'ok'; redis: 'ok'; dynamodb: 'ok' };
+    checks: { postgres: 'ok'; redis: 'ok'; mongodb: 'ok' };
     timestamp: string;
   }> {
     const results = await Promise.allSettled([
       this.prisma.$queryRaw`SELECT 1`,
       this.redis.ping(),
-      this.dynamo.ping(),
+      this.chatStorage.ping(),
     ]);
-    const [postgres, redis, dynamodb] = results;
+    const [postgres, redis, mongodb] = results;
     if (
       postgres.status !== 'fulfilled' ||
       redis.status !== 'fulfilled' ||
-      dynamodb.status !== 'fulfilled'
+      mongodb.status !== 'fulfilled'
     ) {
       throw new ServiceUnavailableException({
         status: 'not_ready',
@@ -62,7 +64,7 @@ export class UserServiceController {
         checks: {
           postgres: postgres.status === 'fulfilled' ? 'ok' : 'error',
           redis: redis.status === 'fulfilled' ? 'ok' : 'error',
-          dynamodb: dynamodb.status === 'fulfilled' ? 'ok' : 'error',
+          mongodb: mongodb.status === 'fulfilled' ? 'ok' : 'error',
         },
         timestamp: new Date().toISOString(),
       });
@@ -70,7 +72,7 @@ export class UserServiceController {
     return {
       status: 'ready',
       service: 'user-service',
-      checks: { postgres: 'ok', redis: 'ok', dynamodb: 'ok' },
+      checks: { postgres: 'ok', redis: 'ok', mongodb: 'ok' },
       timestamp: new Date().toISOString(),
     };
   }

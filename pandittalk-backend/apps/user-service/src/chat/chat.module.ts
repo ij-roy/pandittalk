@@ -5,8 +5,9 @@ import { BookingsModule } from '../bookings/bookings.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { RedisModule } from '../redis/redis.module';
+import { CHAT_STORAGE } from './chat-storage.interface';
 import { ChatGateway } from './chat.gateway';
-import { DynamoService } from './dynamo.service';
+import { MongoChatService } from './mongo-chat.service';
 
 @Module({
   imports: [
@@ -31,7 +32,11 @@ import { DynamoService } from './dynamo.service';
       },
     }),
   ],
-  providers: [ChatGateway, DynamoService],
-  exports: [ChatGateway, DynamoService],
+  providers: [
+    ChatGateway,
+    MongoChatService,
+    { provide: CHAT_STORAGE, useExisting: MongoChatService },
+  ],
+  exports: [ChatGateway, CHAT_STORAGE, MongoChatService],
 })
 export class ChatModule {}

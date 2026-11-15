@@ -1,9 +1,9 @@
 # PanditTalk
 
-PanditTalk is a system-design project with four clients and a local-first
-backend: website, dashboard, Expo mobile app, and NestJS API services. The
-runtime is designed for a low-cost Kali Linux host first; a tunnel exposes only
-the reverse proxy, while Vercel hosts the website and dashboard.
+PanditTalk is a system-design project with four clients and a portable backend:
+website, dashboard, Expo mobile app, and NestJS API services. The API can run on
+the Asus laptop, Kali Linux, or cloud hosts because clients use one stable
+Worker/API hostname and every backend instance shares the same managed services.
 
 Team: the project team currently consists of the user and Aman Singh.
 
@@ -11,21 +11,20 @@ Team: the project team currently consists of the user and Aman Singh.
 
 ```text
 Vercel website/dashboard ─┐
-Expo mobile ──────────────┼─ HTTPS/WSS tunnel ─ Caddy ─ API replicas
-                          │                                  │
-                          └─────────────── Redis ────────────┤
-                                           PostgreSQL ────────┤
-                                           DynamoDB Local ────┘
+Expo mobile ──────────────┼─ Cloudflare Worker/API hostname ─┬─ backend origins
+                          │                                  ├─ Supabase PostgreSQL
+                          └──────── HTTPS/WSS ───────────────┼─ Redis Cloud
+                                                             ├─ MongoDB Atlas
+                                                             └─ Cloudinary
 ```
 
-PostgreSQL is the durable source of truth. Redis holds shared cache, short-lived
-room/session state, rate limits, Socket.IO fan-out, and distributed
-timer/notification locks. The backend does not use sticky sessions. DynamoDB
-Local remains for the current chat-history adapter. Avatar uploads use a named
-Docker volume for local operation. The local Prisma URL limits each API replica
-to ten database connections with a bounded pool wait. Payment, astrology, and AI
-providers are optional environment-controlled integrations; no real credentials
-belong in this repository.
+PostgreSQL in Supabase is the durable source of truth for users, bookings,
+wallets, transactions, auth sessions, and articles. Redis Cloud holds shared
+cache, OTPs, short-lived room/session state, rate limits, Socket.IO fan-out, and
+distributed timer/notification locks. MongoDB Atlas stores chat history only.
+Cloudinary stores uploaded media. The backend does not use sticky sessions.
+Payment, astrology, and AI providers remain optional environment-controlled
+integrations; no real credentials belong in this repository.
 
 ## Local startup
 
@@ -34,6 +33,8 @@ checks, and a copy of the repository.
 
 ```powershell
 Copy-Item .env.example .env
+# For the isolated local demo only, set AVATAR_STORAGE=local and add the
+# demo phones to TEST_OTP_PHONE_ALLOWLIST before starting the stack.
 docker compose up -d --build
 docker compose ps
 Invoke-WebRequest http://localhost:3001/
@@ -57,14 +58,17 @@ audio/video routes; the browser and native clients negotiate peer-to-peer
 WebRTC sessions using the configured STUN/TURN servers.
 
 The API is available at `http://localhost:3001`. The Pandit service, Redis,
-PostgreSQL, and DynamoDB Local stay on the private Compose network so they do
-not collide with software already using ports on the host. Migrations run when
-the API container starts.
+PostgreSQL, and MongoDB stay on the private Compose network so they do not
+collide with software already using ports on the host. Migrations run when the
+API container starts. If the root `.env` contains managed `DATABASE_URL`,
+`REDIS_URL`, or `MONGODB_URI` values, the API uses those exact values; the local
+companion containers are still started as an explicit fallback but are not
+silently substituted for the managed URLs.
 
-`/` is a liveness check. `/readiness` verifies PostgreSQL, Redis, and
-DynamoDB Local before returning `ready`; use it for tunnel/load-balancer health
-checks. Compose applies bounded Docker JSON logs to every service (10 MB per
-file, three retained files) so a long-running Kali host does not fill its disk.
+`/` is a liveness check. `/readiness` verifies PostgreSQL, Redis, and MongoDB
+before returning `ready`; use it as the Worker/load-balancer health check.
+Compose applies bounded Docker JSON logs to every service (10 MB per file,
+three retained files) so a long-running Kali host does not fill its disk.
 
 Useful commands:
 
@@ -82,23 +86,24 @@ docker compose down -v  # deletes local database/cache volumes; use deliberately
 ```
 
 The optional TURN server is started with `docker compose --profile webrtc up -d`.
-A public tunnel must support HTTPS and WebSockets. Set the tunnel hostname/API
-origin and Vercel origins in `.env` before starting the stack; do not commit
-those values.
+A public tunnel or Worker route must support HTTPS and WebSockets. Set
+`API_PUBLIC_URL` to the stable Worker hostname and put the deployed website and
+dashboard origins in `ALLOWED_ORIGINS`; do not commit those values.
 
 For a quick HTTPS/WSS tunnel during development, install `cloudflared` on Kali
 and run `cloudflared tunnel --url http://127.0.0.1:3001` (or use an equivalent
-named tunnel/ngrok deployment). Put the resulting HTTPS origin into the website
-and dashboard API variables, `SOCKET_URL`, `APP_ORIGIN`, `ALLOWED_ORIGINS`, and
-`EXPO_PUBLIC_API_BASE`. A normal HTTP tunnel does not relay WebRTC media; expose
-TURN separately when real audio/video is enabled.
+named tunnel/ngrok deployment). For the stable production path, configure the
+Cloudflare Worker to route `/` and `/chat` to the healthy Asus/Kali backend
+origins, with WebSocket pass-through enabled. Put only the Worker hostname in
+website, dashboard, and mobile API variables. A normal HTTP tunnel does not
+relay WebRTC media; expose TURN separately when real audio/video is enabled.
 
 ## Configuration table
 
 | Consumer | Local value | Tunnel/Vercel value | Variable |
 | --- | --- | --- | --- |
-| API through Caddy | `http://localhost:3001` | `https://<tunnel-host>` | `API_EXTERNAL_PORT`, tunnel hostname |
-| Socket.IO chat | `http://localhost:3001/chat` | `https://<tunnel-host>/chat` | Website `SOCKET_URL`; clients append `/chat` |
+| API through Caddy | `http://localhost:3001` | `https://api.example.com` | `API_PUBLIC_URL` |
+| Socket.IO chat | `http://localhost:3001/chat` | `https://api.example.com/chat` | Website `SOCKET_URL`; clients append `/chat` |
 | Website dev server | `http://localhost:3000` | Vercel website origin | `API_BASE`, `NEXT_PUBLIC_API_BASE`, `BACKEND_URL`, `SOCKET_URL` |
 | Dashboard dev server | `http://localhost:5173` | Vercel dashboard origin | `VITE_API_BASE` |
 | Expo web/dev client | `http://localhost:8081` | `https://<tunnel-host>` for a device | `EXPO_PUBLIC_API_BASE` |
@@ -139,7 +144,9 @@ Copy-Item pandittalk-mobile/.env.example pandittalk-mobile/.env
 Push-Location pandittalk-mobile; npm ci; npm run start; Pop-Location
 ```
 
-Set the mobile `EXPO_PUBLIC_API_BASE` to the tunnel URL for a physical device.
+Set the mobile `EXPO_PUBLIC_API_BASE` to the stable Worker URL for a physical
+device and for release builds. The installed app does not need to change when
+traffic moves from Asus to Kali because the client hostname stays the same.
 The native audio/video module requires an Expo development build; Expo Go does
 not include the native `react-native-webrtc` module. Build the client with the
 configured Expo development client before testing calls on a physical phone.
@@ -180,13 +187,14 @@ local green output is not a substitute for the CI check.
 ## Kali deployment and recovery
 
 1. Clone the repository on Kali and create `.env` from `.env.example`.
-2. Set the tunnel hostname, `ALLOWED_ORIGINS`, and client API/Socket URLs.
+2. Set the stable `API_PUBLIC_URL`, managed service URLs, `ALLOWED_ORIGINS`, and
+   provider credentials.
 3. Run `docker compose up -d --build` and confirm `docker compose ps` is healthy.
-4. Start the HTTPS tunnel to port 3001, then put the same HTTPS API URL into
-   Vercel website/dashboard environment variables and the mobile `.env`/EAS
-   profile.
+4. Configure the Cloudflare Worker to route the public hostname to the healthy
+   Asus/Kali origins, then put only that public URL into the website, dashboard,
+   and mobile `.env`/EAS profile.
 5. Keep the host on a UPS or automatic-resume configuration and back up
-   PostgreSQL before upgrades.
+   Supabase PostgreSQL and MongoDB Atlas before upgrades.
 
 `docker compose stop` pauses the stack without removing volumes; `docker compose
 down` stops and removes containers while preserving named data volumes. To reset
@@ -210,7 +218,7 @@ Get-Content pandittalk-backup.sql | docker compose exec -T postgres psql -U pand
 ```
 
 Do not use `docker compose down -v` during routine restarts because it removes
-the local database, Redis AOF, DynamoDB Local data, and media volume. Rotate or
+the local database, Redis AOF, MongoDB data, and media volume. Rotate or
 replace any credential that was ever exposed before using the repository on a
 public tunnel.
 
