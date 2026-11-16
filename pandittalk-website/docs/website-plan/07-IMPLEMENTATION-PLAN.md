@@ -98,7 +98,7 @@ Consumes: authenticated session and authoritative packages. Produces: reconciled
 
 - [ ] Test server order creation/verification and repeated verification before UI integration.
 - [ ] Render coin balance/history and packages with INR/bonus/tax distinctions.
-- [x] Load Razorpay on explicit checkout action, pass server-created order and verify result server-side. Website recharge now uses the backend wallet package list, server-created Razorpay order, and server verification response; live enablement still requires the production Razorpay credentials and `PAYMENTS_ENABLED=true`.
+- [x] Load Razorpay on explicit checkout action, pass server-created order and verify result server-side. Website recharge now uses the backend wallet package list, server-created Razorpay order, and server verification response; live enablement requires the backend payment feature and production Razorpay credentials.
 - [ ] Implement pending/cancelled/failed/verified states and status recovery after refresh/tab closure.
 - [ ] Re-fetch wallet after confirmed state changes; prevent repeat submission while outcome is unknown.
 - [ ] In test mode replay webhook/verification and verify exactly one credit.

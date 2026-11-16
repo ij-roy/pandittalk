@@ -13,8 +13,6 @@ async function handle(request: NextRequest, context: { params: Promise<{ path: s
   if (!publicRoute && !session) return failure(401, 'Please sign in to continue.');
   if (!backendOrigin()) return failure(503, 'The service connection is not configured for this preview.', 'BACKEND_UNCONFIGURED');
   if (request.method === 'POST' && /^\/tools\/(unlock|monthly-horoscope)$/.test(path)) return failure(503, 'Paid report unlock is temporarily unavailable. You will not be charged.', 'PAID_REPORT_CONTRACT_REQUIRED');
-  const paymentsEnabled = process.env.PAYMENTS_ENABLED === 'true' || process.env.PAYMENTS_TEST_ENABLED === 'true';
-  if (path === '/wallet/create-order' && !paymentsEnabled) return failure(503, 'Wallet recharge is temporarily unavailable. You will not be charged. Existing wallet records remain available.', 'PAYMENTS_DISABLED');
   if (request.method === 'DELETE' && path === '/users/profile' && (!session || Date.now() - session.authenticatedAt > 5 * 60 * 1000)) return failure(403, 'Please sign in again immediately before deleting your account.', 'REAUTH_REQUIRED');
   const headers = new Headers();
   headers.set('X-Client-Platform', 'web');
