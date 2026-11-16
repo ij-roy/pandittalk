@@ -41,7 +41,7 @@ export function SiteFooter() {
           <p className="footer-copyright"><span>© {year} Pandit Talk</span><span>Operated by {organizationName}.</span></p>
           <LinkKeyboardGroup as="nav" className="footer-meta-links" aria-label="Footer support links" aria-describedby="footer-bottom-hint">
             <a href={`mailto:${supportEmail}?subject=${encodeURIComponent('Pandit Talk support')}`}>{supportEmail}<span className="sr-only"> (opens your email app)</span></a>
-            <Link href="/how-it-works#booking-availability-how">Get booking updates</Link>
+            <Link href="/how-it-works#booking-availability-how">How booking works</Link>
             <Link href="/tools">Free tools</Link>
           </LinkKeyboardGroup>
           <p className="footer-back-top"><BackToTop /></p>

@@ -70,7 +70,7 @@ export function HomeFaq({ items }: { items: readonly HomeFaqItem[] }) {
           );
         })}
       </div>
-      <p className="expert-meta">Still looking? <span className="sr-only" id="home-faq-help-hint">Arrow keys move between help centre, free tools, draft, booking updates and contact. Escape blurs. Skip remains site-content.</span><LinkKeyboardGroup as="span" aria-label="Home FAQ help links" aria-describedby="home-faq-help-hint"><Link href="/help">Browse the help centre</Link>, <Link href="/tools">try free tools</Link>, <Link href="/guidance/start">prepare a draft</Link>, <Link href="/how-it-works#booking-availability-how">get booking updates</Link>, or <Link href="/contact">contact support</Link></LinkKeyboardGroup>.</p>
+      <p className="expert-meta">Still looking? <span className="sr-only" id="home-faq-help-hint">Arrow keys move between help centre, free tools, draft, how booking works and contact. Escape blurs. Skip remains site-content.</span><LinkKeyboardGroup as="span" aria-label="Home FAQ help links" aria-describedby="home-faq-help-hint"><Link href="/help">Browse the help centre</Link>, <Link href="/tools">try free tools</Link>, <Link href="/guidance/start">prepare a draft</Link>, <Link href="/how-it-works#booking-availability-how">see how booking works</Link>, or <Link href="/contact">contact support</Link></LinkKeyboardGroup>.</p>
     </>
   );
 }

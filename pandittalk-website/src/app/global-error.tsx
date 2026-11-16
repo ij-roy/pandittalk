@@ -153,7 +153,7 @@ export default function GlobalError({
               Explore Pandits
             </a>
             <a href="/how-it-works#booking-availability-how" style={{ minHeight: 44, padding: '10px 18px', display: 'inline-flex', alignItems: 'center', color: '#292e28' }}>
-              Booking updates
+              How booking works
             </a>
           </div>
         </main>

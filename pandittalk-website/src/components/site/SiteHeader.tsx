@@ -242,7 +242,7 @@ export function SiteHeader() {
                <span className="mobile-nav-label">Continue exploring</span>
               <Link href="/guidance/start" onClick={closeMenu}>Prepare a draft</Link>
               <Link href="/tools" onClick={closeMenu}>Free tools</Link>
-              <Link href="/how-it-works#booking-availability-how" onClick={closeMenu}>Booking updates</Link>
+              <Link href="/how-it-works#booking-availability-how" onClick={closeMenu}>How booking works</Link>
             </>
             : <>
                <span className="mobile-nav-label">Start here</span>

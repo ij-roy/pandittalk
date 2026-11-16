@@ -81,3 +81,13 @@ test('availability copy uses timed-booking language instead of the retired No Ti
   assert.match(source, /timedBookingExplanation/);
   assert.doesNotMatch(source, /noTimerExplanation/);
 });
+
+test('shared navigation describes live booking information instead of a booking waitlist', () => {
+  const availability = readFileSync(resolve(import.meta.dirname, '../../src/content/availability.ts'), 'utf8');
+  const footer = readFileSync(resolve(import.meta.dirname, '../../src/components/site/SiteFooter.tsx'), 'utf8');
+  const header = readFileSync(resolve(import.meta.dirname, '../../src/components/site/SiteHeader.tsx'), 'utf8');
+  assert.match(availability, /Timed sessions and Chat Now are available/);
+  assert.match(availability, /headerLink: 'How booking works'/);
+  assert.doesNotMatch(footer, /Get booking updates/);
+  assert.doesNotMatch(header, />Booking updates</);
+});
