@@ -7,6 +7,7 @@ import { ApiError, api, useApi } from '@/lib/api/client';
 import { formatIstDateTime, todayIstIso } from '@/lib/time/ist';
 import { Skeleton } from '@/components/site/Skeleton';
 import type { Expert } from '@/features/experts/types';
+import { createSessionSocket } from '@/features/sessions/socket';
 import {
   bookingQuotePath,
   createChatNow,
@@ -24,6 +25,7 @@ import {
   type DisplaySlot,
   type PanditLiveStatus,
 } from './bookingApi';
+import { parseQueueEvent, queueExpiredMessage } from './queue-events';
 import type { ScheduledFormat } from './types';
 import styles from './booking-flow.module.css';
 
@@ -68,6 +70,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
   const [queueInfo, setQueueInfo] = useState<{ position: number; estimatedWaitMinutes: number; queueLength: number }>();
   const [queueBusy, setQueueBusy] = useState(false);
   const [queueStatus, setQueueStatus] = useState('');
+  const [queueReadyUntil, setQueueReadyUntil] = useState<string>();
 
   const catalog = catalogQuery.data;
   const expert = expertQuery.data;
@@ -151,6 +154,55 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
     return () => { active = false; window.clearInterval(timer); };
   }, [expertId, isChatNow, queued]);
 
+  useEffect(() => {
+    if (!isChatNow || !expertId || !queued) return;
+    let active = true;
+    let socket: Awaited<ReturnType<typeof createSessionSocket>>['socket'] | undefined;
+    const handleEvent = (eventName: string, payload: unknown) => {
+      const event = parseQueueEvent(expertId, eventName, payload);
+      if (!event || !active) return;
+      if (event.type === 'position') {
+        setQueueInfo({ position: event.position, estimatedWaitMinutes: event.position * 15, queueLength: event.queueLength });
+        return;
+      }
+      if (event.type === 'ready') {
+        setQueued(false);
+        setQueueInfo(undefined);
+        setQueueReadyUntil(event.expiresAt);
+        setQueueStatus(`${event.message} Start Chat Now before ${formatIstDateTime(event.expiresAt)}.`);
+        setPresenceLoading(true);
+        getPanditStatus(expertId)
+          .then(value => { if (active) setPresence(value); })
+          .catch(() => undefined)
+          .finally(() => { if (active) setPresenceLoading(false); });
+        return;
+      }
+      setQueued(false);
+      setQueueInfo(undefined);
+      setQueueReadyUntil(undefined);
+      setQueueStatus(queueExpiredMessage(event.reason));
+    };
+    void createSessionSocket()
+      .then(connection => {
+        if (!active) {
+          connection.socket.disconnect();
+          return;
+        }
+        socket = connection.socket;
+        socket.on('queuePositionUpdated', payload => handleEvent('queuePositionUpdated', payload));
+        socket.on('queueReady', payload => handleEvent('queueReady', payload));
+        socket.on('queueExpired', payload => handleEvent('queueExpired', payload));
+        socket.connect();
+      })
+      .catch(() => {
+        if (active) setQueueStatus('Live queue updates are unavailable. We will keep checking your place here.');
+      });
+    return () => {
+      active = false;
+      socket?.disconnect();
+    };
+  }, [expertId, isChatNow, queued]);
+
   function reviewBooking(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError('');
@@ -202,6 +254,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
     setQueueStatus('');
     try {
       setQueueInfo(await joinChatQueue(expertId));
+      setQueueReadyUntil(undefined);
       setQueued(true);
     } catch (error) {
       setFormError(friendlyError(error));
@@ -217,6 +270,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
       await leaveChatQueue(expertId);
       setQueued(false);
       setQueueInfo(undefined);
+      setQueueReadyUntil(undefined);
       setQueueStatus('You left the queue. Nothing was charged.');
     } catch (error) {
       setFormError(friendlyError(error));
@@ -260,6 +314,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
             {!presenceLoading && presence?.state === 'offline' && <><strong>Not available right now</strong><span>Try a scheduled time instead.</span></>}
           </div>
           {queueStatus && <p className="notice" role="status">{queueStatus}</p>}
+          {queueReadyUntil && <p className="helper">This turn is reserved until {formatIstDateTime(queueReadyUntil)}. The booking service will release it after that time.</p>}
           {!presenceLoading && presence?.state === 'busy' && presence.queueLength >= presence.maxQueueDepth && <p className="notice" role="status">The Chat Now queue is full right now. Nothing is charged unless a booking is confirmed.</p>}
           {presence?.state === 'busy' && !queued && presence.canJoinQueue && <button className="button secondary" type="button" onClick={() => void handleJoinQueue()} disabled={queueBusy}>{queueBusy ? 'Joining queue…' : 'Join the Chat Now queue'}</button>}
           {queued && <button className="text-link" type="button" onClick={() => void handleLeaveQueue()} disabled={queueBusy}>{queueBusy ? 'Updating queue…' : 'Leave the queue'}</button>}
