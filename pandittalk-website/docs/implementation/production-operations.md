@@ -4,12 +4,10 @@ Date: 16 November 2026
 
 ## Current verification after the timed-booking parity changes
 
-- `https://pandittalk-load-balancer.admininfo-6d6.workers.dev/booking-catalog` returned HTTP 200 with the `legacy_timed` catalogue.
-- `https://www.pandittalk.com/api/backend/booking-catalog` returned HTTP 200 through the website proxy.
-- Scheduled Audio and Chat Now quote routes returned HTTP 200 with backend-provided duration and total values.
-- `https://www.pandittalk.com/api/backend/wallet` and `/bookings` returned HTTP 401 without a session, so no account data was exposed.
-- An unauthenticated expert-directory request returned HTTP 200 with an empty array; no live expert was available for a real booking journey during this check.
-- The ECS deployment workflow still fails at AWS OIDC role assumption (`sts:AssumeRoleWithWebIdentity`), so a repeatable deployment path and authenticated staging verification remain release gates.
+- An earlier read-only check returned HTTP 200 for the `legacy_timed` catalogue, scheduled Audio and Chat Now quote routes, and an unauthenticated empty expert directory.
+- Latest recheck: the website returns HTTP 200, but `https://pandittalk-load-balancer.admininfo-6d6.workers.dev/booking-catalog` and `https://www.pandittalk.com/api/backend/booking-catalog` return HTTP 503 with `No healthy backends available`.
+- Because the backend is unhealthy, wallet, bookings, payment, authenticated booking, timer, cancellation, refund and recovery paths were not retried.
+- The ECS deployment workflow still fails at AWS OIDC role assumption (`sts:AssumeRoleWithWebIdentity`), so restoring healthy tasks, a repeatable deployment path and authenticated staging verification remain release gates.
 
 ## Website hosting checklist
 
@@ -31,7 +29,7 @@ The unauthenticated directory request should return HTTP 200 and a JSON array. P
 
 ## Product release guard
 
-New website bookings must use the app's timed model through the backend catalogue, quote, availability, wallet and booking services. The public catalogue and quote routes are now reachable, but do not claim full booking parity until an authenticated scheduled booking and Chat Now booking have been exercised in staging/test mode, including payment, timer, cancellation, refund and recovery behavior. Existing bookings retain their stored duration, price and session terms. A missing catalogue/quote route is a deployment failure, not a reason to restore retired copy or duplicate prices in the website.
+New website bookings must use the app's timed model through the backend catalogue, quote, availability, wallet and booking services. The public catalogue and quote routes must be reachable before claiming full booking parity, followed by authenticated scheduled and Chat Now exercises in staging/test mode covering payment, timer, cancellation, refund and recovery. Existing bookings retain their stored duration, price and session terms. A missing catalogue/quote route is a deployment failure, not a reason to restore retired copy or duplicate prices in the website.
 
 ## Rollback
 
