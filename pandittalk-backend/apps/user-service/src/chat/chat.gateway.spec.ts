@@ -26,6 +26,9 @@ describe('ChatGateway scheduled AV no-show recovery', () => {
       gateway.panditAvailability = {
         clearPanditActive: jest.fn().mockResolvedValue(undefined),
       };
+      gateway.notificationsService = {
+        createNotification: jest.fn().mockResolvedValue(undefined),
+      };
       gateway.hasAudioSessionStarted = jest.fn().mockResolvedValue(false);
       gateway.hasVideoSessionStarted = jest.fn().mockResolvedValue(false);
       gateway.getAudioRoomParticipantCount = jest.fn().mockResolvedValue(1);

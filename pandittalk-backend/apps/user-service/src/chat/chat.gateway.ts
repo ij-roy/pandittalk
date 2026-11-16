@@ -1810,14 +1810,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.avNoShowTimeouts.delete(key);
   }
 
-  private async handleAvNoShowTimeout(
+  async handleAvNoShowTimeout(
     bookingId: string,
     kind: 'audio' | 'video',
-  ): Promise<void> {
+  ): Promise<boolean> {
     const booking = await this.prisma.booking.findUnique({
       where: { id: bookingId },
     });
-    if (!booking || booking.status !== 'confirmed') return;
+    if (!booking || booking.status !== 'confirmed') return false;
 
     const sessionStarted =
       kind === 'audio'
@@ -1836,7 +1836,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         participantCount,
       })
     ) {
-      return;
+      return false;
     }
 
     const result = await this.bookingsService.cancelWithRefund(
@@ -1871,6 +1871,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await this.clearVideoSessionRedisKeys(bookingId);
     }
     await this.panditAvailability.clearPanditActive(booking.panditId);
+
+    if (result.applied) {
+      try {
+        await this.notificationsService.createNotification(
+          booking.userId,
+          'session_ended',
+          'Scheduled session refunded',
+          `Your pandit could not join within ${BOOKING_CATALOG.cancellation.noShowRefundMinutes} minutes. A full refund of ${result.coinsRefunded} coins has been issued to your wallet.`,
+          bookingId,
+        );
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : 'Unknown notification error';
+        this.logger.warn(
+          `Scheduled no-show notification failed for ${bookingId}: ${message}`,
+        );
+      }
+    }
+
+    return result.applied;
   }
 
   private clearAudioWaitTimeout(bookingId: string): void {

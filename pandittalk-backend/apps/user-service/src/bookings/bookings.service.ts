@@ -5,7 +5,10 @@ import {
   forwardRef,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
+  OnModuleDestroy,
+  OnModuleInit,
   ServiceUnavailableException,
 } from '@nestjs/common';
 
@@ -199,8 +202,14 @@ export interface RefundResult {
   applied: boolean;
 }
 
+const SCHEDULED_NO_SHOW_SWEEP_INTERVAL_MS = 60_000;
+const SCHEDULED_NO_SHOW_SWEEP_BATCH_SIZE = 100;
+
 @Injectable()
-export class BookingsService {
+export class BookingsService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(BookingsService.name);
+  private scheduledNoShowSweepInterval?: NodeJS.Timeout;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly panditAvailability: PanditAvailabilityService,
@@ -210,6 +219,68 @@ export class BookingsService {
     @Inject(forwardRef(() => NotificationsService))
     private readonly notificationsService: NotificationsService,
   ) {}
+
+  onModuleInit(): void {
+    const runSweep = () => {
+      void this.reconcileScheduledNoShows().catch((error: unknown) => {
+        const message =
+          error instanceof Error ? error.message : 'Unknown reconciliation error';
+        this.logger.warn(`Scheduled no-show sweep failed: ${message}`);
+      });
+    };
+
+    runSweep();
+    this.scheduledNoShowSweepInterval = setInterval(
+      runSweep,
+      SCHEDULED_NO_SHOW_SWEEP_INTERVAL_MS,
+    );
+    this.scheduledNoShowSweepInterval.unref();
+  }
+
+  onModuleDestroy(): void {
+    if (!this.scheduledNoShowSweepInterval) {
+      return;
+    }
+    clearInterval(this.scheduledNoShowSweepInterval);
+    this.scheduledNoShowSweepInterval = undefined;
+  }
+
+  async reconcileScheduledNoShows(now = new Date()): Promise<number> {
+    const cutoff = new Date(
+      now.getTime() -
+        BOOKING_CATALOG.cancellation.noShowRefundMinutes * 60 * 1000,
+    );
+    const bookings = await this.prisma.booking.findMany({
+      where: {
+        status: 'confirmed',
+        format: { in: ['audio', 'video'] },
+        sessionModel: { not: 'no_timer' },
+        startTime: { lte: cutoff },
+      },
+      select: { id: true, format: true, startTime: true },
+      take: SCHEDULED_NO_SHOW_SWEEP_BATCH_SIZE,
+    });
+
+    let refunded = 0;
+    for (const booking of bookings) {
+      const format = booking.format === 'video' ? 'video' : 'audio';
+      try {
+        if (await this.chatGateway.handleAvNoShowTimeout(booking.id, format)) {
+          refunded += 1;
+        }
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Unknown reconciliation error';
+        this.logger.warn(
+          `Scheduled no-show reconciliation failed for ${booking.id}: ${message}`,
+        );
+      }
+    }
+
+    return refunded;
+  }
 
   async create(
     userId: string,
@@ -886,23 +957,32 @@ export class BookingsService {
     bookingId: string,
     description: string,
   ): Promise<RefundResult> {
-    const booking = await this.prisma.booking.findUnique({
-      where: { id: bookingId },
-    });
-
-    if (!booking) {
-      throw new NotFoundException(`Booking with id "${bookingId}" not found`);
-    }
-
-    if (booking.status !== 'confirmed') {
-      return { coinsRefunded: 0, booking, applied: false };
-    }
-
-    const updated = await this.prisma.$transaction(async (tx) => {
-      await tx.booking.update({
+    const result = await this.prisma.$transaction(async (tx) => {
+      const booking = await tx.booking.findUnique({
         where: { id: bookingId },
+      });
+
+      if (!booking) {
+        return null;
+      }
+
+      if (booking.status !== 'confirmed') {
+        return { coinsRefunded: 0, booking, applied: false };
+      }
+
+      // Multiple socket workers and the periodic sweeper can observe the same
+      // booking. Claim the confirmed row atomically so only one path refunds it.
+      const claimed = await tx.booking.updateMany({
+        where: { id: bookingId, status: 'confirmed' },
         data: { status: 'cancelled' },
       });
+
+      if (claimed.count === 0) {
+        const current = await tx.booking.findUniqueOrThrow({
+          where: { id: bookingId },
+        });
+        return { coinsRefunded: 0, booking: current, applied: false };
+      }
 
       await tx.user.update({
         where: { id: booking.userId },
@@ -922,14 +1002,21 @@ export class BookingsService {
         },
       });
 
-      return tx.booking.findUniqueOrThrow({ where: { id: bookingId } });
+      const updated = await tx.booking.findUniqueOrThrow({
+        where: { id: bookingId },
+      });
+      return {
+        coinsRefunded: booking.coinsDeducted,
+        booking: updated,
+        applied: true,
+      };
     });
 
-    return {
-      coinsRefunded: booking.coinsDeducted,
-      booking: updated,
-      applied: true,
-    };
+    if (!result) {
+      throw new NotFoundException(`Booking with id "${bookingId}" not found`);
+    }
+
+    return result;
   }
 
   async partialRefundAndComplete(
