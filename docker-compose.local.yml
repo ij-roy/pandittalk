@@ -79,6 +79,10 @@ services:
       MONGODB_DATABASE: pandittalk
       # Disposable local/CI value only. Production injects JWT_SECRET from Secrets Manager.
       JWT_SECRET: local-ci-only-do-not-use-in-production
+      # Keep the disposable stack independent of external SMS credentials.
+      # Production continues to use its injected OTP provider configuration.
+      OTP_SMS_PROVIDER: none
+      ALLOW_TEST_OTP: 'false'
       AVATAR_STORAGE: local
       AVATAR_PUBLIC_BASE_URL: http://localhost:3001/static/avatars
       COOKIE_SECURE: 'false'
