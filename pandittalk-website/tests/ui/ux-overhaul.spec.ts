@@ -123,6 +123,13 @@ test('homepage points visitors to real booking paths without a waitlist detour',
   await expect(page.locator('.home-page')).not.toContainText(/no timer|opening soon|waitlist/i);
 });
 
+test('Pandit directory explains that Chat Now rechecks live availability', async ({ page }) => {
+  await page.goto('/pandits');
+
+  await expect(page.getByText('Online presence is only a signal. The booking service checks Chat Now availability again before anything is confirmed. Health, financial and legal topics offer spiritual guidance, not professional advice.', { exact: true })).toBeVisible();
+  await expect(page.locator('.expert-directory-note')).not.toContainText('does not open a booking on this website');
+});
+
 test('homepage does not look unfinished while the Pandit API is unavailable', async ({ page }) => {
   await page.route('**/api/backend/experts**', async route => {
     await new Promise(resolve => setTimeout(resolve, 2500));

@@ -180,7 +180,7 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
           <Link className="text-link" href="/guidance/start">Prepare a draft</Link>
         </LinkKeyboardGroup>
       </div>
-      <p className="expert-meta expert-directory-note">App presence does not open a booking on this website. Health, financial and legal topics offer spiritual guidance, not professional advice.</p>
+      <p className="expert-meta expert-directory-note">Online presence is only a signal. The booking service checks Chat Now availability again before anything is confirmed. Health, financial and legal topics offer spiritual guidance, not professional advice.</p>
     </>}
     <div data-expert-results aria-busy={searching || updating}>
       {updating && <p role="status" className="expert-meta">Updating results…</p>}
