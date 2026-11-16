@@ -178,6 +178,23 @@ test('wallet recharge does not show success when server verification fails', asy
   await expect(page.getByText('Coins added to your wallet.', { exact: true })).toHaveCount(0);
 });
 
+test('wallet recharge follows the backend payment availability flag', async ({ page }) => {
+  await page.route('**/api/backend/wallet', async route => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      coinBalance: 250,
+      paymentsEnabled: false,
+      transactions: [],
+      packages: [{ id: 'pack-starter', label: 'Starter', coins: 500, bonusCoins: 50, priceInr: 499, isActive: true }],
+    }) });
+  });
+  await page.goto('/wallet/recharge');
+
+  await expect(page.getByRole('heading', { name: 'Add coins to your wallet' })).toBeVisible();
+  await expect(page.getByText('Wallet top-ups are temporarily unavailable.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Pay .* securely/ })).toHaveCount(0);
+  await expect(page.getByText('500 coins + 50 bonus', { exact: true })).toHaveCount(0);
+});
+
 test('wallet recharge keeps the payment choice readable on mobile and desktop', async ({ page }) => {
   await page.route('**/api/backend/wallet', async route => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({

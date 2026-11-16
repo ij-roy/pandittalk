@@ -22,6 +22,7 @@ import { buildGstInvoice, type GstInvoice } from './gst-invoice';
 
 export interface WalletResponse {
   coinBalance: number;
+  paymentsEnabled: boolean;
   transactions: Transaction[];
   packages: CoinPackage[];
 }
@@ -91,6 +92,7 @@ export class WalletService {
 
     return {
       coinBalance: Number(user.walletBalance),
+      paymentsEnabled: readFeatureFlags().payments,
       transactions,
       packages,
     };

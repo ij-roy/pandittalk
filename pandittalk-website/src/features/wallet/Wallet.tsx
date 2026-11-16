@@ -28,12 +28,13 @@ const statusBadgeClass = {
 } as const;
 
 export function Wallet() {
-  const q = useApi<{ coinBalance: number; transactions: Transaction[]; packages?: CoinPackage[] }>('/wallet');
+  const q = useApi<{ coinBalance: number; paymentsEnabled?: boolean; transactions: Transaction[]; packages?: CoinPackage[] }>('/wallet');
   const errorRef = useRef<HTMLDivElement>(null);
   const zeroRef = useRef<HTMLElement>(null);
   const emptyTxRef = useRef<HTMLElement>(null);
   const sawZero = useRef(false);
   const sawEmptyTx = useRef(false);
+  const paymentsEnabled = q.data?.paymentsEnabled !== false;
   useEffect(() => {
     if (q.error) requestAnimationFrame(() => {
       const node = errorRef.current;
@@ -90,17 +91,17 @@ export function Wallet() {
     }}><p>{q.error.message} Press Escape to leave this alert.</p><p className="sr-only" id="wallet-load-hint">Arrow keys move between wallet load recovery links. Escape blurs. Skip remains site-content.</p><LinkKeyboardGroup className="actions" aria-label="Wallet load recovery" aria-describedby="wallet-load-hint"><button type="button" className="button secondary" onClick={q.reload} disabled={q.loading} aria-busy={q.loading || undefined}>{q.loading ? 'Trying again…' : 'Try again'}</button><Link className="button secondary" href="/help/coins-and-payment-pending">Payment help</Link><Link className="button secondary" href="/tools">Try free tools</Link><Link className="button secondary" href="/guidance/start">Prepare a draft</Link><Link className="text-link" href="/contact">Contact support →</Link></LinkKeyboardGroup></div>}
     {q.data && <>
       <section className="panel" aria-label="Available wallet balance"><p className="eyebrow">Available balance</p><p className={styles.balance} aria-live="polite">{q.data.coinBalance.toLocaleString('en-IN')} <span>coins</span></p><p>Your balance is shared with your Pandit Talk app account. Pending payments are not included until they settle. Confirmed booking charges and refunds are recorded here.</p></section>
-      <div className="notice" role="status"><strong>{q.data.packages?.length ? 'Add coins when you need them' : 'No coin packs are available right now'}</strong><p>{q.data.packages?.length ? <>Choose a server-priced pack and pay securely. Your balance changes only after payment verification. <Link href="/wallet/recharge">Add coins to your wallet →</Link></> : <>Your existing balance and transaction history are still available. Check back later or <Link href="/contact">contact support</Link> for payment or refund help.</>}</p></div>
+      <div className="notice" role="status"><strong>{!paymentsEnabled ? 'Wallet top-ups are temporarily unavailable' : q.data.packages?.length ? 'Add coins when you need them' : 'No coin packs are available right now'}</strong><p>{!paymentsEnabled ? <>Your existing balance and transaction history are still available. Check back later or <Link href="/contact">contact support</Link> for payment or refund help.</> : q.data.packages?.length ? <>Choose a server-priced pack and pay securely. Your balance changes only after payment verification. <Link href="/wallet/recharge">Add coins to your wallet →</Link></> : <>Your existing balance and transaction history are still available. Check back later or <Link href="/contact">contact support</Link> for payment or refund help.</>}</p></div>
       {q.data.coinBalance === 0 && (
         <aside className="notice" role="status" tabIndex={-1} ref={zeroRef} onKeyDown={event => {
           if (event.key !== 'Escape') return;
           event.preventDefault();
           (event.currentTarget as HTMLElement).blur();
         }}>
-          <p><strong>Your balance is zero.</strong> {q.data.packages?.length ? 'Add coins before starting an eligible booking.' : 'No coin packs are available right now.'} Press Escape to leave this notice.</p>
+          <p><strong>Your balance is zero.</strong> {!paymentsEnabled ? 'Wallet top-ups are temporarily unavailable.' : q.data.packages?.length ? 'Add coins before starting an eligible booking.' : 'No coin packs are available right now.'} Press Escape to leave this notice.</p>
           <p className="sr-only" id="wallet-zero-hint">Arrow keys move between zero-balance next steps. Escape blurs the focused link.</p>
           <LinkKeyboardGroup className="actions" aria-label="Zero balance next steps" aria-describedby="wallet-zero-hint">
-            <Link className="button secondary" href="/wallet/recharge">Add coins</Link>
+            {paymentsEnabled ? <Link className="button secondary" href="/wallet/recharge">Add coins</Link> : <Link className="button secondary" href="/contact">Contact support</Link>}
             <Link className="button secondary" href="/pandits">Explore Pandits</Link>
             <Link className="button secondary" href="/tools">Try free tools</Link>
             <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
@@ -178,12 +179,12 @@ export function Wallet() {
         <h2>No transactions yet</h2>
         <p>
           {q.data.coinBalance === 0
-            ? 'No payment or refund history yet. Choose a coin pack to add coins, or use this page to review wallet status and previous payments. Press Escape to leave this notice.'
+            ? paymentsEnabled ? 'No payment or refund history yet. Choose a coin pack to add coins, or use this page to review wallet status and previous payments. Press Escape to leave this notice.' : 'No payment or refund history yet. Wallet top-ups are temporarily unavailable; use this page to review wallet status and previous payments. Press Escape to leave this notice.'
             : 'Coin payments and refunds will appear here when you use your wallet. Press Escape to leave this notice.'}
         </p>
         <p className="sr-only" id="wallet-empty-hint">Arrow keys move between recharge, pricing, Pandits, free tools, draft and booking links. Escape blurs the focused link. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="Empty wallet next steps" aria-describedby="wallet-empty-hint">
-          <Link className="button secondary" href="/wallet/recharge">Wallet recharge</Link>
+          {paymentsEnabled ? <Link className="button secondary" href="/wallet/recharge">Wallet recharge</Link> : <Link className="button secondary" href="/contact">Payment support</Link>}
           <Link className="button secondary" href="/pricing">Understand pricing</Link>
           <Link className="button secondary" href="/pandits">Explore Pandits</Link>
           <Link className="button secondary" href="/tools">Try free tools</Link>

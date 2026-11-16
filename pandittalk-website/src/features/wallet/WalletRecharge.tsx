@@ -18,6 +18,7 @@ type CoinPackage = {
 
 type WalletData = {
   coinBalance: number;
+  paymentsEnabled?: boolean;
   packages: CoinPackage[];
 };
 
@@ -105,7 +106,10 @@ export function WalletRecharge() {
   const settled = useRef(false);
   const statusRef = useRef<HTMLDivElement>(null);
 
-  const packages = useMemo(() => (wallet.data?.packages ?? []).filter(pkg => pkg.id && pkg.coins > 0 && asNumber(pkg.priceInr) > 0), [wallet.data]);
+  const paymentsEnabled = wallet.data?.paymentsEnabled !== false;
+  const packages = useMemo(() => paymentsEnabled
+    ? (wallet.data?.packages ?? []).filter(pkg => pkg.id && pkg.coins > 0 && asNumber(pkg.priceInr) > 0)
+    : [], [paymentsEnabled, wallet.data]);
   const selected = packages.find(pkg => pkg.id === selectedId) ?? packages[0];
   const busy = stage === 'starting' || stage === 'verifying';
 
@@ -205,7 +209,8 @@ export function WalletRecharge() {
 
     {wallet.loading && <LoadingState label="Loading the available coin packs…" variant="cards" />}
     {wallet.error && <div className="error" role="alert"><p>{wallet.error.message}</p><button type="button" className="button secondary" onClick={wallet.reload}>Try again</button></div>}
-    {wallet.data && packages.length === 0 && <div className="notice" role="status"><strong>No coin packs are available right now.</strong><p>Nothing can be charged from this page. Please check back later or contact support.</p></div>}
+    {wallet.data && !paymentsEnabled && <div className="notice" role="status"><strong>Wallet top-ups are temporarily unavailable.</strong><p>Your existing balance and transactions remain available. No payment window can open while wallet payments are paused; please check back later or contact support.</p></div>}
+    {wallet.data && paymentsEnabled && packages.length === 0 && <div className="notice" role="status"><strong>No coin packs are available right now.</strong><p>Nothing can be charged from this page. Please check back later or contact support.</p></div>}
 
     {packages.length > 0 && <>
       <section className={styles.balancePanel} aria-label="Current wallet balance">
