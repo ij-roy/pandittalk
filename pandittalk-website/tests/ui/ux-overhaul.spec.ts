@@ -9,6 +9,66 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+test('shared interactions acknowledge a held tap and expose a scroll state', async ({ page }) => {
+  await page.goto('/');
+  const primary = page.locator('.hero-copy .button').first();
+  await expect(primary).toBeVisible();
+  await primary.hover();
+  await page.mouse.down();
+  const pressedTransform = await primary.evaluate(element => getComputedStyle(element).transform);
+  await page.mouse.up();
+  expect(pressedTransform).not.toBe('none');
+
+  await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' }));
+  await expect.poll(() => page.locator('html').getAttribute('data-scroll-state')).toBe('scrolled');
+  const dimensions = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.innerWidth);
+});
+
+test('route navigation shows a delayed progress cue', async ({ page }) => {
+  await page.goto('/');
+  await expect.poll(() => page.locator('html').getAttribute('data-scroll-state')).toBe('top');
+  await page.evaluate(() => {
+    const link = document.createElement('a');
+    link.id = 'motion-test-link';
+    link.href = '/pandits?motion-test=slow';
+    link.textContent = 'Motion test';
+    document.body.append(link);
+    link.addEventListener('click', event => event.preventDefault(), { once: true });
+    link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }));
+  });
+  await expect(page.locator('#route-progress')).toHaveAttribute('data-visible', 'true');
+  await page.evaluate(() => window.dispatchEvent(new PopStateEvent('popstate')));
+  await expect(page.locator('#route-progress')).toHaveAttribute('data-visible', 'false');
+});
+
+test('reduced motion disables shared route animation', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await expect(page.locator('#route-progress')).toHaveAttribute('data-reduced-motion', 'true');
+  const animation = await page.locator('#route-progress').evaluate(element => getComputedStyle(element).animationName);
+  expect(animation).toBe('none');
+});
+
+test('slow Pandit results show semantic skeleton rows before data arrives', async ({ page }) => {
+  let release!: () => void;
+  const delayed = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/api/backend/experts**', async route => {
+    await delayed;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: 'ui-expert', name: 'UI Pandit', specialty: 'Guidance', languages: ['English'], experience: 8, isOnline: true }]) });
+  });
+  await page.goto('/pandits');
+  const results = page.locator('[data-expert-results]');
+  await expect(results).toHaveAttribute('aria-busy', 'true');
+  const skeletons = page.locator('[data-skeleton="expert-row"]');
+  await expect(skeletons.first()).toBeVisible();
+  await expect(skeletons.first()).toHaveAttribute('aria-hidden', 'true');
+  release();
+  await expect(results).toHaveAttribute('aria-busy', 'false');
+  await expect(skeletons).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /View UI.*profile/i })).toBeVisible();
+});
+
 async function mockConfiguredSocialProviders(page: import('@playwright/test').Page) {
   await page.route('**/api/auth/config', async route => {
     await route.fulfill({
@@ -129,6 +189,7 @@ test('footer balances legal links and groups utility content', async ({ page }) 
   await page.goto('/');
 
   const footer = page.locator('.site-footer');
+  await expect(footer.locator('.footer-nav-group--legal .footer-nav__items')).toBeVisible();
   const legalColumns = await footer.locator('.footer-nav-group--legal .footer-nav__items').evaluate(element => {
     return getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length;
   });
@@ -206,6 +267,7 @@ test('slow Pandit loading offers a next step instead of a silent skeleton', asyn
   });
 
   await page.goto('/pandits');
+  await expect(page.getByText('Finding Pandits…', { exact: true })).toBeVisible();
   await expect(page.getByText('Still loading? You can use free tools or prepare a draft while profiles load.', { exact: true })).toBeVisible();
   await expect(page.getByLabel('While Pandit results load').getByRole('link', { name: 'Try free tools', exact: true })).toBeVisible();
 });
@@ -471,6 +533,7 @@ test('login keeps provider buttons visually matched after consent', async ({ pag
   for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/login');
+    await expect(page.locator('[data-provider="google"]')).toBeVisible();
     const beforeConsent = await page.locator('[data-provider="google"]').boundingBox();
     expect(beforeConsent).not.toBeNull();
     await page.locator('.auth-panel input[type="checkbox"]').check();
@@ -480,7 +543,9 @@ test('login keeps provider buttons visually matched after consent', async ({ pag
     await expect(google).toBeVisible();
     const afterConsent = await page.locator('[data-provider="google"]').boundingBox();
     expect(afterConsent).not.toBeNull();
-    expect(afterConsent?.height).toBe(beforeConsent?.height);
+    // Browser layout can differ by a sub-pixel as the provider widget swaps in;
+    // the visual contract is that the controls remain the same height.
+    expect(afterConsent?.height).toBeCloseTo(beforeConsent?.height || 0, 2);
     await expect.poll(() => page.evaluate(() => {
       const apple = document.querySelector<HTMLElement>('[data-provider="apple"].social-provider-button');
       const googleButton = document.querySelector<HTMLElement>('.social-google-widget [role="button"]');

@@ -5,6 +5,8 @@ import { PLAY_STORE_URL, SITE_URL } from "@/lib/articles/site";
 import "./globals.css";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
+import { SiteMotion } from "@/components/site/SiteMotion";
+import { Suspense } from "react";
 
 const body = Instrument_Sans({
   subsets: ["latin"],
@@ -57,7 +59,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={body.variable}>
-      <body className="antialiased"><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: 'Pandit Talk', legalName: 'Personal Astrology Numerology Directional Info Talk Tech Private Limited', url: SITE_URL, logo: `${SITE_URL}/logo.png`, email: supportEmail, contactPoint: [{ '@type': 'ContactPoint', email: supportEmail, contactType: 'customer support', areaServed: 'IN', availableLanguage: ['en', 'hi'] }], sameAs: [PLAY_STORE_URL] }) }} /><SiteHeader /><div id="site-content" tabIndex={-1}>{children}</div><SiteFooter /></body>
+      <body className="antialiased"><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: 'Pandit Talk', legalName: 'Personal Astrology Numerology Directional Info Talk Tech Private Limited', url: SITE_URL, logo: `${SITE_URL}/logo.png`, email: supportEmail, contactPoint: [{ '@type': 'ContactPoint', email: supportEmail, contactType: 'customer support', areaServed: 'IN', availableLanguage: ['en', 'hi'] }], sameAs: [PLAY_STORE_URL] }) }} /><Suspense fallback={null}><SiteMotion /></Suspense><SiteHeader /><div id="site-content" tabIndex={-1}>{children}</div><SiteFooter /></body>
     </html>
   );
 }

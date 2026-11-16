@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from "react";
 import { LinkKeyboardGroup } from "@/components/site/LinkKeyboardGroup";
+import { LoadingState } from "@/components/site/Skeleton";
 import { api } from "@/lib/api/client";
 import { todayIstIso } from "@/lib/time/ist";
 import { birthPayload, signs, validateResult, type ToolKind } from "./schemas";
@@ -452,7 +453,7 @@ export default function ToolForm({ kind }: { kind: ToolKind }) {
       </>
     )}
     <button type="submit" className="button" disabled={busy || readingImages || (kind === "tarot" && !card) || palmMissing} aria-busy={busy || readingImages || undefined}>{busy ? "Preparing your reading…" : readingImages ? "Preparing your photos…" : result ? "Generate another reading" : kind === "tarot" ? "Reveal card" : "Get free reading"}</button>
-    {busy && <p className="expert-meta" role="status">Your reading is being prepared. This may take a moment.</p>}
+    {busy && <LoadingState label="Your reading is being prepared. This may take a moment." variant="detail" />}
   </>;
 
   return <main id="main-content" className="page stack tool-flow">

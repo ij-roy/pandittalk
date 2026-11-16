@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { api, useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import { parseBooking, type Booking } from '../bookings/types';
 import { formatIstDate, formatIstDateTime } from '@/lib/time/ist';
 import styles from './customer.module.css';
@@ -212,7 +213,7 @@ export default function StoryContext() {
     </div>}
     {q.loading && (
       <>
-        <p className="notice" role="status">Loading your private stories…</p>
+        <LoadingState label="Loading your private stories…" variant="cards" />
         <p className="sr-only" id="story-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
         <LinkKeyboardGroup className="actions" aria-label="While private stories load" aria-describedby="story-loading-hint">
           <Link className="button secondary" href="/tools">Try free tools</Link>
@@ -260,7 +261,7 @@ export default function StoryContext() {
         <summary>Share with your Pandit<span className="sr-only"> (expand or collapse; Escape closes)</span></summary>
         <div className="stack">
         <p className={styles.helper}>Choose an existing booking. Only its Pandit will receive this version of your story. Sharing does not create a new booking or charge coins.</p>
-        {bookings.loading ? <p role="status">Loading your bookings…</p> : shareBookingsFailed ? <div className="error" role="alert" tabIndex={-1} ref={index === 0 ? bookingErrorRef : undefined} onKeyDown={e => {
+        {bookings.loading ? <LoadingState label="Loading your bookings…" variant="rows" /> : shareBookingsFailed ? <div className="error" role="alert" tabIndex={-1} ref={index === 0 ? bookingErrorRef : undefined} onKeyDown={e => {
           if (e.key !== 'Escape') return;
           e.preventDefault();
           (e.currentTarget as HTMLElement).blur();

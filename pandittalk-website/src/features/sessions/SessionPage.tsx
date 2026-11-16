@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { ApiError, useApi } from '@/lib/api/client';
 import { parseBooking, canResume, type Format } from '@/features/bookings/types';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import ChatRoom from './ChatRoom';
 import MediaRoom from './MediaRoom';
 
@@ -43,14 +44,13 @@ export default function SessionPage({ id, format }: { id: string; format: Format
       </div>
 
       {q.loading && <>
-        <p className="notice" role="status">Loading your booking…</p>
+        <LoadingState label="Loading your booking…" variant="detail" />
         <p className="sr-only" id="session-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
         <LinkKeyboardGroup className="actions" aria-label="While this session loads" aria-describedby="session-loading-hint">
           <Link className="button secondary" href="/tools">Try free tools</Link>
           <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
           <Link className="text-link" href="/bookings">Your bookings →</Link>
         </LinkKeyboardGroup>
-        <div className="panel stack" aria-hidden="true"><span className="skeleton-line" /><span className="skeleton-line short" /><span className="skeleton-line shorter" /></div>
       </>}
       {missing && (
         <section className="panel stack" role="status" onKeyDown={event => {

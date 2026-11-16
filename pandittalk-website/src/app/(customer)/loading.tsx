@@ -1,5 +1,6 @@
 ﻿import Link from 'next/link';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { PageLoadingSkeleton } from '@/components/site/Skeleton';
 
 export default function Loading() {
   return (
@@ -10,17 +11,7 @@ export default function Loading() {
         <Link className="button secondary" href="/tools">Try free tools</Link>
         <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
       </LinkKeyboardGroup>
-      <div className="panel stack" aria-hidden="true">
-        <span className="skeleton-line" />
-        <span className="skeleton-line short" />
-        <span className="skeleton-line shorter" />
-        <span className="skeleton-button" />
-      </div>
-      <div className="panel stack" aria-hidden="true">
-        <span className="skeleton-line short" />
-        <span className="skeleton-line" />
-        <span className="skeleton-line shorter" />
-      </div>
+      <PageLoadingSkeleton variant="customer" />
     </main>
   );
 }

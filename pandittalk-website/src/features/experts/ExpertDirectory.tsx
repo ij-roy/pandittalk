@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { Skeleton, SkeletonText } from '@/components/site/Skeleton';
 import { categories, expertFirstName, filterExperts, presenceLabel, trustworthyReviewStats, type Expert } from './types';
 
 export function ExpertPortrait({ expert }: { expert: Expert }) {
@@ -14,10 +15,10 @@ export function ExpertPortrait({ expert }: { expert: Expert }) {
 
 function LoadingRows({ count = 3 }: { count?: number }) {
   return <div className="expert-loading" aria-hidden="true">
-    {Array.from({ length: count }, (_, index) => <div className="expert-row expert-row-skeleton" key={index}>
-      <span className="expert-avatar skeleton-block" />
-      <div className="skeleton-copy"><span className="skeleton-line" /><span className="skeleton-line short" /><span className="skeleton-line shorter" /></div>
-      <span className="skeleton-button skeleton-block" />
+    {Array.from({ length: count }, (_, index) => <div className="expert-row expert-row-skeleton skeleton-row" data-skeleton="expert-row" aria-hidden="true" key={index}>
+      <Skeleton variant="avatar" className="expert-avatar" />
+      <SkeletonText lines={3} />
+      <Skeleton variant="button" />
     </div>)}
   </div>;
 }
@@ -181,7 +182,7 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
       </div>
       <p className="expert-meta expert-directory-note">App presence does not open a booking on this website. Health, financial and legal topics offer spiritual guidance, not professional advice.</p>
     </>}
-    <div aria-busy={searching || updating}>
+    <div data-expert-results aria-busy={searching || updating}>
       {updating && <p role="status" className="expert-meta">Updating results…</p>}
       {searching ? <>
         <p id={resultsId} role="status" className="expert-meta">Finding Pandits…</p>

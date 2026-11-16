@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { ApiError, api, useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import { Booking, parseBooking, canResume, calendarText, bookingStatusLabel, bookingStatusTone } from './types';
 import { formatIstDateTime, todayIstIso } from '@/lib/time/ist';
 import { DisplaySlot, getAllSlots, rescheduleBooking } from './bookingApi';
@@ -87,13 +88,12 @@ export function BookingList() {
     </div>
     <p id="bookings-filter-hint" className="sr-only">{filter === 'all' ? 'Showing all bookings.' : 'Filtered view. Press Escape on the filter or page to show all bookings.'}</p>
     {q.loading && <>
-      <p className="notice" role="status">Loading your bookings…</p>
+      <LoadingState label="Loading your bookings…" variant="cards" />
       <p className="sr-only" id="bookings-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
       <LinkKeyboardGroup className="actions" aria-label="While bookings load" aria-describedby="bookings-loading-hint">
         <Link className="button secondary" href="/tools">Try free tools</Link>
         <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
       </LinkKeyboardGroup>
-      <div className="grid" aria-hidden="true">{[0, 1, 2].map(i => <div className="panel stack" key={i}><span className="skeleton-line" /><span className="skeleton-line short" /><span className="skeleton-line shorter" /></div>)}</div>
     </>}
     {(q.error || invalid) && <div className="error" role="alert" tabIndex={-1} ref={errorRef} onKeyDown={event => {
       if (event.key !== 'Escape') return;
@@ -269,14 +269,13 @@ export function BookingDetail({ id, reviewOnly = false }: { id: string; reviewOn
       {reviewOnly && <p className="lede">Honest feedback helps other seekers. Submitting a review does not publish it immediately — reviews appear publicly only after eligibility checks.</p>}
     </div>
     {q.loading && <>
-      <p className="notice" role="status">Loading your booking…</p>
+      <LoadingState label="Loading your booking…" variant="detail" />
       <p className="sr-only" id="booking-detail-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools, draft and bookings if loading takes longer than expected.</p>
       <LinkKeyboardGroup className="actions" aria-label="While this booking loads" aria-describedby="booking-detail-loading-hint">
         <Link className="button secondary" href="/tools">Try free tools</Link>
         <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
         <Link className="text-link" href="/bookings">Your bookings →</Link>
       </LinkKeyboardGroup>
-      <div className="panel stack" aria-hidden="true"><span className="skeleton-line" /><span className="skeleton-line short" /><span className="skeleton-line shorter" /></div>
     </>}
     {(q.error || invalid || error) && !(q.error instanceof ApiError && q.error.status === 404) && (
       <div id="booking-action-error" role="alert" className="error" tabIndex={-1} ref={errorRef} onKeyDown={event => {

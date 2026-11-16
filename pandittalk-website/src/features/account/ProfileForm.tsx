@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useRef, type FormEvent } from 'react';
 import { api, useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import { safeReturnTo } from '@/lib/api/security';
 import { signs, validBirthDate } from '../tools/schemas';
 import styles from './customer.module.css';
@@ -142,18 +143,12 @@ export default function ProfileForm() {
       <p><strong>{setup ? 'Signing in does not open a booking.' : 'Saving profile details does not open a booking.'}</strong> Completing, editing or skipping this profile never charges coins. When you are ready, choose a Pandit to see the available timed session or Chat Now total before confirming. <span className="sr-only" id="profile-pause-hint">Arrow keys move between Pandits, free tools and an optional note. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Profile next steps" aria-describedby="profile-pause-hint"><Link href="/pandits">Choose a Pandit</Link> · <Link href="/tools">Try free tools</Link> · <Link href="/guidance/start">Prepare an optional note</Link></LinkKeyboardGroup>.</p>
     </aside>
     {loading && <div aria-busy="true">
-      <p className="notice" role="status">Loading your profile…</p>
+      <LoadingState label="Loading your profile…" variant="form" />
       <p className="sr-only" id="profile-inline-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
       <LinkKeyboardGroup className="actions" aria-label="While profile details load" aria-describedby="profile-inline-loading-hint">
         <Link className="button secondary" href="/tools">Try free tools</Link>
         <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
       </LinkKeyboardGroup>
-      <div className="panel stack" aria-hidden="true">
-        <span className="skeleton-line shorter" />
-        <span className="skeleton-line" />
-        <span className="skeleton-line short" />
-        <span className="skeleton-button" />
-      </div>
     </div>}
     {error && <div className="error" role="alert" tabIndex={-1} ref={loadErrorRef} onKeyDown={e => {
       if (e.key !== 'Escape') return;

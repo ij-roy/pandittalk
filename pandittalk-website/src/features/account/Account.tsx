@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, useApi } from '@/lib/api/client';
 import { normalizePhone } from '@/lib/api/security';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import styles from './customer.module.css';
 
 export async function logout() {
@@ -160,7 +161,7 @@ export function Preferences() {
     </aside>
     {q.loading && !view && (
       <>
-        <p className="notice" role="status">Loading your preferences…</p>
+        <LoadingState label="Loading your preferences…" variant="form" />
         <p className="sr-only" id="pref-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
         <LinkKeyboardGroup className="actions" aria-label="While notification preferences load" aria-describedby="pref-loading-hint">
           <Link className="button secondary" href="/tools">Try free tools</Link>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import styles from './walletRecharge.module.css';
 
 type CoinPackage = {
@@ -202,7 +203,7 @@ export function WalletRecharge() {
       <p className="lede">Choose a coin pack, review the amount in rupees, and pay securely with Razorpay. Your coins are added only after the server verifies the payment.</p>
     </div>
 
-    {wallet.loading && <div className="notice" role="status">Loading the available coin packs…</div>}
+    {wallet.loading && <LoadingState label="Loading the available coin packs…" variant="cards" />}
     {wallet.error && <div className="error" role="alert"><p>{wallet.error.message}</p><button type="button" className="button secondary" onClick={wallet.reload}>Try again</button></div>}
     {wallet.data && packages.length === 0 && <div className="notice" role="status"><strong>No coin packs are available right now.</strong><p>Nothing can be charged from this page. Please check back later or contact support.</p></div>}
 

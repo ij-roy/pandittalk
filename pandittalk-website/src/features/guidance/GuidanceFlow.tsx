@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import { areas, emptyDraft, readDraft, saveGuidanceDraft, clearGuidanceDraft } from './state';
 import { newBookingBlock } from '@/features/bookings/types';
 import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
@@ -215,7 +216,7 @@ export default function GuidanceFlow() {
         </fieldset>}
         {step === 4 && <>
           {experts.loading && <>
-            <p role="status">Loading Pandits…</p>
+            <LoadingState label="Loading Pandits…" variant="rows" />
             <p className="sr-only" id="guidance-experts-loading-hint">Skip remains site-content. Arrow keys move between free tools and draft if loading takes longer than expected. NotifyOpenForm still requires source.</p>
             <LinkKeyboardGroup className="actions" aria-label="While Pandits load" aria-describedby="guidance-experts-loading-hint">
               <Link className="button secondary" href="/tools">Try free tools</Link>

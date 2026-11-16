@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import { Reading } from '../tools/Reading';
 import { validateResult } from '../tools/schemas';
 import { parseReport } from './schema';
@@ -133,14 +134,12 @@ export default function Reports({ id }: { id?: string }) {
       </LinkKeyboardGroup>
     </div>
     {state.loading && <>
-      <p className="notice" role="status">{id ? 'Loading your report…' : 'Loading your saved reports…'}</p>
+      <LoadingState label={id ? 'Loading your report…' : 'Loading your saved reports…'} variant={id ? 'detail' : 'cards'} />
       <p className="sr-only" id="reports-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
       <LinkKeyboardGroup className="actions" aria-label="While reports load" aria-describedby="reports-loading-hint">
         <Link className="button secondary" href="/tools">Try free tools</Link>
         <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
       </LinkKeyboardGroup>
-      {!id && <div className="grid" aria-hidden="true">{[0,1,2].map(i => <div className="panel stack" key={i}><span className="skeleton-line" /><span className="skeleton-line short" /><span className="skeleton-line shorter" /></div>)}</div>}
-      {id && <div className="panel stack" aria-hidden="true"><span className="skeleton-line" /><span className="skeleton-line short" /><span className="skeleton-line shorter" /></div>}
     </>}
     {missing && <section className={`panel stack ${styles.empty}`} role="status" onKeyDown={event => {
       if (event.key !== 'Escape') return;

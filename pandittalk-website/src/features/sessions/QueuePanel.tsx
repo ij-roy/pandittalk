@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import { api, useApi } from '@/lib/api/client';
 
 /** Live Chat Now queue status for a Pandit. */
@@ -37,7 +38,7 @@ export default function QueuePanel({ panditId }: { panditId: string }) {
           <strong>Chat Now queue status.</strong> Joining the queue does not charge coins; a booking is created only after the service confirms a place.
         </p>
       </aside>
-      {q.loading && <p role="status">Checking your queue status…</p>}
+      {q.loading && <LoadingState label="Checking your queue status…" variant="rows" />}
       {(q.error || error) && (
         <div
           className="error"

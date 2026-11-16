@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import { formatIstDateTime } from '@/lib/time/ist';
 import styles from '../account/customer.module.css';
 
@@ -75,13 +76,12 @@ export function Wallet() {
   return <main id="main-content" className="page stack" aria-busy={q.loading || undefined}>
     <div><p className="eyebrow">Your balance, in one place</p><h1>Wallet</h1><p className="lede">View your available coins, payments and refunds. Opening this page never starts a top-up or booking.</p></div>
     {q.loading && <>
-      <p className="notice" role="status">Loading your wallet…</p>
+      <LoadingState label="Loading your wallet…" variant="detail" />
       <p className="sr-only" id="wallet-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
       <LinkKeyboardGroup className="actions" aria-label="While wallet loads" aria-describedby="wallet-loading-hint">
         <Link className="button secondary" href="/tools">Try free tools</Link>
         <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
       </LinkKeyboardGroup>
-      <div className="panel stack" aria-hidden="true"><span className="skeleton-line short" /><span className="skeleton-line shorter" /><span className="skeleton-line" /></div>
     </>}
     {q.error && <div className="error" role="alert" tabIndex={-1} ref={errorRef} onKeyDown={event => {
       if (event.key !== 'Escape') return;

@@ -293,6 +293,12 @@ export default function ChatRoom({ id }: { id: string }) {
             <small>{formatIstDateTime(m.timestamp)}</small>
           </article>
         ))}
+        {messages.length === 0 && connected && state === 'Connected. Loading your conversation…' && (
+          <div className="chat-loading-skeleton" aria-hidden="true">
+            <span className="chat-skeleton-bubble chat-skeleton-bubble-incoming skeleton-shimmer" />
+            <span className="chat-skeleton-bubble chat-skeleton-bubble-outgoing skeleton-shimmer" />
+          </div>
+        )}
         {messages.length === 0 && (
           <div
             className="stack"

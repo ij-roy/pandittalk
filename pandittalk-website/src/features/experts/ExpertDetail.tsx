@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { Skeleton, SkeletonText } from '@/components/site/Skeleton';
 import { ExpertPortrait } from './ExpertDirectory';
 import { expertFirstName, isGenericSeedBio, isPublicReview, presenceLabel, reviewAuthorLabel, trustworthyReviewStats, type Expert } from './types';
 import { formatIstDate } from '@/lib/time/ist';
@@ -19,12 +20,8 @@ function ProfileLoading() {
         <Link className="text-link" href="/pandits">Back to directory →</Link>
       </LinkKeyboardGroup>
       <div className="profile-top" aria-hidden="true">
-        <span className="expert-avatar skeleton-block" style={{ width: 150, height: 175 }} />
-        <div className="skeleton-copy" style={{ flex: 1 }}>
-          <span className="skeleton-line shorter" />
-          <span className="skeleton-line" />
-          <span className="skeleton-line short" />
-        </div>
+        <Skeleton variant="avatar" className="expert-avatar profile-skeleton-avatar" />
+        <div className="skeleton-copy" style={{ flex: 1 }}><SkeletonText lines={3} /></div>
       </div>
     </div>
   );

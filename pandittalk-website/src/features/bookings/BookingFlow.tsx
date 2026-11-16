@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { ApiError, api, useApi } from '@/lib/api/client';
 import { formatIstDateTime, todayIstIso } from '@/lib/time/ist';
+import { Skeleton } from '@/components/site/Skeleton';
 import type { Expert } from '@/features/experts/types';
 import {
   bookingQuotePath,
@@ -242,7 +243,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
         <div>
           <p className="eyebrow">{step === 'review' ? 'Review before paying' : isChatNow ? 'Instant conversation' : 'Choose a time that works'}</p>
           <h1>{step === 'review' ? 'Review your consultation' : isChatNow ? 'Start a Chat Now conversation' : 'Book a timed consultation'}</h1>
-          <p className="lede">{expert ? `A private ${selectedFormat?.label?.toLowerCase() || 'consultation'} with ${titleName}.` : 'Loading the Pandit profile…'}</p>
+          {expert ? <p className="lede">A private {selectedFormat?.label?.toLowerCase() || 'consultation'} with {titleName}.</p> : <p className="lede booking-expert-loading" role="status">Loading the Pandit profile… <Skeleton variant="short" /></p>}
         </div>
         {balance !== undefined && <p className={styles.balance} aria-label={`Wallet balance ${balance} coins`}><strong>{balance}</strong> coins available</p>}
       </div>

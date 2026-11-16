@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { api, useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import { notificationActionLabel, notificationDestination, notificationLabels } from './schema';
 import { formatIstDateTime } from '@/lib/time/ist';
 import styles from '../account/customer.module.css';
@@ -158,23 +159,12 @@ export default function Notifications() {
       </div>
       {loading && (
         <>
-          <p className="notice" role="status">
-            Loading your notifications…
-          </p>
+          <LoadingState label="Loading your notifications…" variant="rows" />
           <p className="sr-only" id="notifications-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
           <LinkKeyboardGroup className="actions" aria-label="While notifications load" aria-describedby="notifications-loading-hint">
             <Link className="button secondary" href="/tools">Try free tools</Link>
             <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
           </LinkKeyboardGroup>
-          <div className="stack" aria-hidden="true">
-            {[0, 1, 2].map(i => (
-              <div className="panel stack" key={i}>
-                <span className="skeleton-line shorter" />
-                <span className="skeleton-line" />
-                <span className="skeleton-line short" />
-              </div>
-            ))}
-          </div>
         </>
       )}
       {(error || failure) && (

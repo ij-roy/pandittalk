@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { LoadingState } from '@/components/site/Skeleton';
 import { canResume, parseBooking, type Booking } from '@/features/bookings/types';
 import { formatIstDateTime } from '@/lib/time/ist';
 
@@ -78,7 +79,7 @@ export function HomeOverview() {
       </div>
       {loading && !anyError && !emptyHome && (
         <>
-          <p className="notice" role="status">Refreshing your overview…</p>
+          <LoadingState label="Refreshing your overview…" variant="rows" />
           <p className="sr-only" id="home-overview-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
           <LinkKeyboardGroup className="actions" aria-label="While home overview loads" aria-describedby="home-overview-loading-hint">
             <Link className="button secondary" href="/tools">Try free tools</Link>
