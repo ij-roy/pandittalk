@@ -111,6 +111,35 @@ jobs:
           docker compose -f docker-compose.yml -f docker-compose.local.yml exec -T redis redis-cli ping
           docker compose -f docker-compose.yml -f docker-compose.local.yml exec -T postgres pg_isready -U pandittalk -d pandittalk
           curl --fail 'http://localhost:3001/socket.io/?EIO=4&transport=polling'
+      - name: Verify scheduled and Chat Now booking quotes
+        shell: bash
+        run: |
+          catalog="$(curl --fail --silent http://localhost:3001/booking-catalog)"
+          echo "$catalog" | jq -e '
+            .sessionModel == "legacy_timed" and
+            (.scheduled.depths | length > 0) and
+            (.scheduled.formats | map(.key) | index("audio") != null) and
+            (.scheduled.formats | map(.key) | index("video") != null) and
+            .chatNow.enabled == true and
+            .chatNow.durationMinutes > 0 and
+            .chatNow.totalPrice > 0
+          '
+          scheduled_quote="$(curl --fail --silent 'http://localhost:3001/booking-catalog/quote?depth=entry&format=audio')"
+          echo "$scheduled_quote" | jq -e '
+            .sessionModel == "legacy_timed" and
+            .format == "audio" and
+            .durationMinutes > 0 and
+            .totalPrice > 0 and
+            .coinsDeducted == .totalPrice
+          '
+          chat_now_quote="$(curl --fail --silent 'http://localhost:3001/booking-catalog/quote?mode=chat-now')"
+          echo "$chat_now_quote" | jq -e '
+            .sessionModel == "legacy_timed" and
+            .format == "chat" and
+            .durationMinutes > 0 and
+            .totalPrice > 0 and
+            .coinsDeducted == .totalPrice
+          '
       - name: Verify two API replicas remain reachable
         run: |
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --scale api=2 --no-recreate api proxy
