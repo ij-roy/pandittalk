@@ -212,7 +212,7 @@ export default function GuidanceFlow() {
         }}>
           <legend>Preferred format for later (not a booking)</legend>
           {(Object.keys(formats) as (keyof typeof formats)[]).map(format => <label className="check" key={format}><input type="radio" name="format" value={format} checked={draft.format === format} onChange={() => setDraft({ ...draft, format })} /><span>{formats[format]}</span></label>)}
-          <p className="expert-meta">Preference only — choosing a format does not start a consultation. Audio needs a microphone; video also needs a camera. Prices are not available yet.{draft.format ? ' Press Escape on a selected option to clear.' : ''}</p>
+          <p className="expert-meta">Preference only — choosing a format does not start a consultation. Audio needs a microphone; video also needs a camera. When you choose a real booking, the booking service supplies the current duration and total.{draft.format ? ' Press Escape on a selected option to clear.' : ''}</p>
         </fieldset>}
         {step === 4 && <>
           {experts.loading && <>

@@ -59,3 +59,9 @@ test('public format copy keeps scheduled Audio/Video separate from Chat Now', ()
   assert.match(source, /Chat Now is a separate live chat path/);
   assert.doesNotMatch(source, /Scheduled bookings can use chat, audio or video/);
 });
+
+test('guidance copy does not claim timed prices are unavailable', () => {
+  const source = readFileSync(resolve(import.meta.dirname, '../../src/features/guidance/GuidanceFlow.tsx'), 'utf8');
+  assert.match(source, /When you choose a real booking, the booking service supplies the current duration and total/);
+  assert.doesNotMatch(source, /Prices are not available yet/);
+});
