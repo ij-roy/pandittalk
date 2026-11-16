@@ -201,7 +201,7 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
       s.on('videoCameraState', (p: { cameraOn: boolean }) =>
         setCameraNote(p.cameraOn ? 'Pandit camera is on' : 'Pandit camera is off'),
       );
-      for (const event of [events.ended, events.timeUp, 'sessionGraceEnded', 'sessionRefunded']) {
+      for (const event of [events.ended, events.timeUp, 'sessionGraceEnded', 'sessionRefunded', events.endedWithRefund]) {
         s.on(event, (p?: { message?: string; coinsRefunded?: number }) => {
           setEnded(true);
           setSecondsRemaining(0);
