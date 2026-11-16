@@ -25,6 +25,11 @@
 .quote strong { font-size: 1.05rem; }
 .review { gap: 22px; }
 .review h2 { max-width: 18ch; }
+.terms { display: grid; gap: 10px; padding: 16px; border: 1px solid #e5d2a8; border-radius: 16px; background: linear-gradient(135deg, #fff8e7, #fffdf8); }
+.terms h3 { margin: 0; }
+.terms ul { display: grid; gap: 8px; margin: 0; padding-inline-start: 20px; }
+.terms li { padding-inline-start: 3px; }
+.terms .helper { margin: 0; }
 .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; margin: 0; border-top: 1px solid var(--line); }
 .summary div { display: grid; gap: 6px; padding: 17px 0; border-bottom: 1px solid var(--line); }
 .summary div:nth-child(odd) { margin-right: 18px; }

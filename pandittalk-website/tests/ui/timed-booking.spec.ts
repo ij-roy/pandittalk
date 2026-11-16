@@ -25,7 +25,7 @@ const catalog = {
   },
   chatNow: { enabled: true, durationMinutes: 15, totalPrice: 101, noShowRefundMinutes: 10, maxQueueDepth: 5, maxQueueWaitMinutes: 15, queueTurnTimeoutSeconds: 60 },
   session: { gracePeriodSeconds: 90, warningSeconds: 300, panditReconnectSeconds: 60 },
-  cancellation: { confirmedBeforeStart: 'Full wallet refund', panditNoShow: 'Full wallet refund', panditDisconnect: 'Unused-time wallet refund', refundDestination: 'wallet' },
+  cancellation: { confirmedBeforeStart: 'full_wallet_refund', panditNoShow: 'full_wallet_refund', panditDisconnect: 'partial_unused_time_wallet_refund', refundDestination: 'wallet' },
   areas: [{ key: 'career', label: 'Career' }, { key: 'love', label: 'Love' }],
 };
 
@@ -56,11 +56,15 @@ test('completes a scheduled audio booking with a backend quote and no client pri
   await page.getByLabel('Topic').selectOption('career');
   await page.getByLabel('Session depth').selectOption('entry');
   await page.getByLabel('Format').selectOption('audio');
-  await page.getByLabel('Date').fill('2026-11-20');
+  await page.getByRole('textbox', { name: 'Date' }).fill('2026-11-20');
   await page.getByRole('button', { name: /10:00 am/i }).click();
   await page.getByRole('button', { name: 'Review booking', exact: true }).click();
   await expect(page.getByText(/15 minutes/)).toBeVisible();
   await expect(page.getByText('151 coins', { exact: true })).toBeVisible();
+  const terms = page.getByRole('region', { name: 'Cancellation and refund terms' });
+  await expect(terms).toContainText('Cancel before the session starts');
+  await expect(terms).toContainText('90 seconds');
+  await expect(terms).toContainText('wallet');
   await page.getByRole('button', { name: /Confirm booking/ }).click();
   await expect(page).toHaveURL(/\/bookings\/booking-new$/);
   expect(received).toMatchObject({ panditId: 'expert-a', area: 'career', depth: 'entry', format: 'audio', sessionModel: 'legacy_timed' });
@@ -93,7 +97,7 @@ test('completes a scheduled video booking with the backend format surcharge', as
   await page.getByLabel('Topic').selectOption('career');
   await page.getByLabel('Session depth').selectOption('entry');
   await page.getByLabel('Format').selectOption('video');
-  await page.getByLabel('Date').fill('2026-11-20');
+  await page.getByRole('textbox', { name: 'Date' }).fill('2026-11-20');
   await page.getByRole('button', { name: /10:00 am/i }).click();
   await expect(page.getByText('301 coins', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Review booking', exact: true }).click();
@@ -121,7 +125,7 @@ test('stops before confirmation and offers wallet recovery when balance is too l
   });
 
   await page.goto('/bookings/new?expertId=expert-a');
-  await page.getByLabel('Date').fill('2026-11-20');
+  await page.getByRole('textbox', { name: 'Date' }).fill('2026-11-20');
   await page.getByRole('button', { name: /10:00 am/i }).click();
   await page.getByRole('button', { name: 'Review booking', exact: true }).click();
   await expect(page.getByRole('alert').getByText('Not enough coins to confirm.')).toBeVisible();
@@ -155,6 +159,9 @@ test('starts Chat Now from the backend presence and quote', async ({ page, conte
   await expect(page.getByText('101 coins', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Start Chat Now', exact: true }).click();
   await expect(page.getByRole('button', { name: /Start Chat Now/ })).toBeVisible();
+  const terms = page.getByRole('region', { name: 'Cancellation and refund terms' });
+  await expect(terms).toContainText('does not join within 10 minutes');
+  await expect(terms).toContainText('90 seconds');
   await page.getByRole('button', { name: /Start Chat Now/ }).click();
   await expect(page).toHaveURL(/\/bookings\/chat-now-1$/);
   expect(received).toMatchObject({ panditId: 'expert-a', area: 'career' });

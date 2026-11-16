@@ -45,12 +45,31 @@ function friendlyError(error: unknown) {
   return error instanceof Error ? error.message : 'We could not load booking details. Please try again.';
 }
 
+function bookingTerms(catalog: BookingCatalog, isChatNow: boolean) {
+  const refundDestination = catalog.cancellation.refundDestination === 'wallet'
+    ? 'your wallet'
+    : 'the original payment method';
+  const beforeStart = catalog.cancellation.confirmedBeforeStart === 'full_wallet_refund'
+    ? `Cancel before the session starts: charged coins return to ${refundDestination}.`
+    : 'Cancellation before the session starts follows the booking service terms.';
+  const noShow = isChatNow
+    ? `If the Pandit does not join within ${catalog.chatNow.noShowRefundMinutes} minutes, the full charge returns to ${refundDestination}.`
+    : catalog.cancellation.panditNoShow === 'full_wallet_refund'
+      ? `If the Pandit cannot join, the charged coins return to ${refundDestination}.`
+      : 'If the Pandit cannot join, the booking service applies its current no-show terms.';
+  const disconnect = catalog.cancellation.panditDisconnect === 'partial_unused_time_wallet_refund'
+    ? `If the Pandit disconnects after the grace period, the service calculates a partial refund for unused time to ${refundDestination}.`
+    : 'If the Pandit disconnects, the booking service applies its current refund terms.';
+  const grace = `Early disconnects can be reviewed during the first ${catalog.session.gracePeriodSeconds} seconds; this is not a general undo.`;
+  return { beforeStart, noShow, disconnect, grace, refundDestination };
+}
+
 export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: string; mode?: 'scheduled' | 'chat-now' }) {
   const router = useRouter();
   const isChatNow = mode === 'chat-now';
   const expertQuery = useApi<Expert>(expertId ? `/experts/${encodeURIComponent(expertId)}` : null);
   const catalogQuery = useApi<BookingCatalog>('/booking-catalog');
-  const walletQuery = useApi<{ coinBalance: number }>('/wallet');
+  const walletQuery = useApi<{ coinBalance: number; paymentsEnabled?: boolean }>('/wallet');
   const [depth, setDepth] = useState<BookingDepth | ''>('');
   const [format, setFormat] = useState<ScheduledFormat | ''>('');
   const [area, setArea] = useState('');
@@ -74,6 +93,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
 
   const catalog = catalogQuery.data;
   const expert = expertQuery.data;
+  const paymentsEnabled = walletQuery.data?.paymentsEnabled !== false;
   const selectedDepth = useMemo(() => catalog?.scheduled.depths.find(item => item.key === depth), [catalog, depth]);
   const selectedFormat = useMemo(() => catalog?.scheduled.formats.find(item => item.key === format), [catalog, format]);
   const availableSlots = (slots || []).filter(slot => slot.status === 'available');
@@ -289,6 +309,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
 
   const titleName = expert?.name || 'your chosen Pandit';
   const balance = Number.isFinite(walletQuery.data?.coinBalance) ? walletQuery.data?.coinBalance : undefined;
+  const terms = catalog ? bookingTerms(catalog, isChatNow) : null;
 
   return (
     <main id="main-content" className={`page stack ${styles.page}`}>
@@ -302,7 +323,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
         {balance !== undefined && <p className={styles.balance} aria-label={`Wallet balance ${balance} coins`}><strong>{balance}</strong> coins available</p>}
       </div>
 
-      {formError && <div id="booking-form-error" className="error" role="alert" tabIndex={-1}><strong>We could not continue.</strong> {formError}{/wallet|coin|balance|insufficient/i.test(formError) && <> <Link className="text-link" href="/wallet/recharge">Add coins to your wallet →</Link></>}</div>}
+      {formError && <div id="booking-form-error" className="error" role="alert" tabIndex={-1}><strong>We could not continue.</strong> {formError}{/wallet|coin|balance|insufficient/i.test(formError) && <> {paymentsEnabled ? <Link className="text-link" href="/wallet/recharge">Add coins to your wallet →</Link> : <Link className="text-link" href="/contact">Payment support →</Link>}</>}</div>}
 
       {step === 'choose' ? isChatNow ? (
         <form className={`panel stack ${styles.form}`} onSubmit={reviewBooking}>
@@ -353,6 +374,16 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
         <section className={`panel stack ${styles.review}`} aria-labelledby="booking-review-title">
           <p className="eyebrow">One last check</p>
           <h2 id="booking-review-title" tabIndex={-1}>Your booking with {titleName}</h2>
+          {terms && <section className={styles.terms} role="region" aria-label="Cancellation and refund terms">
+            <h3>Cancellation and refunds</h3>
+            <ul>
+              <li>{terms.beforeStart}</li>
+              <li>{terms.noShow}</li>
+              <li>{terms.disconnect}</li>
+              <li>{terms.grace}</li>
+            </ul>
+            <p className="helper">Refunds described here go to {terms.refundDestination}. The booking service remains the source of the final outcome.</p>
+          </section>}
           <dl className={styles.summary}>
             {isChatNow ? <div><dt>When</dt><dd>Start now</dd></div> : <div><dt>When</dt><dd>{formatIstDateTime(selectedSlot)}</dd></div>}
             <div><dt>Topic</dt><dd>{catalog?.areas.find(item => item.key === area)?.label || area}</dd></div>
@@ -360,9 +391,9 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
             <div><dt>Total</dt><dd><strong>{quote?.totalPrice} coins</strong></dd></div>
           </dl>
           {notes.trim() && <div className={styles.notes}><span>Optional note</span><p>{notes.trim()}</p></div>}
-          {balance !== undefined && quote && balance < quote.totalPrice && <div className="error" role="alert"><strong>Not enough coins to confirm.</strong> Add {quote.totalPrice - balance} coins to your wallet, then return here to keep these details.</div>}
+          {balance !== undefined && quote && balance < quote.totalPrice && <div className="error" role="alert"><strong>Not enough coins to confirm.</strong> {paymentsEnabled ? `Add ${quote.totalPrice - balance} coins to your wallet, then return here to keep these details.` : 'Wallet top-ups are temporarily unavailable. Contact support before trying again.'}</div>}
           <p className="helper">Your wallet is charged only when the booking service confirms this slot. The server keeps the timer and session terms for the booking.</p>
-          <div className="actions"><button className="button" type="button" onClick={() => void confirmBooking()} disabled={submitting || (balance !== undefined && !!quote && balance < quote.totalPrice)}>{submitting ? 'Confirming…' : isChatNow ? `Start Chat Now · ${quote?.totalPrice} coins` : `Confirm booking · ${quote?.totalPrice} coins`}</button>{balance !== undefined && quote && balance < quote.totalPrice && <Link className="button secondary" href={`/wallet/recharge?returnTo=${encodeURIComponent(`/bookings/new?expertId=${expertId}${isChatNow ? '&mode=chat-now' : ''}`)}`}>Add coins</Link>}<button className="button secondary" type="button" onClick={() => setStep('choose')} disabled={submitting}>Change details</button></div>
+          <div className="actions"><button className="button" type="button" onClick={() => void confirmBooking()} disabled={submitting || (balance !== undefined && !!quote && balance < quote.totalPrice)}>{submitting ? 'Confirming…' : isChatNow ? `Start Chat Now · ${quote?.totalPrice} coins` : `Confirm booking · ${quote?.totalPrice} coins`}</button>{balance !== undefined && quote && balance < quote.totalPrice && <Link className="button secondary" href={paymentsEnabled ? `/wallet/recharge?returnTo=${encodeURIComponent(`/bookings/new?expertId=${expertId}${isChatNow ? '&mode=chat-now' : ''}`)}` : '/contact'}>{paymentsEnabled ? 'Add coins' : 'Payment support'}</Link>}<button className="button secondary" type="button" onClick={() => setStep('choose')} disabled={submitting}>Change details</button></div>
         </section>
       )}
     </main>
