@@ -69,7 +69,7 @@ test('slow Pandit results show semantic skeleton rows before data arrives', asyn
   await expect(page.getByRole('link', { name: /View UI.*profile/i })).toBeVisible();
 });
 
-async function mockConfiguredSocialProviders(page: import('@playwright/test').Page) {
+async function mockConfiguredSocialProviders(page: import('@playwright/test').Page, realisticGoogleWidget = false) {
   await page.route('**/api/auth/config', async route => {
     await route.fulfill({
       status: 200,
@@ -85,7 +85,9 @@ async function mockConfiguredSocialProviders(page: import('@playwright/test').Pa
     await route.fulfill({
       status: 200,
       contentType: 'application/javascript',
-      body: `window.google={accounts:{id:{initialize:function(){},renderButton:function(el){el.innerHTML='<div role="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path></svg><span>Sign in with Google</span></div>';}}}};`,
+      body: realisticGoogleWidget
+        ? `window.google={accounts:{id:{initialize:function(){},renderButton:function(el,options){el.innerHTML='<div class="S9gUrf-YoZ4jf"><div><div role="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path></svg><span>Sign in with Google</span></div></div><iframe title="Sign in with Google" style="display:block;width:'+options.width+'px;height:49px;border:0"></iframe></div>';}}}};`
+        : `window.google={accounts:{id:{initialize:function(){},renderButton:function(el){el.innerHTML='<div role="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path></svg><span>Sign in with Google</span></div>';}}}};`,
     });
   });
 }
@@ -513,9 +515,31 @@ test('login keeps social sign-in copy and brand marks consistent', async ({ page
       return { actionWidth, buttons };
     });
     expect(sizes.buttons).toHaveLength(2);
-    expect(sizes.buttons.map(button => button.width)).toEqual([sizes.actionWidth, sizes.actionWidth]);
+    const expectedWidth = Math.min(sizes.actionWidth, 400);
+    expect(sizes.buttons.map(button => button.width)).toEqual([expectedWidth, expectedWidth]);
     expect(sizes.buttons[0].height).toBe(sizes.buttons[1].height);
   }
+});
+
+test('login keeps the real Google widget aligned after consent and viewport resize', async ({ page }) => {
+  await mockConfiguredSocialProviders(page, true);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/login');
+  await page.locator('.auth-panel input[type="checkbox"]').check();
+
+  const apple = page.locator('[data-provider="apple"].social-provider-button');
+  const googleFrame = page.locator('[data-provider="google"] iframe[title="Sign in with Google"]');
+  const googleButton = page.locator('[data-provider="google"] [role="button"]');
+  await expect(googleFrame).toBeVisible();
+  const wide = { apple: await apple.boundingBox(), google: await googleFrame.boundingBox(), visualGoogle: await googleButton.boundingBox() };
+  expect(wide.apple?.width).toBeCloseTo(wide.google?.width || 0, 1);
+  expect((wide.visualGoogle?.y || 0) - ((wide.apple?.y || 0) + (wide.apple?.height || 0))).toBeGreaterThanOrEqual(8);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(async () => (await googleFrame.boundingBox())?.width || 0).toBeLessThan(400);
+  const narrow = { apple: await apple.boundingBox(), google: await googleFrame.boundingBox(), visualGoogle: await googleButton.boundingBox() };
+  expect(narrow.apple?.width).toBeCloseTo(narrow.google?.width || 0, 1);
+  expect((narrow.visualGoogle?.y || 0) - ((narrow.apple?.y || 0) + (narrow.apple?.height || 0))).toBeGreaterThanOrEqual(8);
 });
 
 test('login keeps provider choices visible when browser sign-in is not configured', async ({ page }) => {

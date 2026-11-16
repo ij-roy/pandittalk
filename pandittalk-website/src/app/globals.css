@@ -411,24 +411,26 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
 .auth-panel { margin:30px 0 24px }
 .auth-panel .button { width:100% }
 .auth-panel>.stack { margin-top:28px; padding-top:24px; border-top:1px solid var(--line) }
+.auth-panel>.stack>.actions { flex-direction:column; align-items:center; width:100%; }
 .phone-field { display:flex; align-items:stretch; gap:0; border:1px solid #d9cfba; border-radius:10px; background:rgba(255,255,255,.96); overflow:hidden; min-width:0; max-width:100% }
 .phone-field input { border:0; box-shadow:none; border-radius:0; background:transparent; min-height:44px; min-width:0 }
 .phone-field:focus-within { border-color:var(--brand-gold-deep); box-shadow:0 0 0 3px rgba(231,182,63,.2) }
 .phone-prefix { display:inline-flex; align-items:center; padding:0 12px; background:#fff2ce; color:var(--muted); font-weight:600; border-right:1px solid #eadcb5 }
 .check a { display:inline; padding:4px 2px; text-underline-offset:3px }
 .auth-page .text-link, .auth-page .button { min-height:44px; display:inline-flex; align-items:center }
-.social-google-slot { display:flex; align-items:center; width:100%; height:49px; min-height:49px; min-width:0; flex:1 1 100% }
+.social-google-slot { display:flex; align-items:center; justify-content:center; width:min(100%,400px); height:49px; min-height:49px; min-width:0; flex:0 0 auto; box-sizing:border-box }
 .social-google-placeholder { width:100%!important; max-width:100% }
-.social-google-widget { display:flex; align-items:center; width:100%; height:49px; min-height:49px; min-width:0; flex:1 1 100% }
-.social-provider-button { width:100%!important; height:49px!important; min-height:49px!important; gap:9px }
+.social-google-widget { display:flex; align-items:center; justify-content:center; width:100%; height:49px; min-height:49px; min-width:0; flex:1 1 auto; box-sizing:border-box }
+.social-provider-button { width:min(100%,400px)!important; height:49px!important; min-height:49px!important; flex:0 0 auto; gap:9px }
 .social-provider-button:not([aria-disabled="true"]) { background:var(--brand-gold-pale)!important; border-color:#e4d3a8!important; box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 12px -8px rgba(125,86,0,.24)!important }
 .social-brand-icon { width:18px; height:18px; flex:0 0 18px; max-width:none }
-.social-google-widget > div { width:100%!important; min-width:0!important; flex:1 1 100%!important }
+.social-google-widget > div { width:100%!important; height:49px!important; min-width:0!important; flex:1 1 100%!important; overflow:hidden!important }
 .social-google-widget [role="button"] { width:100%!important; max-width:none!important; height:49px!important; min-height:49px!important; display:flex!important; align-items:center!important; justify-content:center!important; gap:9px!important; padding:12px 23px!important; border:1px solid #e4d3a8!important; border-radius:12px!important; background:var(--brand-gold-pale)!important; color:var(--ink)!important; box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 12px -8px rgba(125,86,0,.24)!important; font-family:inherit!important; font-size:.94rem!important; font-weight:650!important; line-height:1.5!important }
 .social-google-widget [role="button"] > div:last-child { display:flex!important; align-items:center!important; justify-content:center!important; gap:9px!important; width:auto!important; height:100%!important; flex:0 0 auto!important }
 .social-google-widget [role="button"] > div:last-child > div { flex:0 0 auto!important; width:auto!important }
 .social-google-widget [role="button"] svg { width:18px!important; height:18px!important; flex:0 0 18px!important }
 .social-google-widget [role="button"] span:first-of-type { color:var(--ink)!important; flex:0 0 auto!important; width:auto!important; font-family:inherit!important; font-size:.94rem!important; font-weight:650!important; line-height:1.5!important }
+.social-google-widget iframe { display:block; width:100%!important; max-width:100%; height:49px!important; min-height:49px; border:0; }
 .download-ios-actions { align-items:center; gap:8px 16px }
 .download-ios-actions > span { flex:1 1 100%; min-width:0 }
 @media(min-width:901px) { .download-ios-actions > span { flex:0 1 auto } }

@@ -122,6 +122,8 @@ export function SocialSignIn({ consent, disabled = false, onResult, onConsentReq
       return;
     }
     let cancelled = false;
+    let lastWidth = 0;
+    let resizeObserver: ResizeObserver | undefined;
     void (async () => {
       try {
         if (!window.google) await loadScript('https://accounts.google.com/gsi/client');
@@ -135,14 +137,25 @@ export function SocialSignIn({ consent, disabled = false, onResult, onConsentReq
             void exchange('google', result.credential).catch(error => announce(error.message, true)).finally(() => setBusy(false));
           },
         });
-        googleBox.current.replaceChildren();
-        const slotWidth = Math.round(Math.min(400, googleBox.current.parentElement?.getBoundingClientRect().width || 400));
-        window.google!.accounts.id.renderButton(googleBox.current, { theme: 'outline', size: 'large', width: slotWidth });
+        const renderGoogleButton = () => {
+          if (cancelled || !googleBox.current) return;
+          const slotWidth = Math.round(Math.min(400, googleBox.current.parentElement?.getBoundingClientRect().width || 400));
+          if (slotWidth <= 0 || (slotWidth === lastWidth && googleBox.current.childElementCount > 0)) return;
+          lastWidth = slotWidth;
+          googleBox.current.replaceChildren();
+          window.google!.accounts.id.renderButton(googleBox.current, { theme: 'outline', size: 'large', width: slotWidth });
+        };
+        renderGoogleButton();
+        const slot = googleBox.current.parentElement;
+        if (slot && typeof ResizeObserver !== 'undefined') {
+          resizeObserver = new ResizeObserver(renderGoogleButton);
+          resizeObserver.observe(slot);
+        }
       } catch {
         if (!cancelled) announce('Google sign-in could not load. You can still use phone sign-in.', true);
       }
     })();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; resizeObserver?.disconnect(); };
   }, [consent, disabled, config?.googleClientId]);
 
   async function start(provider: 'google' | 'apple') {
