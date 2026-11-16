@@ -21,7 +21,7 @@ export function OfferNotice({
       <SiteIcon name="info" size={19} />
       <div className="offer-notice-body">
         <p>
-          <strong>{availabilityCopy.publicStatus}</strong> {availabilityCopy.publicDetail} {availabilityCopy.existingBooking}
+          {availabilityCopy.publicDetail} {availabilityCopy.existingBooking}
           {' '}
           <span className="sr-only" id={hintId}>Arrow keys move between pricing when shown, how booking works, free tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span>
           <LinkKeyboardGroup as="span" aria-label="Offer notice next steps" aria-describedby={hintId}>

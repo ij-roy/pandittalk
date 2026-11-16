@@ -53,7 +53,7 @@ export default function GuidanceFlow() {
     if (format && next.format) notes.push(`Preferred format set to ${formats[next.format]} — preference only, not a live session`);
     if (format && !next.area && next.format) notes.push('Choose an area next — your preferred format stays selected');
     if (expertId && next.panditId) notes.push('A Pandit was pre-selected from the link — drafts do not notify them');
-    if (notes.length) setDeepLinkNote(`${notes.join('. ')}. You can change any choice while this draft is saved. ${availabilityCopy.publicStatus}`);
+    if (notes.length) setDeepLinkNote(`${notes.join('. ')}. You can change any choice while this draft is saved.`);
     setReady(true);
   }, []);
 
@@ -120,7 +120,7 @@ export default function GuidanceFlow() {
     <h1>What is on your mind?</h1>
     <p className="lede">You can take your time putting it into words. This private draft stays in your browser, does not make a booking, and never charges coins.</p>
     <aside className="notice" role="status" aria-label="Booking availability">
-      <p><strong>{availabilityCopy.publicStatus}</strong> {availabilityCopy.publicDetail} Preparing a draft does not create a booking or charge.</p>
+      <p>{availabilityCopy.publicDetail} Preparing a draft does not create a booking or charge.</p>
       <div className="notify-inline stack">
         <NotifyOpenForm source="website_guidance_start" />
         <p className="sr-only" id="guidance-start-actions-hint">Arrow keys move between Explore Pandits, free tools, stay on draft and booking updates. Escape blurs the focused control. NotifyOpenForm still requires source. Skip remains site-content.</p>

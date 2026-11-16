@@ -102,7 +102,7 @@ for (const viewport of [
     await page.evaluate(() => document.fonts.ready);
 
     await expect(page.locator('.home-update')).toHaveCount(0);
-    await expect(page.getByText(/Timed sessions and Chat Now are available/i)).toBeVisible();
+    await expect(page.getByText(/Timed sessions and Chat Now are available/i)).toHaveCount(0);
     await expect(page.locator('.home-topics-section .topic-links')).toBeVisible();
 
     const columns = await page.locator('.home-topics-section .topic-links').evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);

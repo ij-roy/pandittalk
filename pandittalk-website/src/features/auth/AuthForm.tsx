@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { normalizePhone, safeReturnTo } from '@/lib/api/security';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { availabilityCopy } from '@/content/availability';
 import { SocialSignIn } from './SocialSignIn';
 
 type AuthResult = { needsPhone?: boolean; pendingToken?: string; hasProfile?: boolean };
@@ -289,7 +288,7 @@ export function AuthForm() {
     </div>
     {socialConsentToast && <div id="auth-social-consent-toast" className="auth-consent-toast" role="alert" aria-atomic="true">{socialConsentToast}</div>}
     <aside className="notice auth-availability" role="status">
-      <p><strong>{availabilityCopy.publicStatus}</strong> Signing in opens your existing private space; it does not create a booking or charge.</p>
+      <p>Signing in opens your existing private space; it does not create a booking or charge.</p>
       <p className="expert-meta">While you wait: <Link href="/tools">try free tools</Link> · <Link href="/guidance/start">prepare a draft</Link> · <Link href="/how-it-works#booking-availability-how">get booking updates</Link>.</p>
     </aside>
     <p className="sr-only" id="auth-help-hint">Arrow keys move between account help, tools, draft, support, booking updates and delete-account. Escape blurs. Consent never blocks Send code. Skip link remains site-content.</p>

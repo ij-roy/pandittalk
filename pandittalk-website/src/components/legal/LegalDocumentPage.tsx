@@ -357,7 +357,7 @@ export default function LegalDocumentPage({
           </LinkKeyboardGroup>
           <aside className="notice offer-notice" role="status" aria-label="Booking availability" style={{ marginTop: 18 }}>
             <p>
-              <strong>{availabilityCopy.headerLink}?</strong> {availabilityCopy.publicStatus} This waitlist is separate from legal or privacy questions.{' '}
+              <strong>{availabilityCopy.headerLink}?</strong> Booking details and terms are shown before confirmation. This waitlist is separate from legal or privacy questions.{' '}
               <span className="sr-only" id="legal-footer-notify-hint">Arrow keys move between how booking works, free tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span>
               <LinkKeyboardGroup as="span" aria-label="Legal footer booking updates" aria-describedby="legal-footer-notify-hint">
                 <Link href="/how-it-works#booking-availability-how">How booking will work</Link>

@@ -119,7 +119,7 @@ test('homepage points visitors to real booking paths without a waitlist detour',
   await page.goto('/');
 
   await expect(page.locator('.home-update')).toHaveCount(0);
-  await expect(page.getByText(/Timed sessions and Chat Now are available/i)).toBeVisible();
+  await expect(page.getByText(/Timed sessions and Chat Now are available/i)).toHaveCount(0);
   await expect(page.locator('.home-page')).not.toContainText(/no timer|opening soon|waitlist/i);
 });
 

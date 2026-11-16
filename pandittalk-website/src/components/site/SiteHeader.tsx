@@ -217,7 +217,7 @@ export function SiteHeader() {
       <div className="header-account" aria-busy={signedIn === null ? true : undefined} aria-describedby="header-account-hint">
         <p id="header-account-hint" className="sr-only">Arrow keys move between account links. Escape blurs the focused link. Skip to content still targets site-content.</p>
         {signedIn ? <>
-          <Link href="/how-it-works#booking-availability-how" title={availabilityCopy.publicStatus}>{availabilityCopy.headerLink}</Link>
+          <Link href="/how-it-works#booking-availability-how">{availabilityCopy.headerLink}</Link>
           <Link href="/notifications" aria-label={unread > 0 ? `Updates, ${unread} unread` : 'Updates'}>
             <SiteIcon name="bell" size={17} />
             {unread > 0 ? `Updates (${unread})` : 'Updates'}
@@ -225,7 +225,7 @@ export function SiteHeader() {
           <Link href="/account"><SiteIcon name="user" size={17} />Account</Link>
           <Link className="button" href="/home">My home<SiteIcon name="right" size={16} /></Link>
         </> : <>
-          <Link href="/how-it-works#booking-availability-how" title={availabilityCopy.publicStatus}>{availabilityCopy.headerLink}</Link>
+          <Link href="/how-it-works#booking-availability-how">{availabilityCopy.headerLink}</Link>
           <Link href="/help"><SiteIcon name="info" size={17} />Help</Link>
           <Link className="button" href="/login">Sign in<SiteIcon name="right" size={16} /></Link>
         </>}
@@ -257,7 +257,7 @@ export function SiteHeader() {
             : <>
               <div className="mobile-nav-section">
                 <span className="mobile-nav-label">Start here</span>
-                {mobileLink('/how-it-works#booking-availability-how', 'How booking works', { title: availabilityCopy.publicStatus })}
+                {mobileLink('/how-it-works#booking-availability-how', 'How booking works')}
                 {mobileLink('/guidance/start', 'Prepare a draft')}
                 {mobileLink('/help', 'Help centre')}
                 {mobileLink('/pricing', 'Pricing')}

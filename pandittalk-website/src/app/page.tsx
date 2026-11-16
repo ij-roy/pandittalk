@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { availabilityCopy } from '@/content/availability';
 import { HeroAurora } from '@/components/site/HeroAurora';
 import { HomeFaq } from '@/components/site/HomeFaq';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
@@ -97,7 +96,6 @@ export default function Home() {
         <h1 id="home-title">Find a calmer next step for the question on your mind.</h1>
         <p className="supporting">Choose a topic, compare Pandit profiles, and see what feels right before deciding whether to talk.</p>
         <Link className="button" href="/pandits">Explore Pandits<SiteIcon name="right" size={18} /></Link>
-          <p className="hero-status">{availabilityCopy.publicStatus} <Link href="/how-it-works#booking-availability-how">See how timing and refunds work</Link></p>
       </div>
 
       <aside className="hero-guide-card panel" aria-labelledby="hero-guide-title">
