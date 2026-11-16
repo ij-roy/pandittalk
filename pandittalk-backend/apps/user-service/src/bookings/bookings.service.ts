@@ -446,9 +446,7 @@ export class BookingsService {
       });
     }
 
-    const endTime = new Date(
-      now.getTime() + quote.durationMinutes * 60 * 1000,
-    );
+    const endTime = new Date(now.getTime() + quote.durationMinutes * 60 * 1000);
     const bufferEndTime = new Date(
       endTime.getTime() + BOOKING_CATALOG.scheduled.bufferMinutes * 60 * 1000,
     );

@@ -25,7 +25,10 @@ export class BookingCatalogController {
       throw new BadRequestException('depth and format are required');
     }
     try {
-      return calculateBookingQuote(depth as BookingDepth, format as BookingFormat);
+      return calculateBookingQuote(
+        depth as BookingDepth,
+        format as BookingFormat,
+      );
     } catch {
       throw new BadRequestException('Unsupported booking option');
     }
