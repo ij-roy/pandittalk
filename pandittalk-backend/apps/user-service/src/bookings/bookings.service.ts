@@ -224,7 +224,9 @@ export class BookingsService implements OnModuleInit, OnModuleDestroy {
     const runSweep = () => {
       void this.reconcileScheduledNoShows().catch((error: unknown) => {
         const message =
-          error instanceof Error ? error.message : 'Unknown reconciliation error';
+          error instanceof Error
+            ? error.message
+            : 'Unknown reconciliation error';
         this.logger.warn(`Scheduled no-show sweep failed: ${message}`);
       });
     };
