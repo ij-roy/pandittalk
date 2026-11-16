@@ -143,7 +143,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
             setQueueStatus('Your queue place is no longer active. Nothing was charged. Check Chat Now availability again or choose a scheduled time.');
             return;
           }
-          setQueueInfo({ position: value.position, estimatedWaitMinutes: value.position * 15, queueLength: value.queueLength });
+          setQueueInfo({ position: value.position, estimatedWaitMinutes: value.estimatedWaitMinutes, queueLength: value.queueLength });
         })
         .catch(() => {
           // Keep the last known queue position; the next refresh can recover it.
@@ -162,7 +162,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
       const event = parseQueueEvent(expertId, eventName, payload);
       if (!event || !active) return;
       if (event.type === 'position') {
-        setQueueInfo({ position: event.position, estimatedWaitMinutes: event.position * 15, queueLength: event.queueLength });
+        setQueueInfo({ position: event.position, estimatedWaitMinutes: event.estimatedWaitMinutes, queueLength: event.queueLength });
         return;
       }
       if (event.type === 'ready') {

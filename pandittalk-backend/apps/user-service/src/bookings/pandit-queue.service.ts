@@ -15,6 +15,7 @@ import type {
   QueuePositionUpdatedPayload,
   QueueReadyPayload,
 } from '../chat/types/chat.types';
+import { BOOKING_CATALOG } from './booking-catalog';
 
 export interface QueueEntry {
   userId: string;
@@ -30,13 +31,14 @@ export interface QueueJoinResult {
 export interface QueuePositionResult {
   position: number | null;
   queueLength: number;
+  estimatedWaitMinutes: number;
 }
 
 @Injectable()
 export class PanditQueueService {
-  static readonly MAX_QUEUE_DEPTH = 5;
-  static readonly MAX_QUEUE_WAIT_MS = 15 * 60 * 1000;
-  static readonly QUEUE_TURN_TIMEOUT_MS = 60 * 1000;
+  static readonly MAX_QUEUE_DEPTH = BOOKING_CATALOG.chatNow.maxQueueDepth;
+  static readonly MAX_QUEUE_WAIT_MS = BOOKING_CATALOG.chatNow.maxQueueWaitMinutes * 60 * 1000;
+  static readonly QUEUE_TURN_TIMEOUT_MS = BOOKING_CATALOG.chatNow.queueTurnTimeoutSeconds * 1000;
 
   private readonly turnTimeouts = new Map<string, NodeJS.Timeout>();
 
@@ -106,7 +108,7 @@ export class PanditQueueService {
 
     return {
       position,
-      estimatedWaitMinutes: position * 15,
+      estimatedWaitMinutes: this.estimatedWaitMinutes(position),
       queueLength: queue.length,
     };
   }
@@ -147,6 +149,7 @@ export class PanditQueueService {
     return {
       position: index === -1 ? null : index + 1,
       queueLength: queue.length,
+      estimatedWaitMinutes: index === -1 ? 0 : this.estimatedWaitMinutes(index + 1),
     };
   }
 
@@ -305,8 +308,13 @@ export class PanditQueueService {
         panditId,
         position: index + 1,
         queueLength: queue.length,
+        estimatedWaitMinutes: this.estimatedWaitMinutes(index + 1),
       };
       this.chatGateway.emitQueuePositionUpdated(entry.userId, payload);
     });
+  }
+
+  private estimatedWaitMinutes(position: number): number {
+    return position * BOOKING_CATALOG.chatNow.durationMinutes;
   }
 }

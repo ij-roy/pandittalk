@@ -13,6 +13,7 @@ export type QueueEvent =
       panditId: string;
       position: number;
       queueLength: number;
+      estimatedWaitMinutes: number;
     }
   | {
       type: 'expired';
@@ -52,13 +53,16 @@ export function parseQueueEvent(panditId: string, event: string, value: unknown)
     Number.isInteger(payload.position) &&
     Number(payload.position) > 0 &&
     Number.isInteger(payload.queueLength) &&
-    Number(payload.queueLength) >= Number(payload.position)
+    Number(payload.queueLength) >= Number(payload.position) &&
+    Number.isInteger(payload.estimatedWaitMinutes) &&
+    Number(payload.estimatedWaitMinutes) >= 0
   ) {
     return {
       type: 'position',
       panditId,
       position: Number(payload.position),
       queueLength: Number(payload.queueLength),
+      estimatedWaitMinutes: Number(payload.estimatedWaitMinutes),
     };
   }
 

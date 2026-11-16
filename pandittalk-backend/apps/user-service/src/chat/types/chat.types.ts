@@ -54,6 +54,7 @@ export interface QueuePositionUpdatedPayload {
   panditId: string;
   position: number;
   queueLength: number;
+  estimatedWaitMinutes: number;
 }
 
 export interface QueueReadyPayload {

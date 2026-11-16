@@ -62,7 +62,7 @@ export function getChatNowQuote() { return api<ChatNowQuote>('/booking-catalog/q
 export function getAllSlots(panditId: string, date: string, durationMinutes: number) { return api<DisplaySlot[]>(expertSlotsPath(panditId, date, durationMinutes)); }
 export function getPanditStatus(panditId: string) { return api<PanditLiveStatus>(panditStatusPath(panditId)); }
 export function getChatQueuePosition(panditId: string) {
-  return api<{ position: number | null; queueLength: number }>(`/bookings/chat-now/queue?panditId=${encodeURIComponent(panditId)}`);
+  return api<{ position: number | null; queueLength: number; estimatedWaitMinutes: number }>(`/bookings/chat-now/queue?panditId=${encodeURIComponent(panditId)}`);
 }
 
 export function createScheduledBooking(payload: { panditId: string; startTime: string; area: string; depth: BookingDepth; format: ScheduledFormat; notes?: string }) {

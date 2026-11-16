@@ -46,6 +46,16 @@ test('queue events are accepted only for the selected Pandit and expose recovery
   );
   assert.equal(parseQueueEvent('pandit-a', 'queueReady', { panditId: 'pandit-b', expiresAt: 'bad' }), null);
   assert.deepEqual(
+    parseQueueEvent('pandit-a', 'queuePositionUpdated', {
+      panditId: 'pandit-a',
+      position: 2,
+      queueLength: 3,
+      estimatedWaitMinutes: 30,
+    }),
+    { type: 'position', panditId: 'pandit-a', position: 2, queueLength: 3, estimatedWaitMinutes: 30 },
+  );
+  assert.equal(parseQueueEvent('pandit-a', 'queuePositionUpdated', { panditId: 'pandit-a', position: 2, queueLength: 3 }), null);
+  assert.deepEqual(
     parseQueueEvent('pandit-a', 'queueExpired', { panditId: 'pandit-a', reason: 'turn_timeout' }),
     { type: 'expired', panditId: 'pandit-a', reason: 'turn_timeout' },
   );
