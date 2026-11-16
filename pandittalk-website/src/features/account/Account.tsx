@@ -9,7 +9,11 @@ import { LoadingState } from '@/components/site/Skeleton';
 import styles from './customer.module.css';
 
 export async function logout() {
-  const response = await fetch('/api/auth/logout', { method: 'POST' });
+  const response = await fetch('/api/auth/logout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  });
   if (!response.ok) throw new Error('Sign out failed. Please try again.');
   window.location.assign('/login');
 }
@@ -347,7 +351,11 @@ export function DeleteAccount() {
     try {
       const r = await api<{ success: boolean }>('/users/profile', { method: 'DELETE' });
       if (r.success !== true) throw new Error('Deletion was not confirmed. Please contact support before retrying.');
-      const response = await fetch('/api/auth/logout', { method: 'POST' });
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      });
       if (!response.ok) throw new Error('Account was deactivated, but sign-out did not finish. Close this browser or clear site data, then visit the public deletion page.');
       location.assign('/delete-account?deleted=1');
     } catch (e) {

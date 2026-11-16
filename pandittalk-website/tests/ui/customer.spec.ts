@@ -23,6 +23,22 @@ test.beforeEach(async ({ page, context }) => {
   });
 });
 
+test('sign out sends the JSON request required by the auth route', async ({ page }) => {
+  let logoutRequest: { contentType?: string; body?: unknown } | undefined;
+  await page.route('**/api/auth/logout', async route => {
+    logoutRequest = {
+      contentType: route.request().headers()['content-type'],
+      body: route.request().postDataJSON(),
+    };
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true }) });
+  });
+
+  await page.goto('/account');
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect.poll(() => logoutRequest).toEqual({ contentType: 'application/json', body: {} });
+  await expect(page).toHaveURL(/\/login$/);
+});
+
 test('booking filters explain an empty view and let customers recover their history', async ({ page }) => {
   await page.goto('/bookings');
   await expect(page.getByRole('heading', { name: 'Pandita Meera' })).toBeVisible();
