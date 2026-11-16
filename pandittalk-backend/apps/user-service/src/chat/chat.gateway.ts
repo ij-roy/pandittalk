@@ -17,6 +17,7 @@ import type { Cache } from 'cache-manager';
 import { Server, Socket } from 'socket.io';
 import type { JwtPayload } from '../auth/types/jwt-payload';
 import { BookingsService } from '../bookings/bookings.service';
+import { BOOKING_CATALOG } from '../bookings/booking-catalog';
 import { PanditAvailabilityService } from '../bookings/pandit-availability.service';
 import { PanditQueueService } from '../bookings/pandit-queue.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -62,10 +63,12 @@ import type {
 } from './types/chat.types';
 
 const TIMER_INTERVAL_MS = 1_000;
-const FIVE_MINUTES_SECONDS = 300;
+const FIVE_MINUTES_SECONDS = BOOKING_CATALOG.session.warningSeconds;
 const DEFAULT_WAITING_TIMEOUT_MS = 600_000;
-const PANDIT_RECONNECT_MS = 60 * 1000;
-const SESSION_GRACE_PERIOD_MS = 90_000;
+const PANDIT_RECONNECT_MS =
+  BOOKING_CATALOG.session.panditReconnectSeconds * 1000;
+const SESSION_GRACE_PERIOD_MS =
+  BOOKING_CATALOG.session.gracePeriodSeconds * 1000;
 const AV_DISCONNECT_GRACE_MS = 3_000;
 
 interface ChatSocketData {
@@ -1931,8 +1934,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return (
       booking.format === 'chat' &&
       booking.depth === 'entry' &&
-      booking.durationMinutes === 15 &&
-      booking.coinsDeducted === 101
+      booking.durationMinutes === BOOKING_CATALOG.chatNow.durationMinutes &&
+      booking.coinsDeducted === BOOKING_CATALOG.chatNow.totalPrice
     );
   }
 
