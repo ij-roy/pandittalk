@@ -9,6 +9,27 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+async function mockConfiguredSocialProviders(page: import('@playwright/test').Page) {
+  await page.route('**/api/auth/config', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        googleClientId: 'ui-test-google-client',
+        appleClientId: 'ui-test-apple-client',
+        appleRedirectUri: 'https://example.test/auth/apple/callback',
+      }),
+    });
+  });
+  await page.route('https://accounts.google.com/gsi/client', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/javascript',
+      body: `window.google={accounts:{id:{initialize:function(){},renderButton:function(el){el.innerHTML='<div role="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path></svg><span>Sign in with Google</span></div>';}}}};`,
+    });
+  });
+}
+
 test('homepage hero leads with value, two choices and a useful guide', async ({ page }) => {
   await page.goto('/');
 
@@ -402,6 +423,7 @@ test('interactive tools keep keyboard implementation help out of visible instruc
 });
 
 test('login keeps social sign-in copy and brand marks consistent', async ({ page }) => {
+  await mockConfiguredSocialProviders(page);
   for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/login');
@@ -427,15 +449,43 @@ test('login keeps social sign-in copy and brand marks consistent', async ({ page
   }
 });
 
+test('login keeps provider choices visible when browser sign-in is not configured', async ({ page }) => {
+  await page.route('**/api/auth/config', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ googleClientId: null, appleClientId: null, appleRedirectUri: null }),
+    });
+  });
+  await page.goto('/login');
+
+  await expect(page.getByRole('button', { name: 'Sign in with Apple', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sign in with Apple', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).toBeDisabled();
+  await expect(page.getByText('Browser sign-in is not configured yet. Phone sign-in stays available.', { exact: true })).toBeVisible();
+});
+
 test('login keeps provider buttons visually matched after consent', async ({ page }) => {
+  await mockConfiguredSocialProviders(page);
   for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/login');
+    const beforeConsent = await page.locator('[data-provider="google"]').boundingBox();
+    expect(beforeConsent).not.toBeNull();
     await page.locator('.auth-panel input[type="checkbox"]').check();
 
     const google = page.locator('.social-google-widget [role="button"]');
     await expect(page.getByRole('button', { name: 'Sign in with Apple', exact: true })).toBeVisible();
     await expect(google).toBeVisible();
+    const afterConsent = await page.locator('[data-provider="google"]').boundingBox();
+    expect(afterConsent).not.toBeNull();
+    expect(afterConsent?.height).toBe(beforeConsent?.height);
+    await expect.poll(() => page.evaluate(() => {
+      const apple = document.querySelector<HTMLElement>('[data-provider="apple"].social-provider-button');
+      const googleButton = document.querySelector<HTMLElement>('.social-google-widget [role="button"]');
+      return !!apple && !!googleButton && getComputedStyle(apple).backgroundColor === getComputedStyle(googleButton).backgroundColor;
+    })).toBe(true);
 
     const styles = await page.evaluate(() => {
       const apple = document.querySelector<HTMLButtonElement>('[data-provider="apple"].social-provider-button');
@@ -464,6 +514,30 @@ test('login keeps provider buttons visually matched after consent', async ({ pag
     expect(styles.apple).toEqual(styles.google);
     expect(styles.googleLabelWidth).toBeLessThan(260);
     expect(Math.abs(styles.googleContentCenter - styles.googleButtonCenter)).toBeLessThanOrEqual(1);
+  }
+});
+
+test('expired-session notice is a dismissible alert at every responsive size', async ({ page }) => {
+  for (const [width, height] of [[390, 844], [768, 1024], [1440, 900]]) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/login?returnTo=%2Fbookings%2Fnew&reason=session');
+
+    const notice = page.locator('#auth-message');
+    await expect(notice).toHaveAttribute('role', 'alert');
+    await expect(notice).toContainText('Your session ended or expired.');
+    await expect(notice).not.toContainText('Press Escape');
+    await expect(page.locator('.auth-return-notice')).not.toContainText('Press Escape');
+    await expect(notice.getByRole('button', { name: 'Dismiss sign-in message', exact: true })).toBeVisible();
+
+    const bounds = await notice.evaluate(node => {
+      const rect = node.getBoundingClientRect();
+      return { width: rect.width, right: rect.right, viewport: window.innerWidth };
+    });
+    expect(bounds.width).toBeLessThanOrEqual(bounds.viewport);
+    expect(bounds.right).toBeLessThanOrEqual(bounds.viewport + 1);
+
+    await notice.getByRole('button', { name: 'Dismiss sign-in message', exact: true }).click();
+    await expect(notice).toHaveCount(0);
   }
 });
 

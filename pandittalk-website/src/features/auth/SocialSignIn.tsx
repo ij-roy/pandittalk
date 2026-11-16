@@ -37,7 +37,7 @@ export function SocialSignIn({ consent, disabled = false, onResult, onConsentReq
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
   const googleBox = useRef<HTMLDivElement>(null);
-  const messageRef = useRef<HTMLParagraphElement>(null);
+  const messageRef = useRef<HTMLDivElement>(null);
   const consentRef = useRef(consent);
   useEffect(() => { consentRef.current = consent; }, [consent]);
 
@@ -51,6 +51,40 @@ export function SocialSignIn({ consent, disabled = false, onResult, onConsentReq
       node.focus({ preventScroll: true });
       node.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
     });
+  }
+
+  function dismissMessage() {
+    setMessage('');
+    setFailed(false);
+    requestAnimationFrame(() => {
+      if (!consent) {
+        document.querySelector<HTMLInputElement>('.auth-panel input[type="checkbox"]')?.focus();
+        return;
+      }
+      const apple = document.querySelector<HTMLButtonElement>('.auth-panel .actions button.secondary');
+      if (apple && !apple.disabled) apple.focus();
+    });
+  }
+
+  function renderMessage() {
+    if (!message) return null;
+    return <div
+      ref={messageRef}
+      tabIndex={-1}
+      className={`auth-message ${failed ? 'auth-message-error' : 'auth-message-status'}`}
+      role={failed ? 'alert' : 'status'}
+      aria-live={failed ? 'assertive' : 'polite'}
+      aria-atomic="true"
+      onKeyDown={event => {
+        if (event.key !== 'Escape') return;
+        event.preventDefault();
+        dismissMessage();
+      }}
+    >
+      <span className="auth-message-icon" aria-hidden="true">{failed ? '!' : 'i'}</span>
+      <p className="auth-message-copy">{message}</p>
+      <button type="button" className="auth-message-dismiss" onClick={dismissMessage}>Dismiss<span className="sr-only"> sign-in message</span></button>
+    </div>;
   }
 
   useEffect(() => {
@@ -139,44 +173,25 @@ export function SocialSignIn({ consent, disabled = false, onResult, onConsentReq
 
   const hasGoogle = !!config?.googleClientId;
   const hasApple = !!config?.appleClientId && !!config?.appleRedirectUri;
-  if (!hasGoogle && !hasApple) return message ? <p role={failed ? 'alert' : 'status'} tabIndex={-1} ref={messageRef}>{message}</p> : null;
+  const providerHint = config === undefined
+    ? 'Check the statement above to enable Google or Apple sign-in. Phone sign-in stays available without it.'
+    : hasGoogle || hasApple
+      ? 'Check the statement above to enable Google or Apple sign-in. Phone sign-in stays available without it.'
+      : 'Browser sign-in is not configured yet. Phone sign-in stays available.';
   return <div className="stack" aria-busy={busy || undefined}>
     <p className="eyebrow">Or continue with</p>
+    <p className="expert-meta" id="social-provider-help">{providerHint}</p>
     <p className="sr-only" id="social-keys-hint">Arrow keys move between Google and Apple sign-in when shown. Escape blurs.</p>
     <LinkKeyboardGroup className="actions" aria-label="Social sign-in options" aria-describedby="social-keys-hint">
-      {hasApple && <button type="button" data-provider="apple" className="button secondary social-provider-button" disabled={busy || disabled} aria-disabled={!consent || undefined} aria-busy={busy || undefined} onClick={() => void start('apple')}><AppleMark />{busy ? 'Signing in with Apple…' : 'Sign in with Apple'}</button>}
-      {hasGoogle && <div className="social-google-slot" data-provider="google">
-        {(!consent || disabled) && <button type="button" className="button secondary social-google-placeholder social-provider-button" disabled={busy || disabled} aria-disabled={!consent || disabled || busy || undefined} onClick={() => {
+      <button type="button" data-provider="apple" className="button secondary social-provider-button" disabled={busy || disabled || !consent || !hasApple} aria-disabled={!consent || disabled || !hasApple || busy || undefined} aria-busy={busy || undefined} title={!hasApple ? 'Apple sign-in is not configured on this website yet.' : undefined} onClick={() => void start('apple')}><AppleMark />{busy ? 'Signing in with Apple…' : 'Sign in with Apple'}</button>
+      <div className="social-google-slot" data-provider="google">
+        {(!consent || disabled || !hasGoogle) && <button type="button" className="button secondary social-google-placeholder social-provider-button" disabled={busy || disabled || !consent || !hasGoogle} aria-disabled={!consent || disabled || !hasGoogle || busy || undefined} title={!hasGoogle ? 'Google sign-in is not configured on this website yet.' : undefined} onClick={() => {
           if (!consent) onConsentRequired('google');
         }}><GoogleMark />Sign in with Google</button>}
-        <div ref={googleBox} className="social-google-widget" hidden={!consent || disabled} role="group" aria-label="Google sign-in" />
-      </div>}
+        <div ref={googleBox} className="social-google-widget" hidden={!consent || disabled || !hasGoogle} role="group" aria-label="Google sign-in" />
+      </div>
     </LinkKeyboardGroup>
-    {message ? (
-      <p
-        ref={messageRef}
-        tabIndex={-1}
-        className={failed ? 'error' : undefined}
-        role={failed ? 'alert' : 'status'}
-        aria-live={failed ? 'assertive' : 'polite'}
-        onKeyDown={event => {
-          if (event.key !== 'Escape' || !message) return;
-          event.preventDefault();
-          setMessage('');
-          setFailed(false);
-          requestAnimationFrame(() => {
-            if (!consent) {
-              document.querySelector<HTMLInputElement>('.auth-panel input[type="checkbox"]')?.focus();
-              return;
-            }
-            const apple = document.querySelector<HTMLButtonElement>('.auth-panel .actions button.secondary');
-            if (apple && !apple.disabled) apple.focus();
-          });
-        }}
-      >
-        {message} Press Escape to dismiss. Consent never blocks phone Send code.
-      </p>
-    ) : null}
+    {renderMessage()}
     {failed && message ? (
       <>
         <p className="sr-only" id="social-fail-hint">Arrow keys move between phone Send code focus, free tools and draft. Escape blurs. Consent never blocks Send code. Skip remains site-content.</p>

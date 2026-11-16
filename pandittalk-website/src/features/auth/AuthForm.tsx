@@ -8,6 +8,7 @@ import { SocialSignIn } from './SocialSignIn';
 
 type AuthResult = { needsPhone?: boolean; pendingToken?: string; hasProfile?: boolean };
 type Action = 'request-otp' | 'verify-otp' | 'complete-social';
+type MessageTone = 'status' | 'alert';
 
 export function AuthForm() {
   const [phone, setPhone] = useState('');
@@ -19,6 +20,7 @@ export function AuthForm() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [failed, setFailed] = useState(false);
+  const [messageTone, setMessageTone] = useState<MessageTone>('status');
   const [pending, setPending] = useState<string>();
   const [retryAt, setRetryAt] = useState<Partial<Record<Action, number>>>({});
   const [now, setNow] = useState(0);
@@ -26,7 +28,7 @@ export function AuthForm() {
   const otpRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
   const socialConsentRef = useRef<HTMLInputElement>(null);
-  const messageRef = useRef<HTMLParagraphElement>(null);
+  const messageRef = useRef<HTMLDivElement>(null);
   const socialConsentToastTimer = useRef<number | null>(null);
   const action = sent ? pending ? 'complete-social' : 'verify-otp' : 'request-otp';
   const secondsLeft = (target: Action) => Math.max(0, Math.ceil(((retryAt[target] || 0) - now) / 1000));
@@ -41,8 +43,9 @@ export function AuthForm() {
     return destination;
   })();
 
-  function announce(note: string, isError = false) {
+  function announce(note: string, isError = false, tone: MessageTone = isError ? 'alert' : 'status') {
     setFailed(isError);
+    setMessageTone(tone);
     setMessage(note);
     requestAnimationFrame(() => messageRef.current?.focus());
   }
@@ -74,8 +77,16 @@ export function AuthForm() {
     setOtp('');
     setPending(undefined);
     setFailed(false);
+    setMessageTone('status');
     setMessage(note);
     requestAnimationFrame(() => (note ? messageRef.current : phoneRef.current)?.focus());
+  }
+
+  function dismissMessage() {
+    setMessage('');
+    setFailed(false);
+    setMessageTone('status');
+    requestAnimationFrame(() => (sent ? otpRef.current : phoneRef.current)?.focus());
   }
 
   useEffect(() => {
@@ -86,7 +97,7 @@ export function AuthForm() {
     } else if (params.get('reason') === 'reauth') {
       announce('For your security, sign in again to continue with this sensitive action.');
     } else if (params.get('reason') === 'session') {
-      announce('Your session ended or expired. Sign in again to continue — no new booking or charge is created by signing in.');
+      announce('Your session ended or expired. Sign in again to continue — no new booking or charge is created by signing in.', false, 'alert');
     }
   }, []);
   useEffect(() => {
@@ -134,6 +145,7 @@ export function AuthForm() {
     if (Date.now() < (retryAt[target] || 0)) return;
     setBusy(true);
     setMessage('');
+      setMessageTone('status');
     try {
       const response = await fetch(`/api/auth/${target}`, {
         method: 'POST',
@@ -159,6 +171,7 @@ export function AuthForm() {
         }
         const apiNote = typeof result.message === 'string' ? result.message.trim() : '';
         const smsSkipped = /not sent|allowlisted|test number/i.test(apiNote);
+        setMessageTone('status');
         setMessage(smsSkipped
           ? `${apiNote}. Enter the four-digit test code below when your environment provides one. Signing in does not create a booking or charge your wallet.`
           : wasResend
@@ -182,13 +195,9 @@ export function AuthForm() {
     <h1>{pending ? 'One more step.' : sent ? 'Enter your code.' : 'Sign in to your private space.'}</h1>
     <p className="lede">{pending ? 'Link your Indian mobile number to keep your wallet, bookings and reports together.' : sent ? 'We sent a four-digit code to your phone. It usually arrives within a minute and expires after a few minutes — use Resend if it stops working.' : 'Use the same account as the app. Your profile, wallet and reports stay together.'}</p>
     {destination !== '/home' && (
-      <p className="notice" role="status" tabIndex={-1} onKeyDown={event => {
-        if (event.key !== 'Escape') return;
-        event.preventDefault();
-        (event.currentTarget as HTMLElement).blur();
-      }}>
-        After you sign in, we will bring you back to <strong>{destinationLabel}</strong>. That return never creates a new booking or recharge. Press Escape to leave this notice. Consent never blocks Send code.
-      </p>
+      <aside className="notice auth-return-notice" role="status" aria-label="Sign-in destination">
+        After you sign in, we will bring you back to <strong>{destinationLabel}</strong>. That return never creates a new booking or recharge. Consent never blocks Send code.
+      </aside>
     )}
     <div className="panel auth-panel">
       <form className="stack" aria-busy={busy} onSubmit={event => { event.preventDefault(); void submit(action); }}>
@@ -217,13 +226,15 @@ export function AuthForm() {
         }} aria-describedby={failed && message ? 'otp-help auth-message' : 'otp-help'} aria-invalid={failed ? true : undefined} /><small id="otp-help">Type the code from your SMS. Codes usually expire in a few minutes — use Resend if yours stops working. Pandit Talk staff will never ask for this code.</small></label>}
         {(sent || !!pending) && <label className="check"><input type="checkbox" checked={consent} disabled={busy} onChange={event => setConsent(event.target.checked)} required={action !== 'request-otp'} aria-describedby={!consent ? 'auth-consent-help' : undefined} /><span>I am 18 or older and agree to the <span className="sr-only" id="auth-legal-otp-hint">Arrow keys move between Terms and Privacy. Escape blurs. Consent never blocks Send code.</span><LinkKeyboardGroup as="span" aria-label="Sign-in legal links" aria-describedby="auth-legal-otp-hint"><Link href="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions<span className="sr-only"> (opens in a new tab)</span></Link> and <Link href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy<span className="sr-only"> (opens in a new tab)</span></Link></LinkKeyboardGroup>.</span></label>}
         {(sent || !!pending) && !consent && <p className="expert-meta" id="auth-consent-help">Accept the statement above to verify. Sending or resending a code does not require this yet.</p>}
-        {message && <p id="auth-message" ref={messageRef} tabIndex={-1} className={failed ? 'error' : 'notice'} role={failed ? 'alert' : 'status'} aria-live={failed ? 'assertive' : 'polite'} onKeyDown={event => {
+        {message && <div id="auth-message" ref={messageRef} tabIndex={-1} className={`auth-message ${failed ? 'auth-message-error' : messageTone === 'alert' ? 'auth-message-alert' : 'auth-message-status'}`} role={failed || messageTone === 'alert' ? 'alert' : 'status'} aria-live={failed || messageTone === 'alert' ? 'assertive' : 'polite'} aria-atomic="true" onKeyDown={event => {
           if (event.key !== 'Escape' || !message) return;
           event.preventDefault();
-          setMessage('');
-          setFailed(false);
-          requestAnimationFrame(() => (sent ? otpRef.current : phoneRef.current)?.focus());
-        }}>{message} Press Escape to dismiss.</p>}
+          dismissMessage();
+        }}>
+          <span className="auth-message-icon" aria-hidden="true">{failed || messageTone === 'alert' ? '!' : 'i'}</span>
+          <p className="auth-message-copy">{message}</p>
+          <button type="button" className="auth-message-dismiss" onClick={dismissMessage}>Dismiss<span className="sr-only"> sign-in message</span></button>
+        </div>}
         {failed && message && (
           <>
             <p className="sr-only" id="auth-error-recovery-hint">Arrow keys move between Resend, different number, account help, free tools, draft and support after a sign-in error. Escape blurs. Consent never blocks Send code. Skip remains site-content.</p>
