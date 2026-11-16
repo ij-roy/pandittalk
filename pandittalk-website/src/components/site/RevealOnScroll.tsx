@@ -39,10 +39,12 @@ export function RevealOnScroll({ children, className = '', delay = 0 }: RevealOn
       observer.disconnect();
     }, { threshold: 0.08, rootMargin: '0px 0px -5% 0px' });
 
+    // Never leave a below-the-fold section transparent long enough to look like
+    // missing content while the first page is hydrating.
     const fallback = window.setTimeout(() => {
       node.dataset.revealVisible = 'true';
       observer.disconnect();
-    }, 1600 + Math.max(0, delay));
+    }, 250 + Math.max(0, delay));
 
     if (!initiallyVisible) observer.observe(node);
     return () => {

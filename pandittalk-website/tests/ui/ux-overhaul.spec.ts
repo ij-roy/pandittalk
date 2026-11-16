@@ -34,14 +34,12 @@ test('homepage explains the first-time visitor path in concrete language', async
   await expect(page.getByRole('heading', { name: 'Start with a reading or a tool.', exact: true })).toBeVisible();
 });
 
-test('homepage asks for an email once, after explaining the service', async ({ page }) => {
+test('homepage points visitors to real booking paths without a waitlist detour', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.locator('.home-update .notify-open-form')).toHaveCount(1);
-  await expect(page.locator('.home-page .notify-open-form')).toHaveCount(1);
-  const updateTop = await page.locator('.home-update').evaluate(element => element.getBoundingClientRect().top);
-  expect(updateTop).toBeGreaterThan(await page.evaluate(() => innerHeight));
-  await expect(page.locator('.home-page')).not.toContainText(/no timer|countdown|minute-by-minute/i);
+  await expect(page.locator('.home-update')).toHaveCount(0);
+  await expect(page.getByText(/Timed sessions and Chat Now are available/i)).toBeVisible();
+  await expect(page.locator('.home-page')).not.toContainText(/no timer|opening soon|waitlist/i);
 });
 
 test('homepage does not look unfinished while the Pandit API is unavailable', async ({ page }) => {
@@ -79,7 +77,7 @@ test('homepage hero uses a calm decorative aurora with a reduced-motion fallback
   await expect(aurora.locator('canvas.hero-aurora-canvas')).toHaveCount(1);
   await expect(aurora.locator('.hero-aurora-fallback')).toHaveCount(1);
   await expect(aurora).toHaveAttribute('data-aurora-engine', /^(webgl|fallback)$/);
-  await expect.poll(async () => aurora.locator('canvas').evaluate(element => ({ width: element.width, height: element.height }))).toMatchObject({ width: expect.any(Number), height: expect.any(Number) });
+  await expect.poll(async () => aurora.locator('canvas').evaluate(element => { const canvas = element as HTMLCanvasElement; return { width: canvas.width, height: canvas.height }; })).toMatchObject({ width: expect.any(Number), height: expect.any(Number) });
   expect(await aurora.getAttribute('data-aurora-running')).toBe('true');
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -153,6 +151,15 @@ test('homepage reveal content cannot remain hidden indefinitely', async ({ page 
   expect(hidden).toBe(0);
 });
 
+test('homepage does not leave a blank gap while tablet sections hydrate', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await page.goto('/');
+  await page.waitForTimeout(700);
+
+  const hidden = await page.locator('.reveal-on-scroll').evaluateAll(elements => elements.filter(element => element.getAttribute('data-reveal-visible') !== 'true').length);
+  expect(hidden).toBe(0);
+});
+
 test('normal homepage content does not expose keyboard implementation instructions', async ({ page }) => {
   await page.goto('/');
 
@@ -186,7 +193,7 @@ test('guidance uses plain-language steps and stores the draft in the browser', a
   await page.goto('/guidance/start');
 
   await expect(page.getByRole('button', { name: '3. What to expect', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: '3. No Timer status', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '3. What to expect', exact: true })).toHaveCount(1);
   await page.getByLabel('Where would you like guidance?').selectOption('career');
   await page.getByRole('button', { name: '2. Your question', exact: true }).click();
   await page.getByLabel('Your question or context (optional)').fill('A question I want to think through.');
@@ -343,20 +350,12 @@ test('directory, help search, and sign-in keep keyboard shortcuts out of visible
   await expect(page.locator('#phone-help')).not.toContainText('Press Escape');
 });
 
-test('help availability notice stacks its email form on small screens', async ({ page }) => {
+test('help centre keeps the booking explanation concise on small screens', async ({ page }) => {
   for (const width of [390, 768]) {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/help');
-    await expect(page.locator('.offer-notice')).toBeVisible();
-
-    const widths = await page.locator('.offer-notice').evaluate(node => {
-      const notice = node.getBoundingClientRect();
-      const form = node.querySelector('.notify-open-form')!.getBoundingClientRect();
-      return { notice: notice.width, form: form.width, direction: getComputedStyle(node).flexDirection };
-    });
-
-    expect(widths.direction).toBe('column');
-    expect(widths.form).toBeGreaterThan(widths.notice * 0.75);
+    await expect(page.getByText(/bookings, session timing, payments/i)).toBeVisible();
+    await expect(page.locator('.offer-notice')).toHaveCount(0);
   }
 });
 
@@ -466,11 +465,11 @@ test('login keeps provider buttons visually matched after consent', async ({ pag
   }
 });
 
-test('download waitlist links never render separators as standalone rows', async ({ page }) => {
+test('download booking links never render separators as standalone rows', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/download');
 
-  const followUps = page.locator('.actions').filter({ hasText: 'Prefer booking updates instead?' });
+  const followUps = page.locator('.actions').filter({ hasText: 'Prefer to book now?' });
   await expect(followUps).toBeVisible();
   const lines = (await followUps.innerText()).split('\n').map(line => line.trim()).filter(Boolean);
   expect(lines).not.toContain('·');
