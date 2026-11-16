@@ -86,7 +86,7 @@ async function mockConfiguredSocialProviders(page: import('@playwright/test').Pa
       status: 200,
       contentType: 'application/javascript',
       body: realisticGoogleWidget
-        ? `window.google={accounts:{id:{initialize:function(){},renderButton:function(el,options){el.innerHTML='<div class="S9gUrf-YoZ4jf"><div><div role="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path></svg><span>Sign in with Google</span></div></div><iframe title="Sign in with Google" style="display:block;width:'+options.width+'px;height:49px;border:0"></iframe></div>';}}}};`
+        ? `window.google={accounts:{id:{initialize:function(){},renderButton:function(el,options){el.innerHTML='<div class="S9gUrf-YoZ4jf"><div><div role="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path></svg><span>Sign in with Google</span></div></div><iframe title="Sign in with Google" style="display:block;width:0;height:0;border:0"></iframe></div>';}}}};`
         : `window.google={accounts:{id:{initialize:function(){},renderButton:function(el){el.innerHTML='<div role="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path></svg><span>Sign in with Google</span></div>';}}}};`,
     });
   });
@@ -530,15 +530,18 @@ test('login keeps the real Google widget aligned after consent and viewport resi
   const apple = page.locator('[data-provider="apple"].social-provider-button');
   const googleFrame = page.locator('[data-provider="google"] iframe[title="Sign in with Google"]');
   const googleButton = page.locator('[data-provider="google"] [role="button"]');
-  await expect(googleFrame).toBeVisible();
-  const wide = { apple: await apple.boundingBox(), google: await googleFrame.boundingBox(), visualGoogle: await googleButton.boundingBox() };
+  const googleSlot = page.locator('[data-provider="google"].social-google-slot');
+  await expect(googleFrame).toBeAttached();
+  const wide = { apple: await apple.boundingBox(), google: await googleSlot.boundingBox(), visualGoogle: await googleButton.boundingBox() };
   expect(wide.apple?.width).toBeCloseTo(wide.google?.width || 0, 1);
+  expect(wide.apple?.width).toBeCloseTo(wide.visualGoogle?.width || 0, 1);
   expect((wide.visualGoogle?.y || 0) - ((wide.apple?.y || 0) + (wide.apple?.height || 0))).toBeGreaterThanOrEqual(8);
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect.poll(async () => (await googleFrame.boundingBox())?.width || 0).toBeLessThan(400);
-  const narrow = { apple: await apple.boundingBox(), google: await googleFrame.boundingBox(), visualGoogle: await googleButton.boundingBox() };
+  await expect.poll(async () => (await googleSlot.boundingBox())?.width || 0).toBeLessThan(400);
+  const narrow = { apple: await apple.boundingBox(), google: await googleSlot.boundingBox(), visualGoogle: await googleButton.boundingBox() };
   expect(narrow.apple?.width).toBeCloseTo(narrow.google?.width || 0, 1);
+  expect(narrow.apple?.width).toBeCloseTo(narrow.visualGoogle?.width || 0, 1);
   expect((narrow.visualGoogle?.y || 0) - ((narrow.apple?.y || 0) + (narrow.apple?.height || 0))).toBeGreaterThanOrEqual(8);
 });
 
