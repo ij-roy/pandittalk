@@ -60,7 +60,7 @@ export default function Page() {
         <li className="panel info-card">
           <span className="info-step" aria-hidden="true">04</span>
           <h2>Talk, then choose a next step.</h2>
-          <p>Join chat, audio or video from the confirmed booking. The server controls the countdown, and reconnecting does not create a second charge. Automated tools are labelled separately from a human conversation.</p>
+          <p>Join the confirmed session. The server controls the countdown, and reconnecting does not create a second charge. Scheduled sessions use audio or video; Chat Now uses live chat. Automated tools are labelled separately from a human conversation.</p>
           <p className="sr-only" id="how-join-hint">Arrow keys move between join-step links including free tools and draft. Escape blurs. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="How it works join step" aria-describedby="how-join-hint">
             <Link className="button secondary" href="/login?returnTo=%2Fbookings&reason=auth">Sign in to view bookings</Link>
@@ -73,8 +73,8 @@ export default function Page() {
 
       <section className="panel info-card" id="formats">
         <p className="info-label">Formats</p>
-        <h2>Chat, audio or video — when a booking allows it</h2>
-          <p>Scheduled bookings can use chat, audio or video when the Pandit offers that format. Chat Now is a live chat path. Camera and microphone permissions apply only on audio or video sessions; if a session disconnects, use reconnect help rather than starting a second booking.</p>
+        <h2>Audio or video for scheduled sessions</h2>
+        <p>Scheduled bookings use audio or video when the Pandit offers that format. Chat Now is a separate live chat path. Camera and microphone permissions apply only on audio or video sessions; if a session disconnects, use reconnect help rather than starting a second booking.</p>
         <p className="sr-only" id="how-format-hint">Arrow keys move between format help, free tools and draft. Escape blurs. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="How it works format help" aria-describedby="how-format-hint">
           <Link className="text-link" href="/help/joining-audio-video">Joining audio or video →</Link>

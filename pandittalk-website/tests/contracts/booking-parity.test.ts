@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { allowedEndpoint } from '../../src/lib/api/security';
 import {
   bookingCatalogPath,
@@ -49,4 +51,11 @@ test('queue events are accepted only for the selected Pandit and expose recovery
   );
   assert.equal(queueExpiredMessage('max_wait'), 'Your Chat Now queue wait expired. Nothing was charged.');
   assert.equal(queueExpiredMessage('pandit_offline'), 'The Pandit went offline before your turn. Nothing was charged.');
+});
+
+test('public format copy keeps scheduled Audio/Video separate from Chat Now', () => {
+  const source = readFileSync(resolve(import.meta.dirname, '../../src/app/(public)/how-it-works/page.tsx'), 'utf8');
+  assert.match(source, /Scheduled bookings use audio or video/);
+  assert.match(source, /Chat Now is a separate live chat path/);
+  assert.doesNotMatch(source, /Scheduled bookings can use chat, audio or video/);
 });
