@@ -124,14 +124,19 @@ jobs:
             .chatNow.durationMinutes > 0 and
             .chatNow.totalPrice > 0
           '
-          scheduled_quote="$(curl --fail --silent 'http://localhost:3001/booking-catalog/quote?depth=entry&format=audio')"
-          echo "$scheduled_quote" | jq -e '
-            .sessionModel == "legacy_timed" and
-            .format == "audio" and
-            .durationMinutes > 0 and
-            .totalPrice > 0 and
-            .coinsDeducted == .totalPrice
-          '
+          while IFS=$'\t' read -r depth format; do
+            scheduled_quote="$(curl --fail --silent "http://localhost:3001/booking-catalog/quote?depth=${depth}&format=${format}")"
+            expected_depth="$(echo "$catalog" | jq -c --arg depth "$depth" '.scheduled.depths[] | select(.key == $depth)')"
+            expected_format="$(echo "$catalog" | jq -c --arg format "$format" '.scheduled.formats[] | select(.key == $format)')"
+            jq -e --arg depth "$depth" --arg format "$format" --argjson expectedDepth "$expected_depth" --argjson expectedFormat "$expected_format" '
+              .sessionModel == "legacy_timed" and
+              .depth == $depth and
+              .format == $format and
+              .durationMinutes == $expectedDepth.durationMinutes and
+              .totalPrice == ($expectedDepth.basePrice + $expectedFormat.surcharge) and
+              .coinsDeducted == .totalPrice
+            ' <<<"$scheduled_quote"
+          done < <(echo "$catalog" | jq -r '.scheduled.depths[] as $depth | .scheduled.formats[] | [$depth.key, .key] | @tsv')
           chat_now_quote="$(curl --fail --silent 'http://localhost:3001/booking-catalog/quote?mode=chat-now')"
           echo "$chat_now_quote" | jq -e '
             .sessionModel == "legacy_timed" and
