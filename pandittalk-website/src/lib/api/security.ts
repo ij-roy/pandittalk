@@ -14,7 +14,17 @@ export function allowedEndpoint(method: string, path: string): boolean {
   return routes[method]?.some(rule => rule.test(path)) ?? false;
 }
 export function trustedMutation(expected: string, origin: string | null, content: string | null): boolean {
-  return origin === expected && !!content && /^(application\/json|multipart\/form-data)(?:;|$)/i.test(content);
+  const expectedOrigins = expected.split(',').flatMap(value => {
+    try {
+      const parsed = new URL(value.trim());
+      return ['http:', 'https:'].includes(parsed.protocol) && !parsed.username && !parsed.password
+        ? [parsed.origin]
+        : [];
+    } catch {
+      return [];
+    }
+  });
+  return !!origin && expectedOrigins.includes(origin) && !!content && /^(application\/json|multipart\/form-data)(?:;|$)/i.test(content);
 }
 export function normalizePhone(value: string): string | null {
   const clean = value.replace(/[\s()-]/g, '');
