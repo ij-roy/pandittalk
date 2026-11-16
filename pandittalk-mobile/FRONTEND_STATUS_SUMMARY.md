@@ -142,7 +142,7 @@ login (+91) → request-otp → verify-otp → JWT in secure store
 2. Else in dev: Expo debugger host (physical device)
 3. Else Android emulator: `http://10.0.2.2:3001`
 4. Else iOS simulator / web dev: `http://localhost:3001`
-5. Else production: `https://api.pandittalk.com`
+5. Else production: the stable PanditTalk Worker (`https://pandittalk-load-balancer.admininfo-6d6.workers.dev`)
 
 Ngrok requests add `ngrok-skip-browser-warning: true`.
 

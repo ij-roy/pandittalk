@@ -108,7 +108,7 @@ login (+91) → request-otp → verify-otp → JWT in secure store
 
 - Session key: `pandittalk.authSession`
 - Test OTP: **`1234`** always works in dev
-- API base: `EXPO_PUBLIC_API_BASE`, dev debugger host, emulator localhost, or `https://api.pandittalk.com` in production
+- API base: `EXPO_PUBLIC_API_BASE`, dev debugger host, emulator localhost, or the stable PanditTalk Worker in production
 
 ---
 

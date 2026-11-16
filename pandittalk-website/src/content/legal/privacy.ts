@@ -22,7 +22,7 @@ export const privacyDocument: LegalDocument = {
           type: "list",
           items: [
             "App / site: https://www.pandittalk.com",
-            "API: https://api.pandittalk.com",
+            "API: https://pandittalk-load-balancer.admininfo-6d6.workers.dev",
             `Support: ${supportEmail}`,
             `Privacy questions: ${privacyEmail}`,
             `Grievance Officer: ${grievanceEmail}`,

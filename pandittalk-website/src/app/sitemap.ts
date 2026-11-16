@@ -14,7 +14,7 @@ const publicPaths = [
 
 async function fetchPublicExpertIds(): Promise<string[]> {
   try {
-    const base = process.env.BACKEND_URL || process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE || 'https://api.pandittalk.com';
+    const base = process.env.BACKEND_URL || process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE || 'https://pandittalk-load-balancer.admininfo-6d6.workers.dev';
     const response = await fetch(`${base.replace(/\/$/, '')}/experts`, { next: { revalidate: 300 } });
     if (!response.ok) return [];
     const rows = await response.json() as Array<{ id?: string }>;

@@ -14,7 +14,7 @@ Date: 16 November 2026
 The Next.js server-side proxy requires one of these production variables, with `BACKEND_URL` preferred:
 
 ```text
-BACKEND_URL=https://api.pandittalk.com
+BACKEND_URL=https://pandittalk-load-balancer.admininfo-6d6.workers.dev
 ```
 
 If the hosting project is connected to GitHub through a team-owned Vercel project, the deploying GitHub/Vercel account must have access to that team. A failed Vercel preview or invitation link does not indicate an ECS backend failure.

@@ -32,7 +32,7 @@ function resolveDebuggerHost(): string | null {
  * `EXPO_PUBLIC_API_BASE=http://192.168.1.10:3001`
  * — In dev, Expo's debugger host is used automatically on physical devices.
  * — Android emulator uses `10.0.2.2`; iOS simulator uses localhost.
- * — Production release builds default to `https://api.pandittalk.com` when unset.
+ * — Production release builds default to the stable PanditTalk Worker when unset.
  */
 export function getApiBase(): string {
   const fromEnv = process.env.EXPO_PUBLIC_API_BASE;
@@ -51,7 +51,7 @@ export function getApiBase(): string {
     return 'http://localhost:3001';
   }
 
-  return 'https://api.pandittalk.com';
+  return 'https://pandittalk-load-balancer.admininfo-6d6.workers.dev';
 }
 
 export const API_BASE = getApiBase();

@@ -7,7 +7,7 @@ export const SITE_URL = (
 export const API_BASE = (
   process.env.API_BASE ||
   process.env.NEXT_PUBLIC_API_BASE ||
-  'https://api.pandittalk.com'
+  'https://pandittalk-load-balancer.admininfo-6d6.workers.dev'
 ).replace(/\/$/, '');
 
 export const PLAY_STORE_URL =

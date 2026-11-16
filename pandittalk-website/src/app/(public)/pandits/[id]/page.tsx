@@ -5,7 +5,7 @@ import { SITE_URL } from '@/lib/articles/site';
 
 async function fetchExpert(id: string) {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL || process.env.API_BASE || 'https://api.pandittalk.com'}/experts/${encodeURIComponent(id)}`, {
+    const response = await fetch(`${process.env.BACKEND_URL || process.env.API_BASE || 'https://pandittalk-load-balancer.admininfo-6d6.workers.dev'}/experts/${encodeURIComponent(id)}`, {
       next: { revalidate: 300 },
     });
     if (!response.ok) return null;

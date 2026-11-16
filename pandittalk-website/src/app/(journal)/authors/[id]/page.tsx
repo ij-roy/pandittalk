@@ -12,7 +12,7 @@ export const revalidate = 60;
 
 async function expertExists(id: string) {
   try {
-    const response = await fetch(`${process.env.BACKEND_URL || process.env.API_BASE || 'https://api.pandittalk.com'}/experts/${encodeURIComponent(id)}`, {
+    const response = await fetch(`${process.env.BACKEND_URL || process.env.API_BASE || 'https://pandittalk-load-balancer.admininfo-6d6.workers.dev'}/experts/${encodeURIComponent(id)}`, {
       next: { revalidate: 300 },
     });
     return response.ok;
