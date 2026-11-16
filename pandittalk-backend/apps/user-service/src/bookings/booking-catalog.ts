@@ -45,6 +45,7 @@ export const BOOKING_CATALOG = {
   },
   cancellation: {
     confirmedBeforeStart: 'full_wallet_refund' as const,
+    noShowRefundMinutes: 10,
     panditNoShow: 'full_wallet_refund' as const,
     panditDisconnect: 'partial_unused_time_wallet_refund' as const,
     refundDestination: 'wallet' as const,

@@ -25,7 +25,7 @@ const catalog = {
   },
   chatNow: { enabled: true, durationMinutes: 15, totalPrice: 101, noShowRefundMinutes: 10, maxQueueDepth: 5, maxQueueWaitMinutes: 15, queueTurnTimeoutSeconds: 60 },
   session: { gracePeriodSeconds: 90, warningSeconds: 300, panditReconnectSeconds: 60 },
-  cancellation: { confirmedBeforeStart: 'full_wallet_refund', panditNoShow: 'full_wallet_refund', panditDisconnect: 'partial_unused_time_wallet_refund', refundDestination: 'wallet' },
+  cancellation: { confirmedBeforeStart: 'full_wallet_refund', noShowRefundMinutes: 10, panditNoShow: 'full_wallet_refund', panditDisconnect: 'partial_unused_time_wallet_refund', refundDestination: 'wallet' },
   areas: [{ key: 'career', label: 'Career' }, { key: 'love', label: 'Love' }],
 };
 
@@ -63,6 +63,7 @@ test('completes a scheduled audio booking with a backend quote and no client pri
   await expect(page.getByText('151 coins', { exact: true })).toBeVisible();
   const terms = page.getByRole('region', { name: 'Cancellation and refund terms' });
   await expect(terms).toContainText('Cancel before the session starts');
+  await expect(terms).toContainText('within 10 minutes');
   await expect(terms).toContainText('90 seconds');
   await expect(terms).toContainText('wallet');
   await page.getByRole('button', { name: /Confirm booking/ }).click();

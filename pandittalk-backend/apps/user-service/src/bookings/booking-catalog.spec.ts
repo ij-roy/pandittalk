@@ -57,6 +57,7 @@ describe('booking catalog', () => {
       maxQueueWaitMinutes: 15,
       queueTurnTimeoutSeconds: 60,
     });
+    expect(BOOKING_CATALOG.cancellation.noShowRefundMinutes).toBe(10);
     expect(chatNowQuote()).toMatchObject({
       sessionModel: 'legacy_timed',
       depth: 'entry',

@@ -27,6 +27,10 @@ import { parseAllowedOrigins } from '../config/cors-origins';
 import { RedisClientService } from '../redis/redis-client.service';
 import { CHAT_STORAGE } from './chat-storage.interface';
 import type { ChatStorage } from './chat-storage.interface';
+import {
+  scheduledNoShowDelayMs,
+  shouldRefundScheduledNoShow,
+} from './session-no-show';
 import type {
   AudioParticipantLeftPayload,
   AudioParticipantRejoinedPayload,
@@ -100,6 +104,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly videoSessionIntervals = new Map<string, NodeJS.Timeout>();
   private readonly videoWaitTimeouts = new Map<string, NodeJS.Timeout>();
   private readonly waitingTimeouts = new Map<string, NodeJS.Timeout>();
+  private readonly avNoShowTimeouts = new Map<string, NodeJS.Timeout>();
   private readonly panditReconnectTimeouts = new Map<string, NodeJS.Timeout>();
   private readonly avDisconnectGraceTimeouts = new Map<
     string,
@@ -485,6 +490,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const sessionStarted = await this.hasAudioSessionStarted(data.bookingId);
 
       if (sessionStarted) {
+        this.clearAvNoShowTimeout('audio', data.bookingId);
         this.clearAvDisconnectGraceTimeout('audio', data.bookingId, userId);
 
         const participantCount = await this.getAudioRoomParticipantCount(
@@ -524,6 +530,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
 
       if (participantCount < 2) {
+        this.scheduleAvNoShowTimeout(data.bookingId, booking, 'audio');
         const isPandit = await this.isBookingPandit(userId, booking);
         const payload: AudioWaitingForOtherPayload = {
           bookingId: data.bookingId,
@@ -533,6 +540,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
+      this.clearAvNoShowTimeout('audio', data.bookingId);
       this.emitMediaPeerReady(client, room, data.bookingId, 'audio');
 
       const now = new Date();
@@ -625,6 +633,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           where: { id: data.bookingId },
           include: { pandit: { select: { userId: true } } },
         });
+        if (booking) {
+          this.scheduleAvNoShowTimeout(data.bookingId, booking, 'audio');
+        }
         const waitingForRole: SenderRole =
           booking && booking.pandit.userId === userId ? 'user' : 'pandit';
         const waitingPayload: AudioWaitingForOtherPayload = {
@@ -656,8 +667,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw new Error('Pandits can leave but not end the session');
       }
 
+      const sessionStarted = await this.hasAudioSessionStarted(data.bookingId);
+      this.clearAvNoShowTimeout('audio', data.bookingId);
       this.clearAudioWaitTimeout(data.bookingId);
       this.clearAudioSessionTimer(data.bookingId);
+
+      if (!sessionStarted) {
+        const result = await this.bookingsService.cancelWithRefund(
+          data.bookingId,
+          'Session refund — ended before pandit joined',
+        );
+        if (result.applied) {
+          const refund: SessionRefundedPayload = {
+            reason: 'ended_before_start',
+            coinsRefunded: result.coinsRefunded,
+            message: `Since your pandit had not yet joined, a full refund of ${result.coinsRefunded} coins has been issued to your wallet.`,
+          };
+          this.server
+            .to(this.audioRoom(data.bookingId))
+            .emit('sessionRefunded', refund);
+        }
+      }
 
       const payload: AudioSessionEndedPayload = { bookingId: data.bookingId };
       this.server
@@ -739,6 +769,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
 
       if (participantCount < 2) {
+        this.scheduleAvNoShowTimeout(data.bookingId, booking, 'video');
         const isPandit = await this.isBookingPandit(userId, booking);
         const payload: VideoWaitingForOtherPayload = {
           bookingId: data.bookingId,
@@ -748,6 +779,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
+      this.clearAvNoShowTimeout('video', data.bookingId);
       this.emitMediaPeerReady(client, room, data.bookingId, 'video');
 
       const now = new Date();
@@ -876,6 +908,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           where: { id: data.bookingId },
           include: { pandit: { select: { userId: true } } },
         });
+        if (booking) {
+          this.scheduleAvNoShowTimeout(data.bookingId, booking, 'video');
+        }
         const waitingForRole: SenderRole =
           booking && booking.pandit.userId === userId ? 'user' : 'pandit';
         const waitingPayload: VideoWaitingForOtherPayload = {
@@ -907,8 +942,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         throw new Error('Pandits can leave but not end the session');
       }
 
+      const sessionStarted = await this.hasVideoSessionStarted(data.bookingId);
+      this.clearAvNoShowTimeout('video', data.bookingId);
       this.clearVideoWaitTimeout(data.bookingId);
       this.clearVideoSessionTimer(data.bookingId);
+
+      if (!sessionStarted) {
+        const result = await this.bookingsService.cancelWithRefund(
+          data.bookingId,
+          'Session refund — ended before pandit joined',
+        );
+        if (result.applied) {
+          const refund: SessionRefundedPayload = {
+            reason: 'ended_before_start',
+            coinsRefunded: result.coinsRefunded,
+            message: `Since your pandit had not yet joined, a full refund of ${result.coinsRefunded} coins has been issued to your wallet.`,
+          };
+          this.server
+            .to(this.videoRoom(data.bookingId))
+            .emit('sessionRefunded', refund);
+        }
+      }
 
       const payload: VideoSessionEndedPayload = { bookingId: data.bookingId };
       this.server
@@ -1713,6 +1767,110 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       clearInterval(interval);
       this.audioSessionIntervals.delete(bookingId);
     }
+  }
+
+  private avNoShowTimeoutKey(
+    kind: 'audio' | 'video',
+    bookingId: string,
+  ): string {
+    return `${kind}:${bookingId}`;
+  }
+
+  private scheduleAvNoShowTimeout(
+    bookingId: string,
+    booking: Booking,
+    kind: 'audio' | 'video',
+  ): void {
+    const key = this.avNoShowTimeoutKey(kind, bookingId);
+    if (this.avNoShowTimeouts.has(key)) return;
+
+    const delayMs = scheduledNoShowDelayMs(
+      booking.startTime,
+      new Date(),
+      BOOKING_CATALOG.cancellation.noShowRefundMinutes,
+    );
+    const timeout = setTimeout(
+      () => {
+        this.avNoShowTimeouts.delete(key);
+        void this.handleAvNoShowTimeout(bookingId, kind);
+      },
+      Math.max(1, delayMs),
+    );
+    this.avNoShowTimeouts.set(key, timeout);
+  }
+
+  private clearAvNoShowTimeout(
+    kind: 'audio' | 'video',
+    bookingId: string,
+  ): void {
+    const key = this.avNoShowTimeoutKey(kind, bookingId);
+    const timeout = this.avNoShowTimeouts.get(key);
+    if (!timeout) return;
+    clearTimeout(timeout);
+    this.avNoShowTimeouts.delete(key);
+  }
+
+  private async handleAvNoShowTimeout(
+    bookingId: string,
+    kind: 'audio' | 'video',
+  ): Promise<void> {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+    });
+    if (!booking || booking.status !== 'confirmed') return;
+
+    const sessionStarted =
+      kind === 'audio'
+        ? await this.hasAudioSessionStarted(bookingId)
+        : await this.hasVideoSessionStarted(bookingId);
+    const participantCount =
+      kind === 'audio'
+        ? await this.getAudioRoomParticipantCount(bookingId)
+        : await this.getVideoRoomParticipantCount(bookingId);
+    if (
+      !shouldRefundScheduledNoShow({
+        startTime: booking.startTime,
+        now: new Date(),
+        noShowMinutes: BOOKING_CATALOG.cancellation.noShowRefundMinutes,
+        sessionStarted,
+        participantCount,
+      })
+    ) {
+      return;
+    }
+
+    const result = await this.bookingsService.cancelWithRefund(
+      bookingId,
+      'Session refund — pandit timeout',
+    );
+    if (result.applied) {
+      const room =
+        kind === 'audio'
+          ? this.audioRoom(bookingId)
+          : this.videoRoom(bookingId);
+      const refund: SessionRefundedPayload = {
+        reason: 'pandit_timeout',
+        coinsRefunded: result.coinsRefunded,
+        message: `Your pandit was unable to join within the allotted time. A full refund of ${result.coinsRefunded} coins has been issued to your wallet.`,
+      };
+      this.server.to(room).emit('sessionRefunded', refund);
+      this.server
+        .to(room)
+        .emit(kind === 'audio' ? 'audioSessionEnded' : 'videoSessionEnded', {
+          bookingId,
+        });
+    }
+
+    if (kind === 'audio') {
+      this.clearAudioWaitTimeout(bookingId);
+      this.clearAudioSessionTimer(bookingId);
+      await this.clearAudioSessionRedisKeys(bookingId);
+    } else {
+      this.clearVideoWaitTimeout(bookingId);
+      this.clearVideoSessionTimer(bookingId);
+      await this.clearVideoSessionRedisKeys(bookingId);
+    }
+    await this.panditAvailability.clearPanditActive(booking.panditId);
   }
 
   private clearAudioWaitTimeout(bookingId: string): void {

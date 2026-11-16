@@ -15,7 +15,7 @@ export type BookingCatalog = {
     enabled: boolean;
     durationMinutes: number;
     totalPrice: number;
-    noShowRefundMinutes: number;
+    noShowRefundMinutes?: number;
     maxQueueDepth: number;
     maxQueueWaitMinutes: number;
     queueTurnTimeoutSeconds: number;
@@ -23,6 +23,7 @@ export type BookingCatalog = {
   session: { gracePeriodSeconds: number; warningSeconds: number; panditReconnectSeconds: number };
   cancellation: {
     confirmedBeforeStart: string;
+    noShowRefundMinutes: number;
     panditNoShow: string;
     panditDisconnect: string;
     refundDestination: string;

@@ -49,13 +49,14 @@ function bookingTerms(catalog: BookingCatalog, isChatNow: boolean) {
   const refundDestination = catalog.cancellation.refundDestination === 'wallet'
     ? 'your wallet'
     : 'the original payment method';
+  const scheduledNoShowMinutes = catalog.cancellation.noShowRefundMinutes ?? catalog.chatNow.noShowRefundMinutes;
   const beforeStart = catalog.cancellation.confirmedBeforeStart === 'full_wallet_refund'
     ? `Cancel before the session starts: charged coins return to ${refundDestination}.`
     : 'Cancellation before the session starts follows the booking service terms.';
   const noShow = isChatNow
     ? `If the Pandit does not join within ${catalog.chatNow.noShowRefundMinutes} minutes, the full charge returns to ${refundDestination}.`
     : catalog.cancellation.panditNoShow === 'full_wallet_refund'
-      ? `If the Pandit cannot join, the charged coins return to ${refundDestination}.`
+      ? `If the Pandit does not join within ${scheduledNoShowMinutes} minutes of the scheduled start, the charged coins return to ${refundDestination}.`
       : 'If the Pandit cannot join, the booking service applies its current no-show terms.';
   const disconnect = catalog.cancellation.panditDisconnect === 'partial_unused_time_wallet_refund'
     ? `If the Pandit disconnects after the grace period, the service calculates a partial refund for unused time to ${refundDestination}.`
