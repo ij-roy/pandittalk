@@ -31,7 +31,7 @@ export function AuthForm() {
   const action = sent ? pending ? 'complete-social' : 'verify-otp' : 'request-otp';
   const secondsLeft = (target: Action) => Math.max(0, Math.ceil(((retryAt[target] || 0) - now) / 1000));
   const destinationLabel = (() => {
-    if (destination.startsWith('/bookings/new')) return 'the booking waitlist page (new bookings stay closed)';
+    if (destination.startsWith('/bookings/new')) return 'the booking page';
     if (destination.startsWith('/wallet/recharge')) return 'recharge updates (top-ups stay paused)';
     if (destination.startsWith('/bookings')) return 'your existing bookings list';
     if (destination.startsWith('/wallet')) return 'your wallet (recharge stays paused)';
@@ -82,7 +82,7 @@ export function AuthForm() {
     const params = new URLSearchParams(location.search);
     setDestination(safeReturnTo(params.get('returnTo')));
     if (params.get('reason') === 'auth') {
-      announce('Sign in to continue to your private Pandit Talk space. Signing in does not open No Timer booking or recharge.');
+      announce('Sign in to continue to your private Pandit Talk space. Signing in does not create a booking or charge your wallet.');
     } else if (params.get('reason') === 'reauth') {
       announce('For your security, sign in again to continue with this sensitive action.');
     } else if (params.get('reason') === 'session') {
@@ -160,7 +160,7 @@ export function AuthForm() {
         const apiNote = typeof result.message === 'string' ? result.message.trim() : '';
         const smsSkipped = /not sent|allowlisted|test number/i.test(apiNote);
         setMessage(smsSkipped
-          ? `${apiNote}. Enter the four-digit test code below when your environment provides one. This does not open No Timer or recharge.`
+          ? `${apiNote}. Enter the four-digit test code below when your environment provides one. Signing in does not create a booking or charge your wallet.`
           : wasResend
             ? `A new code was sent to ${phoneNumber}. Enter the four-digit code below. Codes usually expire in a few minutes.`
             : `Code sent to ${phoneNumber}. Enter the four-digit code below. Codes usually expire in a few minutes.`);

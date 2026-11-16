@@ -69,10 +69,10 @@ export default async function Page({
         </section>
         <aside className="notice offer-notice" role="status" aria-label="Booking availability">
           <p>
-            <strong>Want a note if you return later?</strong> This waitlist is for No Timer opening — not for restoring a deleted account.{' '}
-            <span className="sr-only" id="delete-done-notify-hint">Arrow keys move between booking-how, tools and draft. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</span>
+            <strong>Want to review a conversation later?</strong> Choose a Pandit when you return; this page is for restoring account context, not starting a booking.{' '}
+            <span className="sr-only" id="delete-done-notify-hint">Arrow keys move between Pandits, tools and optional notes. Escape blurs. Skip remains site-content.</span>
             <LinkKeyboardGroup as="span" aria-label="After deletion booking alternatives" aria-describedby="delete-done-notify-hint">
-              <Link href="/how-it-works#booking-availability-how">How booking will work</Link>
+              <Link href="/pandits">Choose a Pandit</Link>
               {' · '}
               <Link href="/tools">Try free tools</Link>
               {' · '}
@@ -113,10 +113,10 @@ export default async function Page({
       </section>
       <aside className="notice offer-notice" role="status" aria-label="Booking availability">
         <p>
-          <strong>Staying for now?</strong> You can still get a note when No Timer opens — separate from account deletion.{' '}
-          <span className="sr-only" id="delete-stay-hint">Arrow keys move between booking-how, tools and draft. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</span>
+          <strong>Staying for now?</strong> Review Pandit profiles or manage your saved notes separately from account deletion.{' '}
+          <span className="sr-only" id="delete-stay-hint">Arrow keys move between Pandits, tools and optional notes. Escape blurs. Skip remains site-content.</span>
           <LinkKeyboardGroup as="span" aria-label="Delete account stay alternatives" aria-describedby="delete-stay-hint">
-            <Link href="/how-it-works#booking-availability-how">How booking will work</Link>
+            <Link href="/pandits">Choose a Pandit</Link>
             {' · '}
             <Link href="/tools">Try free tools</Link>
             {' · '}

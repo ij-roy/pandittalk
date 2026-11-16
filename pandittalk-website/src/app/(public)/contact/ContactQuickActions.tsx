@@ -35,12 +35,12 @@ export function ContactQuickActions() {
     <div className="contact-quick stack">
       <p className="info-label">Looking for booking availability?</p>
       <p className="expert-meta">
-        New No Timer bookings are not open yet. Prefer the waitlist over a support email if you only want a note when conversations can begin.
+        Choose a Pandit to see scheduled availability or Chat Now before you contact support about a new conversation.
       </p>
-      <p className="sr-only" id="contact-booking-alt-hint">Arrow keys move between booking updates, draft and free tools instead of support email. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
+      <p className="sr-only" id="contact-booking-alt-hint">Arrow keys move between Pandits, optional notes and free tools instead of support email. Escape blurs. Skip remains site-content.</p>
       <LinkKeyboardGroup className="actions" aria-label="Booking availability instead of support email" aria-describedby="contact-booking-alt-hint">
-        <Link className="button" href="/how-it-works#booking-availability-how">Get booking updates</Link>
-        <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
+        <Link className="button" href="/pandits">Explore Pandits</Link>
+        <Link className="button secondary" href="/guidance/start">Prepare an optional note</Link>
         <Link className="button secondary" href="/tools">Try free tools</Link>
       </LinkKeyboardGroup>
       <p className="info-label">Start an email with a clear subject</p>
@@ -56,7 +56,7 @@ export function ContactQuickActions() {
           const pages = previousPath
             ? `Page you were on: ${pathname}\nPrevious page: ${previousPath}\n`
             : `Page you were on: ${pathname}\n`;
-          const body = `Booking or payment reference (if any):\n\nWhat happened:\n\nNote: New No Timer bookings are not open yet — this email is for an existing booking, payment, or account issue.\n\n${pages}`;
+          const body = `Booking or payment reference (if any):\n\nWhat happened:\n\nThis email is for an existing booking, payment, or account issue.\n\n${pages}`;
           return (
             <a
               key={item.subject}
@@ -70,13 +70,13 @@ export function ContactQuickActions() {
         })}
       </LinkKeyboardGroup>
       <p className="expert-meta">Use <strong>Existing booking</strong> for a past consultation, payment, or account issue. Leave birth charts, palm images and private conversation text out of your first email. The page path{previousPath ? ' and previous page are' : ' is'} filled in for you — edit if needed.</p>
-      <p className="sr-only" id="contact-recovery-hint">Arrow keys move between account help, payment help, draft, free tools, booking updates and grievance. Escape blurs. Skip remains site-content.</p>
+      <p className="sr-only" id="contact-recovery-hint">Arrow keys move between account help, payment help, optional notes, free tools and grievance. Escape blurs. Skip remains site-content.</p>
       <LinkKeyboardGroup className="actions contact-recovery-links" style={{ marginTop: 4 }} aria-label="Contact recovery links" aria-describedby="contact-recovery-hint">
         <Link className="text-link" href="/help/account-access">Account access help →</Link>
         <Link className="text-link" href="/help/coins-and-payment-pending">Payment help →</Link>
         <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
         <Link className="text-link" href="/tools">Free tools →</Link>
-        <Link className="text-link" href="/how-it-works#booking-availability-how">Booking updates →</Link>
+        <Link className="text-link" href="/pandits">Explore Pandits →</Link>
         <Link className="text-link" href="/grievance-redressal">Raise a grievance →</Link>
       </LinkKeyboardGroup>
     </div>

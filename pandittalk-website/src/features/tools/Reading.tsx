@@ -96,7 +96,7 @@ export function Reading({ data, live = true }: { data: Record<string, unknown>; 
         if (event.key !== 'Escape') return;
         event.preventDefault();
         (event.currentTarget as HTMLElement).blur();
-      }}>These interpretations are not guarantees, diagnoses, lifespan predictions, or professional advice. A Pandit can help you reflect on what is useful when booking opens — prepare a draft meanwhile; new consultations stay paused. See the{' '}
+      }}>These interpretations are not guarantees, diagnoses, lifespan predictions, or professional advice. A Pandit can help you reflect on what is useful in a timed session or Chat Now. See the{' '}
         <span className="sr-only" id="reading-general-disclaimer-hint">Arrow keys move to the disclaimer link. Escape blurs. Skip remains site-content.</span>
         <LinkKeyboardGroup as="span" aria-label="Reading disclaimer" aria-describedby="reading-general-disclaimer-hint">
           <Link href="/disclaimer">disclaimer</Link>

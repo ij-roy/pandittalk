@@ -1,12 +1,12 @@
 # Backend deployment (ECS Fargate)
 
-Production backend deploys via GitHub Actions ([`.github/workflows/deploy-backend.yml`](../../.github/workflows/deploy-backend.yml)).
+Production backend deploys via GitHub Actions ([`.github/workflows/deploy-backend.yml`](../.github/workflows/deploy-backend.yml)). The workflow builds the `pandittalk-backend` image, runs Prisma migrations as a one-off ECS task, rolls the service, and verifies the public health and booking-catalogue routes.
 **No static AWS access keys in GitHub.** Authentication uses OIDC → `pandittalk-github-deploy-role`.
 
 ## Architecture
 
-1. Push to `main` under `apps/backend/**` (or manual `workflow_dispatch` from `main`)
-2. OIDC assumes `pandittalk-github-deploy-role`
+1. Push to `main` under `pandittalk-backend/**` (or manual `workflow_dispatch` from `main`)
+2. OIDC assumes `pandittalk-github-deploy-role` for `ij-roy/pandittalk`
 3. Build Docker image → push to ECR (`git` SHA tag + `latest`)
 4. Register ECS task definition from [`infra/task-def.json`](infra/task-def.json) (image injected at deploy time)
 5. **Run `prisma migrate deploy`** as a one-off Fargate task (same VPC subnets/SG as `pandittalk-service`)
@@ -34,7 +34,7 @@ aws iam create-open-id-connect-provider \
 ```bash
 aws iam create-role \
   --role-name pandittalk-github-deploy-role \
-  --assume-role-policy-document file://apps/backend/infra/github-deploy-trust-policy.json \
+  --assume-role-policy-document file://pandittalk-backend/infra/github-deploy-trust-policy.json \
   --description "GitHub Actions OIDC deploy role for PanditTalk backend (ECR + ECS)"
 ```
 
@@ -44,7 +44,7 @@ aws iam create-role \
 aws iam put-role-policy \
   --role-name pandittalk-github-deploy-role \
   --policy-name pandittalk-github-deploy \
-  --policy-document file://apps/backend/infra/github-deploy-policy.json
+  --policy-document file://pandittalk-backend/infra/github-deploy-policy.json
 ```
 
 ### 4. Verify
@@ -62,7 +62,7 @@ No GitHub secrets required for AWS. The role ARN is referenced directly in the w
 
 | Principal | Action | Condition |
 |-----------|--------|-----------|
-| `arn:aws:iam::576557633000:oidc-provider/token.actions.githubusercontent.com` | `sts:AssumeRoleWithWebIdentity` | `aud` = `sts.amazonaws.com`; `sub` = `repo:pandittalk/PanditTalk-Monorepo:ref:refs/heads/main` |
+| `arn:aws:iam::576557633000:oidc-provider/token.actions.githubusercontent.com` | `sts:AssumeRoleWithWebIdentity` | `aud` = `sts.amazonaws.com`; `sub` = `repo:ij-roy/pandittalk:ref:refs/heads/main` |
 
 ### Permissions ([`github-deploy-policy.json`](infra/github-deploy-policy.json))
 

@@ -57,10 +57,10 @@ export default function Page() {
       <aside className="notice offer-notice" aria-label="Get availability updates">
         <div className="offer-notice-body">
           <p>
-            <strong>Want a note when No Timer opens?</strong> Exploring tools and profiles does not create a booking or charge.{' '}
-            <span className="sr-only" id="disclaimer-notify-hint">Arrow keys move between booking-how, tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span>
+            <strong>Ready to explore a conversation?</strong> Exploring tools and profiles does not create a booking or charge.{' '}
+            <span className="sr-only" id="disclaimer-notify-hint">Arrow keys move between Pandits, tools and optional notes. Escape blurs. Skip remains site-content.</span>
             <LinkKeyboardGroup as="span" aria-label="Disclaimer booking alternatives" aria-describedby="disclaimer-notify-hint">
-              <Link href="/how-it-works#booking-availability-how">How booking will work</Link>
+              <Link href="/pandits">Choose a Pandit</Link>
               {' · '}
               <Link href="/tools">Try free tools</Link>
               {' · '}

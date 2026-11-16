@@ -54,7 +54,7 @@ export default function GlobalError({
             event.preventDefault();
             (event.currentTarget as HTMLElement).blur();
           }}>Pandit Talk could not load this page.</h1>
-          <p style={{ margin: '0 0 24px', lineHeight: 1.5 }}>Please try again. If you were editing a draft or form, check the page after reload before starting over. New No Timer bookings are not open yet — this error does not create or cancel a booking.</p>
+          <p style={{ margin: '0 0 24px', lineHeight: 1.5 }}>Please try again. If you were editing a draft or form, check the page after reload before starting over. This error does not create or cancel a booking.</p>
           {error.digest ? <p style={{ margin: '0 0 16px', fontSize: 13, opacity: 0.75 }}>Reference: {error.digest}</p> : null}
           <p style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }} id="global-error-recovery-hint">
             Arrow keys move between Try again, Previous page, home, contact, email, help, free tools, draft, Pandits and booking updates. Escape blurs. Skip remains site-content when the shell reloads.

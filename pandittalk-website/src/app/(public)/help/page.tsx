@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
 import { grievanceEmail, privacyEmail, supportEmail } from '@/content/siteIdentity';
 import { helpTopicIndex } from '@/content/help';
 import { InformationPage } from '../about/InformationPage';
@@ -8,35 +7,18 @@ import { HelpSearch } from './HelpSearch';
 
 export const metadata = {
   title: 'Help centre',
-  description: 'Account access, payments, existing bookings and tools. New No Timer bookings are not open yet on the website.',
+  description: 'Account access, payments, bookings, session timing and tools.',
   alternates: { canonical: '/help' },
   openGraph: {
     title: 'Help centre · Pandit Talk',
-    description: 'Account access, payments, existing bookings and tools. New No Timer bookings are not open yet.',
+    description: 'Account access, payments, bookings, session timing and tools.',
     url: '/help',
   },
 };
 
 export default function Page() {
   return (
-    <InformationPage eyebrow="We stay with the practical part" title="How can we help?" intro="Find a clear next step for an existing booking, payment, account access or tool. New No Timer bookings are not open yet — this centre will not schedule a new consultation.">
-      <aside className="notice offer-notice" role="status" aria-label="Booking availability">
-        <p>
-          <strong>Looking to book a new conversation?</strong> New No Timer bookings are not open yet on the website.
-          These topics cover existing bookings, payments, account access and tools.{' '}
-          <span className="sr-only" id="help-index-pause-hint">Arrow keys move between Pandits, draft, free tools and booking updates. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span>
-          <LinkKeyboardGroup as="span" aria-label="Help index pause alternatives" aria-describedby="help-index-pause-hint">
-            <Link href="/pandits">Explore Pandits</Link>
-            {' · '}
-            <Link href="/guidance/start">Prepare a draft</Link>
-            {' · '}
-            <Link href="/tools">Try free tools</Link>
-            {' · '}
-            <Link href="/how-it-works#booking-availability-how">Booking updates</Link>
-          </LinkKeyboardGroup>
-        </p>
-        <NotifyOpenForm source="website_help_index" />
-      </aside>
+    <InformationPage eyebrow="We stay with the practical part" title="How can we help?" intro="Find a clear next step for bookings, session timing, payments, account access or tools. If you are ready to talk, start from a Pandit profile.">
       <HelpSearch topics={helpTopicIndex} />
       <section className="panel info-card">
         <h2>Need a hand?</h2>

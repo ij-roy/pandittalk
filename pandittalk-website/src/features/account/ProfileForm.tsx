@@ -135,11 +135,11 @@ export default function ProfileForm() {
       <p className="eyebrow">{setup ? 'Welcome to Pandit Talk' : 'Your details, at your pace'}</p>
       <h1>{setup ? 'Complete your profile' : 'Your profile'}</h1>
       <p className="lede">{setup
-        ? 'Add a few optional details so a later conversation can start with context. New No Timer bookings are not open yet — completing or skipping this page never creates a booking or charge. You can finish later from your account.'
+        ? 'Add a few optional details so a timed conversation can start with context. Completing or skipping this page never creates a booking or charge. You can finish later from your account.'
         : 'Keep your personal and birth details ready for a later conversation. All fields are optional. Saving here never opens a booking or charges coins.'}</p>
     </div>
     <aside className="notice" role="status">
-      <p><strong>{setup ? 'Signing in does not open a booking.' : 'Saving profile details does not open a booking.'}</strong> Completing, editing or skipping this profile never charges coins. New No Timer bookings and recharge stay paused. <span className="sr-only" id="profile-pause-hint">Arrow keys move between booking updates, free tools and draft. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Profile pause links" aria-describedby="profile-pause-hint"><Link href="/how-it-works#booking-availability-how">Get a note when No Timer opens</Link> · <Link href="/tools">Try free tools</Link> · <Link href="/guidance/start">Prepare a draft</Link></LinkKeyboardGroup>.</p>
+      <p><strong>{setup ? 'Signing in does not open a booking.' : 'Saving profile details does not open a booking.'}</strong> Completing, editing or skipping this profile never charges coins. When you are ready, choose a Pandit to see the available timed session or Chat Now total before confirming. <span className="sr-only" id="profile-pause-hint">Arrow keys move between Pandits, free tools and an optional note. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Profile next steps" aria-describedby="profile-pause-hint"><Link href="/pandits">Choose a Pandit</Link> · <Link href="/tools">Try free tools</Link> · <Link href="/guidance/start">Prepare an optional note</Link></LinkKeyboardGroup>.</p>
     </aside>
     {loading && <div aria-busy="true">
       <p className="notice" role="status">Loading your profile…</p>

@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { availabilityCopy } from '@/content/availability';
-import { FocusOnHash } from '@/components/site/FocusOnHash';
 import { HeroAurora } from '@/components/site/HeroAurora';
 import { HomeFaq } from '@/components/site/HomeFaq';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
 import { RevealOnScroll } from '@/components/site/RevealOnScroll';
 import { SiteIcon, type SiteIconName } from '@/components/site/SiteIcon';
 import { SpotlightCard } from '@/components/site/SpotlightCard';
@@ -13,11 +11,11 @@ import { SITE_URL } from '@/lib/articles/site';
 
 export const metadata: Metadata = {
   title: { absolute: 'Pandit Talk — You Talk. We Stay.' },
-  description: 'Explore real Pandit profiles, prepare your question privately, and use free reflection tools while new conversations get ready to open.',
+  description: 'Explore real Pandit profiles, choose a timed session or Chat Now, and prepare your question privately before you talk.',
   alternates: { canonical: '/' },
   openGraph: {
     title: 'Pandit Talk — You Talk. We Stay.',
-    description: 'Explore real Pandit profiles, prepare your question privately, and use free reflection tools while new conversations get ready to open.',
+    description: 'Explore real Pandit profiles, choose a timed session or Chat Now, and prepare your question privately before you talk.',
     url: '/',
   },
 };
@@ -36,13 +34,13 @@ const topics: { slug: string; label: string; icon: SiteIconName }[] = [
 const homeFaqs = [
   {
     q: 'Can I book a conversation right now?',
-    a: `${availabilityCopy.publicStatus} You can explore profiles, prepare a private draft, try free tools, and leave one email for an availability update. Nothing on this page starts a booking or charge.`,
-    linkHref: '/how-it-works#booking-availability-how',
-    linkLabel: 'See the current booking status →',
+    a: 'Yes. Open a Pandit profile to compare scheduled times and Chat Now availability. You will see the duration and total before the booking service confirms anything.',
+    linkHref: '/pandits',
+    linkLabel: 'Explore Pandit profiles →',
   },
   {
     q: 'What should I bring to a conversation?',
-    a: 'You do not need a perfect question. Bring the topic that feels closest and only the details you are comfortable sharing. You can prepare a private draft now.',
+    a: 'You do not need a perfect question. Bring the topic that feels closest and only the details you are comfortable sharing. Notes are optional when you book.',
     linkHref: '/help/first-consultation',
     linkLabel: 'See how to prepare →',
   },
@@ -92,7 +90,6 @@ export default function Home() {
 
   return <main id="main-content" className="page home-page">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-    <FocusOnHash hash="#booking-availability" targetId="booking-availability" />
 
     <section className="hero" aria-labelledby="home-title">
       <HeroAurora />
@@ -100,7 +97,7 @@ export default function Home() {
         <h1 id="home-title">Find a calmer next step for the question on your mind.</h1>
         <p className="supporting">Choose a topic, compare Pandit profiles, and see what feels right before deciding whether to talk.</p>
         <Link className="button" href="/pandits">Explore Pandits<SiteIcon name="right" size={18} /></Link>
-        <p className="hero-status">{availabilityCopy.publicStatus} <Link href="#booking-availability">Get one email when that changes</Link></p>
+          <p className="hero-status">{availabilityCopy.publicStatus} <Link href="/how-it-works#booking-availability-how">See how timing and refunds work</Link></p>
       </div>
 
       <aside className="hero-guide-card panel" aria-labelledby="hero-guide-title">
@@ -155,7 +152,7 @@ export default function Home() {
           <SpotlightCard className="panel trust-card">
             <span className="trust-card-icon"><SiteIcon name="spark" size={23} /></span>
             <h3>Move at your pace</h3>
-            <p>Browse profiles and free tools without starting a booking, payment, or conversation.</p>
+            <p>Choose a scheduled time or Chat Now when you are ready; the exact terms are shown first.</p>
           </SpotlightCard>
         </div>
         <p className="sr-only" id="home-assurance-hint">Arrow keys move between process and trust links. Escape blurs the focused link.</p>
@@ -218,16 +215,5 @@ export default function Home() {
       </section>
     </RevealOnScroll>
 
-    <RevealOnScroll>
-      <section className="section home-update" id="booking-availability" aria-labelledby="home-update-title" tabIndex={-1}>
-        <div className="home-update-panel panel">
-          <div>
-            <h2 id="home-update-title">Get one email when availability changes.</h2>
-            <p>Leave your email once for this update. You can keep exploring without joining a general marketing list.</p>
-          </div>
-          <NotifyOpenForm source="website_home_update" submitLabel="Email me once" fieldLabel={availabilityCopy.waitlistLabel} helpText={availabilityCopy.waitlistHelp} />
-        </div>
-      </section>
-    </RevealOnScroll>
   </main>;
 }

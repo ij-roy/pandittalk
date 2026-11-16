@@ -7,7 +7,8 @@ test('return paths cannot escape the website or contain private query data', () 
   assert.equal(safeReturnTo('/bookings/abc'), '/bookings/abc');
 });
 test('proxy never exposes privileged routes or encoded path escapes', () => {
-  for (const path of ['/wallet/webhook','/sessions/audio/create','/experts/me','/pandit/articles','/users/profile/../admin','/experts/%2e%2e']) assert.equal(allowedEndpoint('POST',path), false);
+  for (const path of ['/wallet/webhook','/experts/me','/pandit/articles','/users/profile/../admin','/experts/%2e%2e']) assert.equal(allowedEndpoint('POST',path), false);
+  assert.equal(allowedEndpoint('POST','/sessions/audio/create'), true);
   assert.equal(allowedEndpoint('GET','/wallet'), true);
   assert.equal(allowedEndpoint('POST','/wallet/verify-payment'), true);
   assert.equal(allowedEndpoint('GET','/experts/abc'), true);

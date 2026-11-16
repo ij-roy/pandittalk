@@ -41,9 +41,9 @@ export default function ForPanditsClient() {
       <p className="eyebrow">For Pandits</p>
       <h1>Bring your practice into a careful conversation.</h1>
       <p className="lede">Practitioner suitability, identity evidence, conduct expectations and application intake are reviewed before any profile is published.</p>
-      <aside className="notice" role="status" aria-label="Applications while customer booking is paused">
+      <aside className="notice" role="status" aria-label="Practitioner application information">
         <p>
-          <strong>Applications are open.</strong> Customer No Timer bookings stay paused until service terms are ready — submitting here does not publish a profile or create seeker bookings. You can still apply and get reviewed.
+          <strong>Applications are open.</strong> Submitting here does not publish a profile or create seeker bookings. Approved practitioners can manage availability, presence and timed conversations from the practitioner workspace.
         </p>
         <NotifyOpenForm
           source="website_for_pandits"
@@ -56,7 +56,7 @@ export default function ForPanditsClient() {
         <section className="panel info-card">
           <p className="info-label">Already approved?</p>
           <h2>Open your dashboard</h2>
-          <p>Approved practitioners manage availability, presence and conversations in the practitioner workspace when seekers can book. Customer No Timer remains paused on the website — approval does not create seeker bookings yet. The public website cannot sign you into the dashboard.</p>
+          <p>Approved practitioners manage availability, presence and timed conversations in the practitioner workspace. The public website cannot sign you into the dashboard.</p>
           <p className="sr-only" id="for-pandits-dashboard-hint">Arrow keys move between dashboard, trust, tools, draft and support links. Escape blurs the focused control. Skip remains site-content. NotifyOpenForm still requires source.</p>
           <LinkKeyboardGroup className="actions" aria-label="Practitioner dashboard next steps" aria-describedby="for-pandits-dashboard-hint">
             <a className="button" href={DASHBOARD_URL} target="_blank" rel="noopener noreferrer">
@@ -96,7 +96,7 @@ export default function ForPanditsClient() {
           <li>Willingness to follow conduct expectations: respectful listening, confidentiality, and honest claims.</li>
           <li>No invented testimonials or outcome guarantees on a public profile.</li>
         </ul>
-        <p className="expert-meta">Submitting an application does not publish a profile or create customer bookings. New No Timer conversations remain closed for customers until service terms are ready.</p>
+        <p className="expert-meta">Submitting an application does not publish a profile or create customer bookings. Publication and customer access follow the separate review process.</p>
         <p className="sr-only" id="for-pandits-before-hint">Arrow keys move between trust, how-it-works and contact. Escape blurs the focused link.</p>
         <LinkKeyboardGroup className="actions" aria-label="Before you apply next steps" aria-describedby="for-pandits-before-hint">
           <Link className="text-link" href="/trust">Read our trust standard →</Link>

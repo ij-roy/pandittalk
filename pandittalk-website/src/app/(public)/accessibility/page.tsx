@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { supportEmail } from '@/content/siteIdentity';
 import { InformationPage } from '../about/InformationPage';
@@ -36,7 +35,7 @@ export default function Page() {
           <li>Deep links to <code>/how-it-works#booking-availability-how</code>, <code>/trust#how-to-check</code>, and the home <code>#booking-availability</code> region scroll and focus those blocks (honouring reduced motion).</li>
           <li>Legal “Skip to document” and on-this-page links focus the document start or section heading after scrolling (honouring reduced motion).</li>
           <li>Contact and For Pandits pages include attributed waitlist forms (<code>website_contact</code>, <code>website_for_pandits</code>).</li>
-          <li>About, Our approach, Trust, Editorial, Disclaimer and Pricing policy pages offer an attributed waitlist form when you want a note about No Timer booking or pricing.</li>
+          <li>About, Our approach, Trust, Editorial, Disclaimer and Pricing policy pages link to the live timed-booking explanation and recovery paths.</li>
           <li>Page landmarks use semantic headings; forms aim for labelled fields and status or alert messages where feedback is shown.</li>
           <li>Escape closes the mobile menu, confirmation dialogs, and open Pandit filter panels (focus returns to the filter control); it also clears focused help or Pandit search fields where noted, and collapses the focused home FAQ item. Home FAQ summaries also support Arrow keys, Home and End between questions.</li>
           <li>Legal on-this-page links keep the current section scrolled into view as you move through long documents.</li>
@@ -161,7 +160,7 @@ export default function Page() {
       </section>
       <aside className="notice offer-notice" role="status" aria-label="Booking availability">
         <p>
-          <strong>Want a note when No Timer opens?</strong> This waitlist is separate from accessibility reports.{' '}
+          <strong>Need help using timed bookings?</strong> This guidance is separate from accessibility reports.{' '}
           <span className="sr-only" id="a11y-offer-hint">Arrow keys move between how booking works, free tools and draft. Escape blurs. NotifyOpenForm still requires source.</span>
           <LinkKeyboardGroup as="span" aria-label="Accessibility page booking updates" aria-describedby="a11y-offer-hint">
             <Link href="/how-it-works#booking-availability-how">How booking will work</Link>
@@ -171,7 +170,6 @@ export default function Page() {
             <Link href="/guidance/start">Prepare a draft</Link>
           </LinkKeyboardGroup>
         </p>
-        <NotifyOpenForm source="website_accessibility" helpText="Booking-open emails only — not accessibility replies. See our" />
       </aside>
       <section className="panel info-card">
         <h2>What we are still improving</h2>

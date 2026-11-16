@@ -96,18 +96,16 @@ for (const viewport of [
   { width: 390, height: 844, topicColumns: 2 },
   { width: 1440, height: 900, topicColumns: 4 },
 ]) {
-  test(`homepage keeps a compact form and deliberate grid at ${viewport.width}px`, async ({ page }) => {
+  test(`homepage keeps the booking hierarchy and deliberate grid at ${viewport.width}px`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.goto('/');
     await page.evaluate(() => document.fonts.ready);
 
-    const inputHeight = await page.locator('.home-update input[type="email"]').evaluate(element => element.getBoundingClientRect().height);
-    expect(inputHeight).toBeGreaterThanOrEqual(44);
-    expect(inputHeight).toBeLessThanOrEqual(56);
-    const rowHeight = await page.locator('.home-update .notify-open-row').evaluate(element => element.getBoundingClientRect().height);
-    expect(rowHeight).toBeLessThanOrEqual(viewport.width < 900 ? 150 : 100);
+    await expect(page.locator('.home-update')).toHaveCount(0);
+    await expect(page.getByText(/Timed sessions and Chat Now are available/i)).toBeVisible();
+    await expect(page.locator('.home-topics-section .topic-links')).toBeVisible();
 
-    const columns = await page.locator('.topic-links').evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
+    const columns = await page.locator('.home-topics-section .topic-links').evaluate(element => getComputedStyle(element).gridTemplateColumns.split(' ').filter(Boolean).length);
     expect(columns).toBe(viewport.topicColumns);
 
     const heroGuide = await page.locator('.hero-guide-card').boundingBox();
@@ -126,5 +124,5 @@ test('large text and reduced motion keep the homepage usable', async ({ page }) 
   await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
   const overflow = await page.evaluate(() => ({ width: document.documentElement.scrollWidth, elements: Array.from(document.querySelectorAll('body *')).filter(element => !element.closest('details:not([open]), nextjs-portal') && element.getBoundingClientRect().right > innerWidth + 2).map(element => ({ tag: element.tagName, class: element.className, width: element.getBoundingClientRect().width, right: element.getBoundingClientRect().right })).slice(0, 12) }));
   expect(overflow.width, JSON.stringify(overflow.elements)).toBeLessThanOrEqual(769);
-  await expect(page.locator('.hero .actions .button').first()).toBeVisible();
+  await expect(page.locator('.hero-copy .button').first()).toBeVisible();
 });

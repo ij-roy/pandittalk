@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
 import { SoftResourceNotFound } from '@/components/site/SoftResourceNotFound';
 import { topics } from '@/features/guidance/topics';
 import type { Metadata } from 'next';
@@ -21,9 +20,9 @@ export async function generateMetadata({ params }: { params: Promise<{ topic: st
   }
   return {
     title: entry.title,
-    description: `${entry.intro} New No Timer bookings stay paused — prepare a private draft without charging coins.`,
+    description: `${entry.intro} Prepare an optional note before choosing a timed conversation.`,
     alternates: { canonical: `/guidance/${topic}` },
-    openGraph: { title: `${entry.title} · Guidance`, description: `${entry.intro} Bookings stay paused; drafts never charge.`, url: `/guidance/${topic}` },
+    openGraph: { title: `${entry.title} · Guidance`, description: `${entry.intro} Choose a timed conversation when you are ready.`, url: `/guidance/${topic}` },
   };
 }
 
@@ -55,7 +54,7 @@ export default async function Page({ params }: { params: Promise<{ topic: string
       <p className="eyebrow">A place to begin</p>
       <h1>{entry.title}</h1>
       <p className="lede">{entry.intro}</p>
-      <p className="expert-meta">New No Timer bookings stay paused — preparing a draft here never notifies a Pandit or charges coins.</p>
+      <p className="expert-meta">Prepare an optional note here. It stays private until you choose to share it with a confirmed booking.</p>
 
       <section className="panel stack">
         <h2>Questions worth bringing</h2>
@@ -70,7 +69,7 @@ export default async function Page({ params }: { params: Promise<{ topic: string
         <p>{entry.boundary}</p>
       </section>
 
-      <p className="sr-only" id="guidance-topic-draft-hint">Arrow keys move between draft, chat-format draft, Pandits and free-tool links. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
+      <p className="sr-only" id="guidance-topic-draft-hint">Arrow keys move between an optional note, Pandits and free-tool links. Escape blurs. Skip remains site-content.</p>
       <LinkKeyboardGroup className="actions" aria-label={`${entry.title} draft next steps`} aria-describedby="guidance-topic-draft-hint">
         <Link href={`/guidance/start?area=${encodeURIComponent(topic)}`} className="button">Prepare a private draft</Link>
         <Link href={`/guidance/start?area=${encodeURIComponent(topic)}&format=chat`} className="button secondary">Save chat as preferred format (not live)</Link>
@@ -90,13 +89,6 @@ export default async function Page({ params }: { params: Promise<{ topic: string
           <Link className="text-link" href="/guidance">All guidance topics</Link>
         </LinkKeyboardGroup>
       </nav>
-      <aside className="notice offer-notice" aria-label="Booking availability">
-        <div className="offer-notice-body">
-          <p>New No Timer bookings are not open yet. Preparing a draft does not create a charge. <span className="sr-only" id="guidance-topic-pause-hint">Arrow keys move between draft help, booking how-to, free tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span><LinkKeyboardGroup as="span" aria-label="Guidance topic pause links" aria-describedby="guidance-topic-pause-hint"><Link href="/help/preparing-a-draft">Draft help</Link> · <Link href="/how-it-works#booking-availability-how">How booking will work</Link> · <Link href="/tools">Try free tools</Link> · <Link href={`/guidance/start?area=${encodeURIComponent(topic)}`}>Prepare a draft</Link></LinkKeyboardGroup>.</p>
-          <p className="expert-meta">Want a note when No Timer booking opens?</p>
-          <NotifyOpenForm source={`website_guidance_topic_${topic}`} />
-        </div>
-      </aside>
     </main>
   );
 }

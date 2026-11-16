@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ApiError, api, useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { Booking, parseBooking, canResume, calendarText, bookingStatusLabel, bookingStatusTone } from './types';
-import { formatIstDateTime } from '@/lib/time/ist';
+import { formatIstDateTime, todayIstIso } from '@/lib/time/ist';
+import { DisplaySlot, getAllSlots, rescheduleBooking } from './bookingApi';
 import styles from '../account/customer.module.css';
 
 const statusBadgeClass = {
@@ -59,15 +60,13 @@ export function BookingList() {
     return () => document.removeEventListener('keydown', onKey);
   }, [filter]);
   return <main id="main-content" className="page stack" aria-busy={q.loading || undefined}>
-    <div><p className="eyebrow">Your conversations</p><h1>Bookings</h1><p className="lede">Open an existing consultation or revisit a past one. New No Timer bookings cannot be created here yet.</p></div>
+    <div><p className="eyebrow">Your conversations</p><h1>Bookings</h1><p className="lede">Open an existing consultation or revisit a past one. To book again, choose a Pandit and select a scheduled time or Chat Now.</p></div>
     <aside className="notice" role="status">
       <p>
-        <strong>New No Timer bookings are not open yet.</strong> Existing consultations stay listed below.{' '}
-        <span className="sr-only" id="bookings-pause-hint">Arrow keys move between pause links. Escape blurs the focused link. Skip remains site-content.</span>
-        <LinkKeyboardGroup as="span" aria-label="Bookings list pause links" aria-describedby="bookings-pause-hint">
-          <Link href="/guidance/start">Prepare a draft</Link>
-          {' · '}
-          <Link href="/how-it-works#booking-availability-how">Get a note when booking opens</Link>
+        <strong>Booked sessions keep their original terms.</strong> Duration, total and status below come from the booking service.{' '}
+        <span className="sr-only" id="bookings-pause-hint">Arrow keys move between booking, Pandit and free-tool links. Escape blurs the focused link. Skip remains site-content.</span>
+        <LinkKeyboardGroup as="span" aria-label="Bookings list next steps" aria-describedby="bookings-pause-hint">
+          <Link href="/pandits">Book another consultation</Link>
           {' · '}
           <Link href="/tools">Try free tools</Link>
         </LinkKeyboardGroup>
@@ -82,7 +81,7 @@ export function BookingList() {
       }} aria-describedby="bookings-count bookings-filter-hint"><option value="all">All bookings</option><option value="upcoming">Upcoming and active</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
       <LinkKeyboardGroup className="actions" style={{ margin: 0 }} aria-label="Bookings list refresh" aria-describedby="bookings-toolbar-hint">
         <button type="button" className="button secondary" onClick={q.reload} disabled={q.loading} aria-busy={q.loading || undefined}>{q.loading ? 'Refreshing…' : 'Refresh history'}</button>
-        <Link className="text-link" href="/guidance/start">Prepare a draft</Link>
+        <Link className="text-link" href="/pandits">Book another consultation</Link>
         <Link className="text-link" href="/tools">Free tools</Link>
       </LinkKeyboardGroup>
     </div>
@@ -130,7 +129,7 @@ export function BookingList() {
         (event.currentTarget as HTMLElement).blur();
       }}>
         <h2>{rows.length ? 'No bookings in this view' : 'No conversations yet'}</h2>
-        <p>{rows.length ? 'Try another filter to find an upcoming or past consultation. Press Escape to show all bookings.' : 'New No Timer bookings are not open yet, so this list may stay empty. Existing consultations will appear here when you have them. You can still prepare a draft and explore Pandits now without creating a charge. Press Escape to leave this notice.'}</p>
+        <p>{rows.length ? 'Try another filter to find an upcoming or past consultation. Press Escape to show all bookings.' : 'Your confirmed scheduled sessions and Chat Now conversations will appear here. Explore a Pandit profile to make a new booking. Press Escape to leave this notice.'}</p>
           <p className="sr-only" id="bookings-empty-hint">Arrow keys move between empty-state actions. Escape shows all bookings or leaves this notice. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="Empty bookings next steps" aria-describedby="bookings-empty-hint">
             {rows.length > 0
@@ -141,10 +140,9 @@ export function BookingList() {
                 <Link href="/pandits" className="text-link">Explore Pandits →</Link>
               </>
               : <>
-              <Link href="/guidance/start" className="button">Prepare a draft</Link>
-              <Link href="/pandits" className="button secondary">Explore Pandits</Link>
+              <Link href="/pandits" className="button">Explore Pandits</Link>
               <Link href="/tools" className="button secondary">Try free tools</Link>
-              <Link href="/how-it-works#booking-availability-how" className="text-link">Notify me when booking opens →</Link>
+              <Link href="/guidance/start" className="text-link">Prepare an optional note →</Link>
             </>}
           </LinkKeyboardGroup>
       </div>}
@@ -155,7 +153,7 @@ export function BookingList() {
         <LinkKeyboardGroup className="actions" aria-label="After browsing bookings" aria-describedby="bookings-more-draft-hint">
           <Link href="/guidance/start" className="button">Prepare another draft question</Link>
           <Link href="/tools" className="button secondary">Try free tools</Link>
-          <Link href="/how-it-works#booking-availability-how" className="text-link">Booking updates →</Link>
+          <Link href="/pandits" className="text-link">Book another consultation →</Link>
         </LinkKeyboardGroup>
       </>
     )}
@@ -166,6 +164,8 @@ export function BookingDetail({ id, reviewOnly = false }: { id: string; reviewOn
   const q = useApi<unknown>(`/bookings/${encodeURIComponent(id)}`);
   const [busy, setBusy] = useState(false); const [error, setError] = useState('');
   const [status, setStatus] = useState(''); const [confirmCancel, setConfirmCancel] = useState(false);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false); const [rescheduleDate, setRescheduleDate] = useState(todayIstIso());
+  const [rescheduleSlots, setRescheduleSlots] = useState<DisplaySlot[]>([]); const [rescheduleLoading, setRescheduleLoading] = useState(false); const [selectedSlot, setSelectedSlot] = useState('');
   const [rating, setRating] = useState(0); const [comment, setComment] = useState('');
   const cancelRef = useRef<HTMLDivElement | null>(null);
   const statusRef = useRef<HTMLDivElement | null>(null);
@@ -212,6 +212,16 @@ export function BookingDetail({ id, reviewOnly = false }: { id: string; reviewOn
   useEffect(() => {
     if (status) requestAnimationFrame(() => statusRef.current?.focus());
   }, [status]);
+  useEffect(() => {
+    if (!rescheduleOpen || !b || b.status !== 'confirmed') return;
+    let cancelled = false;
+    setRescheduleLoading(true); setSelectedSlot(''); setError('');
+    getAllSlots(b.panditId, rescheduleDate, b.durationMinutes)
+      .then(slots => { if (!cancelled) setRescheduleSlots(slots.filter(slot => slot.status === 'available')); })
+      .catch(reason => { if (!cancelled) { setRescheduleSlots([]); setError((reason as Error).message); } })
+      .finally(() => { if (!cancelled) setRescheduleLoading(false); });
+    return () => { cancelled = true; };
+  }, [rescheduleOpen, rescheduleDate, b?.panditId, b?.durationMinutes, b?.status]);
   async function mutate(review: boolean) {
     if (review && (!rating || rating < 1 || rating > 5)) {
       setError('Choose a rating from 1 to 5.');
@@ -223,7 +233,7 @@ export function BookingDetail({ id, reviewOnly = false }: { id: string; reviewOn
       await api(`/bookings/${encodeURIComponent(id)}/${review ? 'review' : 'status'}`, { method: review ? 'POST' : 'PATCH', body: JSON.stringify(review ? { rating, comment: comment.trim() || undefined } : { status: 'cancelled' }) });
       setStatus(review
         ? 'Your review was submitted. It is not public yet — published reviews appear only after eligibility checks.'
-        : 'Cancellation request submitted. A refund is not automatic — check the refreshed booking and wallet for the final status.');
+        : 'Cancellation confirmed. The charged coins are returned to your wallet under the booking service terms — refresh the booking and wallet to verify.');
       setConfirmCancel(false); q.reload();
       requestAnimationFrame(() => statusRef.current?.focus());
     } catch (e) {
@@ -238,6 +248,17 @@ export function BookingDetail({ id, reviewOnly = false }: { id: string; reviewOn
     const a = document.createElement('a'); a.href = url; a.download = 'pandittalk-booking.ics'; a.click(); URL.revokeObjectURL(url);
     setStatus('Calendar file downloaded. Open it in your calendar app to add this booking — times are shown in IST on the booking page.');
     requestAnimationFrame(() => statusRef.current?.focus());
+  }
+  async function changeTime() {
+    if (!selectedSlot) { setError('Choose an available time before rescheduling.'); return; }
+    setBusy(true); setError(''); setStatus('');
+    try {
+      await rescheduleBooking(id, selectedSlot);
+      setRescheduleOpen(false); setStatus('Your booking time was changed. The original duration and total remain unchanged. Refreshing the booking details now.');
+      q.reload();
+    } catch (e) {
+      setError(`${(e as Error).message} Refresh the available times before trying again.`);
+    } finally { setBusy(false); }
   }
   return <main id="main-content" className="page stack" aria-busy={q.loading || busy || undefined}>
     <Link className="text-link" href="/bookings">← Your bookings</Link>
@@ -339,16 +360,26 @@ export function BookingDetail({ id, reviewOnly = false }: { id: string; reviewOn
         <div className={styles.cardHeader}><h2>{b.pandit?.name || b.panditName || 'Pandit consultation'}</h2><span className={`${styles.badge} ${statusBadgeClass[bookingStatusTone(b.status)]}`}>{bookingStatusLabel(b.status)}</span></div>
         <p>{b.area.replaceAll('_', ' ')} · {b.format}</p>
         <div className={styles.formGrid}><div><p className="eyebrow">Date and time (IST)</p><p><time dateTime={b.startTime}>{formatIstDateTime(b.startTime)}</time></p></div><div><p className="eyebrow">Booking total</p><p>{b.totalPrice} coins<br /><small>{b.coinsDeducted} coins deducted</small></p></div></div>
-        <p className="notice">Included duration from your original booking: {b.durationMinutes} minutes (not a live website countdown). Your original booking terms and time limit apply.</p>
+        <p className="notice">Included duration from your original booking: {b.durationMinutes} minutes. The server countdown starts when the session begins; your original booking terms apply.</p>
         {b.notes && <div><h3>Your shared notes</h3><p style={{ whiteSpace: 'pre-wrap' }}>{b.notes}</p></div>}
-        <p className="sr-only" id="booking-session-hint">Arrow keys move between Open session, Add to calendar, Join help, free tools and draft. Escape blurs the focused control. Skip remains site-content.</p>
+        <p className="sr-only" id="booking-session-hint">Arrow keys move between Open session, Add to calendar, change time, Join help, free tools and draft. Escape blurs the focused control. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="Booking session actions" aria-describedby="booking-session-hint">
           {canResume(b) && <Link className="button" href={`/sessions/${encodeURIComponent(b.id)}/${b.format}`}>Open {b.format} session</Link>}
           <button className="button secondary" type="button" onClick={download}>Add to calendar</button>
+          {b.status === 'confirmed' && <button className="button secondary" type="button" onClick={() => setRescheduleOpen(open => !open)} disabled={busy}>{rescheduleOpen ? 'Close change time' : 'Change time'}</button>}
           {canResume(b) && <Link className="text-link" href="/help/joining-audio-video">Join help →</Link>}
           <Link className="text-link" href="/tools">Try free tools →</Link>
           <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
         </LinkKeyboardGroup>
+        {rescheduleOpen && b.status === 'confirmed' && <div className="notice stack" role="region" aria-labelledby="reschedule-title">
+          <div><h3 id="reschedule-title">Choose a new time</h3><p>Available times come from the booking service. Your {b.durationMinutes}-minute session and charged total stay the same; the service will reject changes that are too close to the start.</p></div>
+          <label className="field">Date (IST)<input type="date" value={rescheduleDate} min={todayIstIso()} onChange={event => setRescheduleDate(event.target.value)} /></label>
+          {rescheduleLoading && <p role="status">Loading available times…</p>}
+          {!rescheduleLoading && !rescheduleSlots.length && <p role="status">No available times for this date. Try another date.</p>}
+          {!rescheduleLoading && rescheduleSlots.length > 0 && <div className="actions" role="group" aria-label="Available replacement times">{rescheduleSlots.map(slot => <button key={slot.startTime} type="button" className={`button ${selectedSlot === slot.startTime ? '' : 'secondary'}`} aria-pressed={selectedSlot === slot.startTime} onClick={() => setSelectedSlot(slot.startTime)}>{formatIstDateTime(slot.startTime)}</button>)}</div>}
+          <p className={styles.helper}>Rescheduling does not create a second booking or charge more coins. If you need to cancel instead, use Cancel booking below.</p>
+          <button type="button" className="button" disabled={busy || rescheduleLoading || !selectedSlot} onClick={() => void changeTime()}>{busy ? 'Changing time…' : 'Confirm new time'}</button>
+        </div>}
         {!canResume(b) && (
           <div className="notice stack" role="status" id="booking-session-closed" tabIndex={-1} onKeyDown={event => {
             if (event.key !== 'Escape') return;
@@ -357,9 +388,9 @@ export function BookingDetail({ id, reviewOnly = false }: { id: string; reviewOn
           }}>
             <p>
               This consultation is {bookingStatusLabel(b.status).toLowerCase()}, so the live {b.format} room is not available from here.
-              Opening this page does not create a new booking or charge coins — new No Timer bookings stay paused. Press Escape to leave this notice.
+              Opening this page does not create a new booking or charge coins. Press Escape to leave this notice.
             </p>
-            <p className="sr-only" id="booking-session-closed-hint">Arrow keys move between review when shown, bookings, free tools, draft, booking updates and support. Escape blurs. Skip remains site-content.</p>
+        <p className="sr-only" id="booking-session-closed-hint">Arrow keys move between review when shown, bookings, free tools, optional notes and support. Escape blurs. Skip remains site-content.</p>
             <LinkKeyboardGroup className="actions" aria-label="Session not available recovery" aria-describedby="booking-session-closed-hint">
               {b.status === 'completed' && !b.review && (
                 <Link className="button" href={`/bookings/${encodeURIComponent(b.id)}/review`}>Leave a review</Link>
@@ -370,7 +401,7 @@ export function BookingDetail({ id, reviewOnly = false }: { id: string; reviewOn
               <Link className="button secondary" href="/bookings">Your bookings</Link>
               <Link className="button secondary" href="/tools">Try free tools</Link>
               <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
-              <Link className="text-link" href="/how-it-works#booking-availability-how">New booking updates →</Link>
+              <Link className="text-link" href="/pandits">Book another consultation →</Link>
               <Link className="text-link" href="/contact">Contact support →</Link>
             </LinkKeyboardGroup>
           </div>
@@ -382,7 +413,7 @@ export function BookingDetail({ id, reviewOnly = false }: { id: string; reviewOn
       {confirmCancel && ['pending', 'confirmed'].includes(b.status) && (
         <div className="notice" role="alertdialog" aria-modal="true" aria-labelledby="cancel-booking-title" ref={cancelRef}>
           <p id="cancel-booking-title"><strong>Cancel this consultation?</strong></p>
-          <p>Your original cancellation policy applies. Eligible refunds are not guaranteed and are not instant — check your wallet afterwards for the final outcome. Cancelling does not open a new No Timer booking. Press Escape to keep the booking.</p>
+          <p>Confirmed bookings are cancelled through the booking service and the charged coins are returned to your wallet. Refresh the booking and wallet after confirming. Press Escape to keep the booking.</p>
           <p className="sr-only" id="booking-cancel-confirm-hint">Arrow keys move between Keep booking, Confirm cancellation, free tools and draft. Escape keeps the booking. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="Cancel booking confirmation" aria-describedby="booking-cancel-confirm-hint">
             <button type="button" className="button secondary" disabled={busy} onClick={() => setConfirmCancel(false)}>Keep booking</button>

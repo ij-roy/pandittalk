@@ -39,7 +39,7 @@ export default function SessionPage({ id, format }: { id: string; format: Format
       <div>
         <p className="eyebrow">A space for your conversation</p>
         <h1>{format[0].toUpperCase() + format.slice(1)} consultation</h1>
-        {booking && <p className="lede">With {booking.panditName || booking.pandit?.name || 'your Pandit'} · included duration {booking.durationMinutes} minutes (original terms, not a live countdown)</p>}
+        {booking && <p className="lede">With {booking.panditName || booking.pandit?.name || 'your Pandit'} · {booking.durationMinutes}-minute session. The server countdown starts when the conversation begins.</p>}
       </div>
 
       {q.loading && <>
@@ -89,7 +89,7 @@ export default function SessionPage({ id, format }: { id: string; format: Format
       )}
 
       {booking && <>
-        <p className="notice" role="status">This is an existing booking. Included duration from your original booking is {booking.durationMinutes} minutes under those agreed terms — not a live website timer, and not a new No Timer purchase.</p>
+        <p className="notice" role="status">This is an existing booking. It keeps its original {booking.durationMinutes}-minute terms; the session room shows the server countdown once the conversation begins.</p>
         {booking.format !== format ? (
           <section className="panel stack" role="status" onKeyDown={event => {
             if (event.key !== 'Escape') return;
@@ -114,7 +114,7 @@ export default function SessionPage({ id, format }: { id: string; format: Format
             (document.getElementById('session-status-focus') as HTMLElement | null)?.blur();
           }}>
             <h2 id="session-status-focus" tabIndex={-1}>This consultation is {booking.status.replaceAll('_', ' ')}</h2>
-            <p>You can return to your booking to see its final details{booking.status === 'completed' ? ' and leave a review' : ''}. Opening this room again does not create a new booking or charge coins — new No Timer bookings stay paused. Press Escape to leave this heading.</p>
+            <p>You can return to your booking to see its final details{booking.status === 'completed' ? ' and leave a review' : ''}. Opening this room again does not create a new booking or charge coins. Press Escape to leave this heading.</p>
             <p className="sr-only" id="session-closed-hint">Arrow keys move between booking and help links. Escape blurs the focused control. Skip remains site-content.</p>
             <LinkKeyboardGroup className="actions" aria-label="Session not resumable next steps" aria-describedby="session-closed-hint">
               <Link className="button" href={`/bookings/${encodeURIComponent(id)}${booking.status === 'completed' ? '/review' : ''}`}>

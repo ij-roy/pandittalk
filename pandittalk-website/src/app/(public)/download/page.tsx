@@ -8,7 +8,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Download the app',
-  description: 'Use the same Pandit Talk account on Android today. iOS is not on the App Store yet — join the waitlist for launch updates.',
+  description: 'Use the same Pandit Talk account on Android today. iOS is not on the App Store yet — join the list for launch updates.',
   alternates: { canonical: '/download' },
   openGraph: {
     title: 'Download the app · Pandit Talk',
@@ -22,7 +22,7 @@ export default function Page() {
     <InformationPage
       eyebrow="Continue on mobile"
       title="A little room for you. Wherever you are."
-      intro="Use the same Pandit Talk account on your phone. Wallet, bookings and reports stay together where supported. Website No Timer bookings and recharge stay paused; timed packs in the Android app follow in-app confirmation. iOS is not listed on the App Store yet."
+      intro="Use the same Pandit Talk account on your phone. Wallet, bookings and reports stay together where supported. The website and Android app use timed booking rules; confirm duration, total and format in the booking flow. iOS is not listed on the App Store yet."
     >
       <DownloadPlatform />
       <figure className="campaign-feature campaign-feature-square">
@@ -39,7 +39,7 @@ export default function Page() {
       <section className="panel info-card">
         <h2>Need help signing in?</h2>
         <p>Account access, OTP and phone linking tips are in the help centre. The Play Store link opens Google’s listing — it does not create a booking.</p>
-        <p className="sr-only" id="download-help-hint">Arrow keys move between account help, Play Store, iOS waitlist, draft and booking updates. Escape blurs the focused link.</p>
+        <p className="sr-only" id="download-help-hint">Arrow keys move between account help, Play Store, iOS waitlist, draft and Pandit profiles. Escape blurs the focused link.</p>
         <LinkKeyboardGroup className="actions" aria-label="Download help next steps" aria-describedby="download-help-hint">
           <Link className="text-link" href="/help/account-access">Help with your account →</Link>
           <a className="text-link" href={PLAY_STORE_URL} rel="noopener noreferrer" target="_blank">
@@ -49,7 +49,7 @@ export default function Page() {
           <Link className="text-link" href="/download#ios">iPhone App Store waitlist →</Link>
           <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
           <Link className="text-link" href="/tools">Try free tools →</Link>
-          <Link className="text-link" href="/how-it-works#booking-availability-how">Booking updates →</Link>
+          <Link className="text-link" href="/pandits">Explore Pandits →</Link>
           <Link className="text-link" href="/contact">Contact support →</Link>
         </LinkKeyboardGroup>
       </section>

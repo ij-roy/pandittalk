@@ -60,7 +60,7 @@ export const termsDocument: LegalDocument = {
         },
         {
           type: "p",
-          text: "Website availability caveat: new No Timer consultation bookings and website coin recharge may be paused until pricing, completion and interruption terms are approved. While paused, browsing profiles, preparing a draft, signing in, or opening wallet history does not create a new booking or charge. Existing bookings and prior wallet balances keep their agreed terms. The Android app may still offer timed packages under earlier in-app terms.",
+          text: "Website bookings follow the app's timed booking model: the booking service supplies the available duration, format, total coin price, countdown, cancellation and refund terms. Website coin recharge may be unavailable in some account states; the website will show that state before any charge. Existing bookings and prior wallet balances keep their agreed terms.",
         },
         {
           type: "p",
@@ -172,7 +172,7 @@ export const termsDocument: LegalDocument = {
                 "Scheduled sessions may use depth-based prices plus format adjustments for chat/audio/video.",
                 "“Chat Now” may use a fixed coin price when a pandit is online (queue if busy) — this applies in the Android app where that flow is enabled.",
                 "Tool charges (e.g. detailed reports) may also debit coins when paid unlock is enabled.",
-                "On this website, new No Timer bookings, wallet recharge, and paid tool unlocks may be paused; paused flows will not charge you here.",
+                "On this website, scheduled bookings and Chat Now use the live booking service. If wallet recharge or a paid tool is unavailable, the website will say so before any charge is attempted.",
                 "Prices are subject to change in-app.",
               ],
             },

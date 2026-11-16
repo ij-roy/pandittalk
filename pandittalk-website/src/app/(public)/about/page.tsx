@@ -2,8 +2,6 @@ import { organizationName } from '@/content/siteIdentity';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
-import { SiteIcon } from '@/components/site/SiteIcon';
 import { InformationPage } from './InformationPage';
 
 export const metadata: Metadata = {
@@ -49,10 +47,9 @@ export default function Page() {
           </ul>
         </section>
         <section className="panel info-card">
-          <p className="info-label">What stays closed for now</p>
-          <h2>New No Timer bookings</h2>
-          <p>Website bookings for new No Timer conversations stay closed until pricing, completion and interruption terms are finalized. Existing bookings keep their agreed terms.</p>
-          <Link className="text-link" href="/how-it-works#booking-availability-how">Get a note when booking opens →</Link>
+          <p className="info-label">Choosing a conversation</p>
+          <h2>Scheduled or Chat Now</h2>
+          <p>Open a Pandit profile to see the live schedule or check Chat Now. The booking service shows the duration and total before you confirm.</p>
         </section>
       </div>
 
@@ -70,7 +67,7 @@ export default function Page() {
         </LinkKeyboardGroup>
       </section>
 
-      <p className="sr-only" id="about-next-hint">Arrow keys move between About next steps. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
+      <p className="sr-only" id="about-next-hint">Arrow keys move between About next steps. Escape blurs. Skip remains site-content.</p>
       <LinkKeyboardGroup className="actions" aria-label="About next steps" aria-describedby="about-next-hint">
         <Link className="button" href="/pandits">Explore Pandits</Link>
         <Link className="button secondary" href="/guidance">Find guidance</Link>
@@ -79,13 +76,6 @@ export default function Page() {
         <Link className="text-link" href="/for-pandits">For Pandits →</Link>
       </LinkKeyboardGroup>
 
-      <aside className="notice offer-notice" aria-label="Get availability updates">
-        <SiteIcon name="info" size={19} />
-        <div className="offer-notice-body">
-          <p><strong>Want a note when No Timer opens?</strong> Leave your email and we will write when website booking terms are ready.</p>
-          <NotifyOpenForm source="website_about" />
-        </div>
-      </aside>
 
       <section className="panel info-card">
         <p className="info-label">Our organization</p>

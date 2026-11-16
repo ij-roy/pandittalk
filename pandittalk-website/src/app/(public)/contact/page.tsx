@@ -1,14 +1,13 @@
 import { organizationName, privacyEmail, supportEmail } from '@/content/siteIdentity';
 import Link from 'next/link';
 import { InformationPage } from '../about/InformationPage';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { ContactQuickActions } from './ContactQuickActions';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Contact support',
-  description: 'Email Pandit Talk support for existing account, booking or payment questions. New No Timer bookings are not open yet — contact will not schedule a new consultation.',
+  description: 'Email Pandit Talk support for account, booking or payment questions.',
   alternates: { canonical: '/contact' },
 };
 
@@ -17,26 +16,21 @@ export default function Page() {
     <InformationPage
       eyebrow="Pandit Talk support"
       title="A question? Start here."
-      intro="Tell us what you need help with, and include your booking or payment reference when relevant. We aim to reply as soon as we can (often within a few working days). New No Timer bookings are not open yet — contact us about an existing booking, payment, or account issue rather than to schedule a new consultation."
+      intro="Tell us what you need help with, and include your booking or payment reference when relevant. We aim to reply as soon as we can (often within a few working days). For a new consultation, choose a Pandit and use the live scheduled or Chat Now path on their profile."
     >
       <aside className="notice" role="status">
         <p>
-          <strong>Looking to book?</strong> Website bookings stay closed while No Timer terms are finalized. Leave your email below, or{' '}
+          <strong>Looking to book?</strong> Choose a Pandit to see live scheduled times, Chat Now availability, duration and total before confirming.{' '}
           <LinkKeyboardGroup as="span" aria-label="Contact booking alternatives" aria-describedby="contact-booking-alt-hint">
             <Link href="/pandits">explore Pandits</Link>
             {' · '}
             <Link href="/tools">try free tools</Link>
             {' · '}
             <Link href="/guidance/start">prepare a draft</Link>
-            {' · '}
-            <Link href="/how-it-works#booking-availability-how">get booking updates</Link>
           </LinkKeyboardGroup>
-          <span className="sr-only" id="contact-booking-alt-hint">Arrow keys move between Pandits, tools, draft and booking updates. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span>
+          <span className="sr-only" id="contact-booking-alt-hint">Arrow keys move between Pandits, tools and optional notes. Escape blurs. Skip remains site-content.</span>
           .
         </p>
-        <div className="notify-inline" style={{ marginTop: 12 }}>
-          <NotifyOpenForm source="website_contact" />
-        </div>
       </aside>
       <div className="info-columns">
         <section className="panel info-card">
@@ -91,7 +85,7 @@ export default function Page() {
             </li>
             <li>Formal grievances → <Link href="/grievance-redressal">grievance redressal</Link></li>
             <li>Accessibility barriers → <Link href="/accessibility">Accessibility</Link></li>
-            <li>Booking availability (not support replies) → <Link href="/how-it-works#booking-availability-how">No Timer waitlist</Link></li>
+            <li>Booking availability → <Link href="/pandits">Explore Pandits</Link></li>
           </ul>
         </LinkKeyboardGroup>
       </section>

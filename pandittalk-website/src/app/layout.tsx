@@ -20,16 +20,16 @@ export const metadata: Metadata = {
     template: "%s · Pandit Talk",
   },
   description:
-    "Traditional wisdom, real Pandits and modern technology for thoughtful conversations. New No Timer bookings are not open yet — explore profiles, tools and drafts today.",
+    "Traditional wisdom, real Pandits and modern technology for thoughtful timed conversations. Explore profiles, scheduled sessions and Chat Now.",
   openGraph: {
     type: 'website',
     siteName: 'Pandit Talk',
     title: 'Pandit Talk — You Talk. We Stay.',
-    description: 'Traditional wisdom, real Pandits and modern technology. New bookings are not open yet — explore profiles, tools and drafts today.',
+    description: 'Traditional wisdom, real Pandits and modern technology. Explore profiles, scheduled sessions and Chat Now.',
     url: SITE_URL,
     images: [{ url: '/logo.png', width: 512, height: 512, alt: 'Pandit Talk' }],
   },
-  twitter: { card: 'summary', title: 'Pandit Talk — You Talk. We Stay.', description: 'Thoughtful conversations with real Pandits. New bookings are not open yet.' },
+  twitter: { card: 'summary', title: 'Pandit Talk — You Talk. We Stay.', description: 'Thoughtful timed conversations with real Pandits.' },
   appleWebApp: { capable: true, title: 'Pandit Talk', statusBarStyle: 'default' },
   icons: {
     icon: [

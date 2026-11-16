@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { api, useApi } from '@/lib/api/client';
 
-/** Instant chat-now queue — reserved for existing bookings only; new instant chats stay closed. */
+/** Live Chat Now queue status for a Pandit. */
 export default function QueuePanel({ panditId }: { panditId: string }) {
   const q = useApi<{ position: number | null; queueLength: number }>(
     `/bookings/chat-now/queue?panditId=${encodeURIComponent(panditId)}`,
@@ -34,8 +34,7 @@ export default function QueuePanel({ panditId }: { panditId: string }) {
       <h2>Chat queue</h2>
       <aside className="notice" role="status">
         <p>
-          <strong>New instant chats are currently unavailable.</strong> No coins will be charged. You can still open an
-          existing booking.
+          <strong>Chat Now queue status.</strong> Joining the queue does not charge coins; a booking is created only after the service confirms a place.
         </p>
       </aside>
       {q.loading && <p role="status">Checking your queue status…</p>}

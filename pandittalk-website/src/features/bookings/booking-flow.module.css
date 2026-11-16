@@ -1,0 +1,46 @@
+.page { max-width: 960px; }
+.header { display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; margin-block: 22px 8px; }
+.header h1 { max-width: 14ch; margin-bottom: 12px; }
+.balance { flex: 0 0 auto; margin: 0 0 14px; padding: 10px 14px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, .68); font-size: .86rem; }
+.balance strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+.form { gap: 28px; }
+.sectionIntro { display: grid; gap: 7px; }
+.sectionIntro h2 { margin: 0; }
+.sectionIntro p { margin: 0; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.slots { display: grid; gap: 13px; min-width: 0; padding: 0; border: 0; }
+.chatStatus { display: grid; gap: 7px; padding: 18px; border: 1px solid #e5d2a8; border-radius: 16px; background: linear-gradient(135deg, #fff8e7, #fffdf8); }
+.chatStatus strong { font-size: 1.05rem; }
+.chatStatus span { color: var(--muted); }
+.slots legend { padding: 0; font-weight: 650; }
+.slotGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.slotGrid button { min-height: 68px; flex-direction: column; gap: 1px; }
+.slotGrid small { font-size: .76rem; font-weight: 500; color: var(--muted); }
+.slotGrid .slotSelected small { color: inherit; opacity: .85; }
+.slotSelected { background: var(--ochre); border-color: var(--ochre); color: #fffaf0; }
+.slotSelected:hover { background: var(--brand-gold-deep); border-color: var(--brand-gold-deep); color: #fffaf0; }
+.quote { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 16px; border: 1px solid #e5d2a8; border-radius: 16px; background: linear-gradient(135deg, #fff8e7, #fffdf8); }
+.quote div { display: grid; gap: 4px; min-width: 0; }
+.quote span, .summary dt, .notes span { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
+.quote strong { font-size: 1.05rem; }
+.review { gap: 22px; }
+.review h2 { max-width: 18ch; }
+.summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; margin: 0; border-top: 1px solid var(--line); }
+.summary div { display: grid; gap: 6px; padding: 17px 0; border-bottom: 1px solid var(--line); }
+.summary div:nth-child(odd) { margin-right: 18px; }
+.summary dt { font-weight: 650; }
+.summary dd { margin: 0; font-size: 1.05rem; }
+.notes { padding: 16px; border-radius: 14px; background: var(--brand-sage-soft); }
+.notes p { margin: 6px 0 0; }
+@media (max-width: 700px) {
+  .header { display: grid; align-items: start; gap: 10px; }
+  .header h1 { max-width: none; }
+  .balance { width: fit-content; margin-bottom: 0; }
+  .grid, .quote, .summary { grid-template-columns: minmax(0, 1fr); }
+  .summary div:nth-child(odd) { margin-right: 0; }
+  .slotGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 430px) {
+  .slotGrid { grid-template-columns: minmax(0, 1fr); }
+}
+

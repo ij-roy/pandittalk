@@ -7,6 +7,7 @@ import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { createSessionSocket } from './socket';
 import { sessionEvents } from './events';
 import { BrowserWebRtcSession, type WebRtcSessionConfig } from './webrtc';
+import { formatSessionRemaining } from './sessionTimer';
 import styles from '../account/customer.module.css';
 
 export default function MediaRoom({ id, format }: { id: string; format: 'audio' | 'video' }) {
@@ -35,11 +36,21 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
   const [graceRequested, setGraceRequested] = useState(false);
   const [leftRoom, setLeftRoom] = useState(false);
   const [ended, setEnded] = useState(false);
+  const [sessionEndAt, setSessionEndAt] = useState<number | null>(null);
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const events = sessionEvents(format);
   const dialogOpen = confirmEnd || confirmLeave || confirmGrace;
   const joinRef = useRef<HTMLButtonElement | null>(null);
   const rejoinRef = useRef<HTMLButtonElement | null>(null);
   const endedRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!sessionEndAt || ended) return;
+    const update = () => setSecondsRemaining(Math.max(0, Math.ceil((sessionEndAt - Date.now()) / 1000)));
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [sessionEndAt, ended]);
 
   useEffect(() => {
     if (error) requestAnimationFrame(() => errorRef.current?.focus());
@@ -169,9 +180,13 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
       s.on('connect_error', () =>
         setError('We could not reconnect your consultation yet. Keep this page open, or return from your booking and try again.'),
       );
-      s.on(events.started, () => {
+      s.on(events.started, (p: { endTime?: number; durationMinutes?: number }) => {
+        if (Number.isFinite(p.endTime)) setSessionEndAt(Number(p.endTime));
         session.enableSessionMedia();
         setState('Consultation started');
+      });
+      s.on('timeRemaining', (p: { secondsLeft?: number }) => {
+        if (Number.isFinite(p.secondsLeft)) setSecondsRemaining(Math.max(0, Number(p.secondsLeft)));
       });
       s.on(`${format}WaitingForOther`, () => {
         session.enterWaitingRoomMode();
@@ -199,6 +214,7 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
       for (const event of [events.ended, events.timeUp, 'sessionGraceEnded', 'sessionRefunded']) {
         s.on(event, (p?: { message?: string; coinsRefunded?: number }) => {
           setEnded(true);
+          setSecondsRemaining(0);
           setLeftRoom(false);
           setConfirmEnd(false);
           setConfirmLeave(false);
@@ -253,6 +269,7 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
       >
         {state} Press Escape to leave this status.
       </p>
+      {secondsRemaining !== null && !ended && <div className={styles.sessionTimer} role="status" aria-live="polite" data-warning={secondsRemaining <= 300 ? 'true' : undefined}><strong>{formatSessionRemaining(secondsRemaining)}</strong><span>remaining · server timer</span></div>}
       {cameraNote && format === 'video' && (
         <p
           className="expert-meta"
@@ -339,7 +356,7 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
             (event.currentTarget as HTMLElement).blur();
           }}
         >
-          <p><strong>This consultation has ended.</strong> Rejoining from here will not open a new booking or charge coins. Review is available only after the booking is marked completed. If a refund was mentioned in-session, confirm it in your wallet — this room is not a payment receipt. New No Timer bookings stay paused. Press Escape to leave this notice.</p>
+          <p><strong>This consultation has ended.</strong> Rejoining from here will not open a new booking or charge coins. Review is available only after the booking is marked completed. If a refund was mentioned in-session, confirm it in your wallet — this room is not a payment receipt. Press Escape to leave this notice.</p>
           <p className="sr-only" id="media-ended-hint">Arrow keys move between booking, review, free tools, draft and wallet after the consultation ends. Escape blurs. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="After media consultation ended" aria-describedby="media-ended-hint">
             <Link className="button" href={`/bookings/${encodeURIComponent(id)}`}>Open booking details</Link>

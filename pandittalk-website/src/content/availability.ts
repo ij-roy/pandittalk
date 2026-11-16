@@ -1,9 +1,9 @@
 export const availabilityCopy = {
-  publicStatus: 'New conversations are opening soon.',
-  publicDetail: 'Explore real Pandit profiles, try free tools, or prepare a private draft while we finish the conversation terms.',
-  noTimerExplanation: 'The upcoming format is designed without a minute-by-minute countdown.',
+  publicStatus: 'Timed sessions and Chat Now are available.',
+  publicDetail: 'Explore a Pandit profile to see live availability, choose a format, and review the exact total before confirming.',
+  noTimerExplanation: "Sessions follow the app's timed booking model. The booking service sets the duration, countdown and refund terms.",
   existingBooking: 'Existing bookings keep the terms agreed when they were made.',
-  waitlistLabel: 'Email for one availability update',
-  waitlistHelp: 'One email when conversations open. See our',
-  headerLink: 'Booking updates',
+  waitlistLabel: 'Email for booking updates',
+  waitlistHelp: 'We will only use this for important booking updates. See our',
+  headerLink: 'Booking details',
 } as const;

@@ -59,10 +59,10 @@ export default function Page() {
       </section>
       <aside className="notice offer-notice" role="status" aria-label="Booking availability">
         <p>
-          <strong>Want a note when No Timer opens?</strong> This waitlist is separate from cookie or privacy questions.{' '}
-          <span className="sr-only" id="cookie-notify-hint">Arrow keys move between booking-how, tools and draft. Escape blurs. NotifyOpenForm still requires source.</span>
-          <LinkKeyboardGroup as="span" aria-label="Cookie policy booking pause links" aria-describedby="cookie-notify-hint">
-            <Link href="/how-it-works#booking-availability-how">How booking will work</Link>
+          <strong>Want to review a booking?</strong> Choose a Pandit to see the live options; this page is for cookie and privacy questions.{' '}
+          <span className="sr-only" id="cookie-notify-hint">Arrow keys move between Pandits, tools and optional notes. Escape blurs. Skip remains site-content.</span>
+          <LinkKeyboardGroup as="span" aria-label="Cookie policy next steps" aria-describedby="cookie-notify-hint">
+            <Link href="/pandits">Choose a Pandit</Link>
             {' · '}
             <Link href="/tools">Try free tools</Link>
             {' · '}

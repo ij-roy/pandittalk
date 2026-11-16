@@ -1,10 +1,9 @@
-import { OfferNotice } from '@/components/site/OfferNotice';
 import { ExpertDirectory } from '@/features/experts/ExpertDirectory';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Explore Pandits',
-  description: 'Browse real Pandit introductions, languages and practice areas. New conversations are opening soon — exploring never charges coins.',
+  description: 'Browse real Pandit introductions, languages and practice areas, then choose a scheduled session or Chat Now.',
   alternates: { canonical: '/pandits' },
 };
 
@@ -13,8 +12,7 @@ export default function Page() {
     <main id="main-content" className="page pandits-page">
       <p className="eyebrow">Know the person</p>
       <h1>Meet the people behind the conversations.</h1>
-      <p className="lede pandits-lede">Read real introductions, languages and practice areas. New conversations are opening soon — exploring a profile does not create a charge or notify the Pandit.</p>
-      <OfferNotice compact source="website_pandits_directory" />
+      <p className="lede pandits-lede">Read real introductions, languages and practice areas. Open a profile to see the live schedule or check Chat Now; the exact duration and total appear before confirmation.</p>
       <ExpertDirectory />
     </main>
   );

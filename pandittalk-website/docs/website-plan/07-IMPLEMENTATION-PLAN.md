@@ -38,14 +38,14 @@ Gate: one reviewed source of truth per contract; staging access defined. No prod
 
 ## Task 2 — Shared shell and brand foundations
 
-### Prerequisite delivery after Task 1: D11 no-timer model
+### Prerequisite delivery after Task 1: D11 timed booking parity
 
-Files: coordinate new contracts and targeted changes in the monorepo's `bookings/bookings.service.ts`, `chat/chat.gateway.ts`, session scheduling/jobs and relevant DTO/schema files identified during Task 1. Update website booking/session contracts alongside model-aware mobile and Pandit dashboard consumers. Do not make unrelated app changes from the website checkout.
+Files: coordinate the versioned catalogue/quote and targeted changes in the monorepo's `bookings/bookings.service.ts`, `chat/chat.gateway.ts`, session scheduling/jobs and relevant DTO/schema files identified during Task 1. Update website booking/session contracts alongside the mobile and Pandit dashboard consumers. Do not make unrelated app changes from the website checkout.
 
-- [ ] Obtain the defined offer price/scope/completion/fair-use/capacity policy; encode a versioned `sessionModel` and policy reference rather than inferring it from the screen copy.
-- [ ] Test explicit completion and no automatic cutoff at the former 15/25/45-minute thresholds for new chat/audio/video bookings; preserve legacy booking semantics.
-- [ ] Implement server lifecycle and job/media changes, amount invariance over elapsed time, queue/capacity handling and agreed interruption/refund behavior.
-- [ ] Verify app/web/dashboard compatibility, recoverable reconnect and release gating before enabling the no-timer offer.
+- [ ] Audit and approve the app's versioned timed catalogue, quote, availability, timer, queue, cancellation and refund rules.
+- [ ] Test server-controlled 15/25/45-minute scheduled sessions and 15-minute Chat Now behavior for chat/audio/video; preserve existing booking semantics.
+- [ ] Implement and verify atomic debits, slot/queue contention, waiting/no-show refunds, disconnect refunds, rejoin behavior and recoverable reconnect.
+- [ ] Verify app/web/dashboard compatibility and deploy the backend catalogue/quote contract before enabling web booking.
 
 This is a dependency of Tasks 6-8. Task 2 visual work can proceed independently. Task 14's required continuity implementation must pass before Task 12's continuity claims are published. The latest review adds these requirements to original app parity rather than removing any tool, account or payment capability.
 
@@ -112,7 +112,7 @@ Files: create `src/features/guidance/{state,steps}.tsx`, `src/features/bookings/
 Consumes: identity, expert, wallet and verified booking contracts. Produces: persisted booking ID and authoritative start/format/status.
 
 - [ ] Implement area/notes/service-scope/format/Pandit steps; preserve backwards editing and private draft across recharge.
-- [ ] Fetch capacity-aware slots under the no-timer scheduling policy and display timezone with final summary.
+- [ ] Fetch capacity-aware timed slots for the selected duration and display timezone with final summary.
 - [ ] Reconcile total and wallet before commit; handle expired quote/slot taken/insufficient coins.
 - [ ] Create once; on network timeout reconcile booking state before retrying mutation.
 - [ ] Build detail/confirmation/history/cancel and calendar file from persisted records.
@@ -129,7 +129,7 @@ Consumes: existing socket contract, D01 bootstrap and booking state. Produces: r
 - [ ] Record exact server event payloads/acks; test unauthorized room access and ended booking rejection.
 - [ ] Implement instant chat/queue join/status/leave, accepted/missed events and active booking recovery.
 - [ ] Build history, send acknowledgement, typing, failed draft retention and ID deduplication.
-- [ ] Render server waiting/start/end/refund state without countdown or sold-minute cutoff and clean up listeners on navigation.
+- [ ] Render server waiting/start/end/refund state with the server countdown and clean up listeners on navigation.
 - [ ] Test user↔Pandit dashboard chat, reconnect, duplicate events and end/review transition.
 
 Gate: no fake messages, hidden fixed-minute cutoff or client-calculated refunds.
@@ -142,7 +142,7 @@ Consumes: Task 7 state model and D04. Produces: browser↔Pandit audio/video wit
 
 - [x] Prove local browser WebRTC interoperability through the API/WebSocket front door; repeat through the public tunnel before presentation.
 - [ ] Build user-initiated permission/device preflight and waiting room.
-- [ ] Implement mute/camera/device/tile states, reconnect and server-authorized no-timer lifecycle.
+- [ ] Implement mute/camera/device/tile states, reconnect and the server-authorized timed lifecycle.
 - [ ] Distinguish leave/rejoin from end and policy-backed grace cancellation; release all tracks/listeners on exit.
 - [ ] Test camera denied, microphone denied, device absent, network interruption and Pandit disconnect on real supported browsers.
 - [ ] Verify refund amounts against ledger, plus completion/review.
@@ -199,7 +199,7 @@ Files: modify root page and article chrome; create `src/content/site/{home,appro
 Consumes: actual profiles/prices, document 04 and existing article feed. Produces: complete public acquisition and learning experience.
 
 - [ ] Build homepage, approach/about, how-it-works/pricing, guidance hub/topics, tools hub and download page using approved content.
-- [ ] Apply document 04's exact Why Pandit Talk hero hierarchy, prominent No Timer section and story-continuity section. Verify the first-screen hierarchy at 390 × 844 and natural flow at 360px/enlarged text; verify claims against D10/D11 before publication.
+- [ ] Apply the approved timed-booking hero hierarchy and optional-note explanation. Verify the first-screen hierarchy at 390 × 844 and natural flow at 360px/enlarged text; verify all duration/price/refund claims against D11 before publication.
 - [ ] Preserve article/author URLs, API behavior and publisher ownership; improve layout and related discovery.
 - [ ] Add trust/editorial/accessibility content with accountable claims.
 - [ ] Connect public CTAs to actual product flows and resume after authentication.

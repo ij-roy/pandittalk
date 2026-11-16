@@ -4,7 +4,6 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { InformationPage } from '../../about/InformationPage';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
 import { SoftResourceNotFound } from '@/components/site/SoftResourceNotFound';
 
 export function generateStaticParams() {
@@ -55,22 +54,6 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 
   return (
     <InformationPage eyebrow="Help centre" title={article.title} intro={article.summary}>
-      <aside className="notice" role="status">
-        <p>
-          <strong>New No Timer bookings stay paused.</strong> This article still helps with drafts, tools, account access and existing bookings.
-        </p>
-        <p className="sr-only" id="help-article-pause-hint">Arrow keys move between booking updates, draft and free tools. Escape blurs. NotifyOpenForm still requires source.</p>
-        <LinkKeyboardGroup className="actions" style={{ marginTop: 8 }} aria-label="Help article booking pause next steps" as="p" aria-describedby="help-article-pause-hint">
-          <Link href="/how-it-works#booking-availability-how">Get a note when booking opens</Link>
-          {' · '}
-          <Link href="/guidance/start">Prepare a private draft</Link>
-          {' · '}
-          <Link href="/tools">Try free tools</Link>
-        </LinkKeyboardGroup>
-        <div className="notify-inline" style={{ marginTop: 12 }}>
-          <NotifyOpenForm source={`website_help_${slug}`} helpText="Booking-open emails only — separate from this help topic. See our" />
-        </div>
-      </aside>
       <article className="panel info-card">
         <h2>What to do</h2>
         <ol>

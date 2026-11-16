@@ -1,0 +1,113 @@
+name: Deploy backend (ECS)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pandittalk-backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ap-south-1
+  ECS_CLUSTER: pandittalk-cluster
+  ECS_SERVICE: pandittalk-service
+  ECS_TASK_FAMILY: pandittalk-user-service
+  ECR_REPOSITORY: pandittalk-user-service
+  AWS_ACCOUNT_ID: '576557633000'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: backend-production
+      cancel-in-progress: false
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials through OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::576557633000:role/pandittalk-github-deploy-role
+
+      - name: Log in to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push backend image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            --file pandittalk-backend/Dockerfile \
+            --tag "$REGISTRY/${ECR_REPOSITORY}:$IMAGE_TAG" \
+            --tag "$REGISTRY/${ECR_REPOSITORY}:latest" \
+            pandittalk-backend
+          docker push "$REGISTRY/${ECR_REPOSITORY}:$IMAGE_TAG"
+          docker push "$REGISTRY/${ECR_REPOSITORY}:latest"
+          echo "IMAGE_URI=$REGISTRY/${ECR_REPOSITORY}:$IMAGE_TAG" >> "$GITHUB_ENV"
+
+      - name: Register task definition with the new image
+        id: task-definition
+        run: |
+          jq --arg image "$IMAGE_URI" \
+            '.containerDefinitions[0].image = $image' \
+            pandittalk-backend/infra/task-def.json > "$RUNNER_TEMP/task-def.json"
+          arn=$(aws ecs register-task-definition \
+            --cli-input-json "file://$RUNNER_TEMP/task-def.json" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          echo "arn=$arn" >> "$GITHUB_OUTPUT"
+
+      - name: Discover the service network
+        id: network
+        run: |
+          service=$(aws ecs describe-services \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE" \
+            --query 'services[0]' \
+            --output json)
+          test "$(jq -r '.status' <<<"$service")" = ACTIVE
+          config=$(jq -c '.networkConfiguration.awsvpcConfiguration' <<<"$service")
+          echo "subnets=$(jq -r '.subnets | join(",")' <<<"$config")" >> "$GITHUB_OUTPUT"
+          echo "security_groups=$(jq -r '.securityGroups | join(",")' <<<"$config")" >> "$GITHUB_OUTPUT"
+          echo "assign_public_ip=$(jq -r '.assignPublicIp' <<<"$config")" >> "$GITHUB_OUTPUT"
+
+      - name: Run Prisma migrations as a one-off task
+        run: |
+          task=$(aws ecs run-task \
+            --cluster "$ECS_CLUSTER" \
+            --task-definition "${{ steps.task-definition.outputs.arn }}" \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=${{ steps.network.outputs.subnets }},securityGroups=${{ steps.network.outputs.security_groups }},assignPublicIp=${{ steps.network.outputs.assign_public_ip }}}" \
+            --overrides '{"containerOverrides":[{"name":"pandittalk-user-service","command":["npx","prisma","migrate","deploy","--schema","apps/user-service/prisma/schema.prisma"]}]}' \
+            --query 'tasks[0].taskArn' \
+            --output text)
+          test -n "$task" && test "$task" != None
+          aws ecs wait tasks-stopped --cluster "$ECS_CLUSTER" --tasks "$task"
+          exit_code=$(aws ecs describe-tasks --cluster "$ECS_CLUSTER" --tasks "$task" --query 'tasks[0].containers[0].exitCode' --output text)
+          test "$exit_code" = 0
+
+      - name: Update service and wait for stability
+        run: |
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --task-definition "${{ steps.task-definition.outputs.arn }}" \
+            --force-new-deployment \
+            --query 'service.taskDefinition' \
+            --output text
+          aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE"
+
+      - name: Verify public health and catalogue route
+        run: |
+          curl --fail --silent --show-error https://pandittalk-load-balancer.admininfo-6d6.workers.dev/
+          curl --fail --silent --show-error https://pandittalk-load-balancer.admininfo-6d6.workers.dev/booking-catalog

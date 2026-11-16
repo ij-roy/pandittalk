@@ -30,27 +30,27 @@ export default function PaidTool({
         {isMonthly
           ? 'There is no purchase form on this page. Sign in only if you already own a monthly report.'
           : 'Existing purchased reports remain available when you sign in.'}
-        {' '}Want a human conversation when No Timer opens?{' '}
-        <span className="sr-only" id="paid-tool-booking-hint">Arrow keys move between booking updates, free tools and draft. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</span>
-        <LinkKeyboardGroup as="span" aria-label="Paid tool booking pause links" aria-describedby="paid-tool-booking-hint">
-          <Link href="/how-it-works#booking-availability-how">Get booking updates</Link>
+        {' '}Want a human conversation?{' '}
+        <span className="sr-only" id="paid-tool-booking-hint">Arrow keys move between Pandits, free tools and optional notes. Escape blurs. Skip remains site-content.</span>
+        <LinkKeyboardGroup as="span" aria-label="Paid tool booking links" aria-describedby="paid-tool-booking-hint">
+          <Link href="/pandits">Explore Pandits</Link>
           {' · '}
           <Link href="/tools">Try free tools</Link>
           {' · '}
           <Link href="/guidance/start">Prepare a draft</Link>
         </LinkKeyboardGroup>
-        . New website bookings stay paused — this page never charges you.
+        . This page never charges you.
       </aside>
 
       <div className="panel stack">
         <h2>What you can do meanwhile</h2>
-        <p className="sr-only" id="paid-tool-list-hint">Arrow keys move between paused-purchase alternatives. Escape blurs the focused link. Skip remains site-content. NotifyOpenForm still requires source.</p>
+        <p className="sr-only" id="paid-tool-list-hint">Arrow keys move between paid-report alternatives. Escape blurs the focused link. Skip remains site-content.</p>
         <LinkKeyboardGroup as="nav" aria-label="Paused purchase alternatives list" aria-describedby="paid-tool-list-hint">
           <ul className="link-list">
             <li><Link href="/tools/horoscope">Try the free daily horoscope</Link></li>
             <li><Link href="/tools">Browse free reflection tools</Link></li>
             <li><Link href="/login?returnTo=%2Freports&reason=auth">Sign in to open saved reports</Link></li>
-            <li><Link href="/pricing">Read current pricing and pause terms</Link></li>
+            <li><Link href="/pricing">Read current pricing and booking terms</Link></li>
             <li><Link href="/pricing-policy">Formal pricing policy</Link></li>
             <li><Link href="/pandits">Explore Pandits for a later conversation</Link></li>
             <li><Link href="/guidance/start">Prepare a private draft</Link></li>
@@ -58,14 +58,14 @@ export default function PaidTool({
             <li><Link href="/help/coins-and-payment-pending">Payment and coin help</Link></li>
           </ul>
         </LinkKeyboardGroup>
-        <p className="sr-only" id="paid-tool-actions-hint">Arrow keys move between Sign in, free tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
+        <p className="sr-only" id="paid-tool-actions-hint">Arrow keys move between Sign in, free tools and optional notes. Escape blurs. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="Paused purchase alternatives" aria-describedby="paid-tool-actions-hint">
           <Link href="/login?returnTo=%2Freports&reason=auth" className="button">Sign in to view reports</Link>
           <Link href={isMonthly ? '/tools/horoscope' : '/tools'} className="button secondary">
             {isMonthly ? 'Open free daily horoscope' : 'Browse free tools'}
           </Link>
           <Link href="/guidance/start" className="text-link">Prepare a private draft →</Link>
-          <Link href="/how-it-works#booking-availability-how" className="text-link">Booking updates →</Link>
+          <Link href="/pandits" className="text-link">Explore Pandits →</Link>
         </LinkKeyboardGroup>
       </div>
 
@@ -75,23 +75,21 @@ export default function PaidTool({
         <div className="offer-notice-body">
           <p><strong>{isMonthly ? 'Want a note when monthly horoscopes open again?' : 'Want a note when detailed reports open?'}</strong></p>
           <NotifyOpenForm source={isMonthly ? 'website_paid_tool_monthly' : 'website_paid_tool'} />
-          <p className="sr-only" id="paid-tool-notify-followup-hint">Arrow keys move between free tools and draft while you wait. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</p>
+          <p className="sr-only" id="paid-tool-notify-followup-hint">Arrow keys move between free tools and optional notes. Escape blurs. Skip remains site-content.</p>
           <LinkKeyboardGroup as="p" aria-label="While paid reports stay paused" aria-describedby="paid-tool-notify-followup-hint">
             Meanwhile: <Link href="/tools">Try free tools</Link>
             {' · '}
             <Link href="/guidance/start">Prepare a draft</Link>
             {' · '}
-            <Link href="/how-it-works#booking-availability-how">Booking updates</Link>
+            <Link href="/pandits">Explore Pandits</Link>
           </LinkKeyboardGroup>
         </div>
       </EscapeBlurNotice>
 
       <aside className="notice" role="status">
-        Prefer a human conversation when No Timer opens?{' '}
-        <span className="sr-only" id="paid-tool-conversation-hint">Arrow keys move between booking updates, Pandits, draft and free tools. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</span>
+        Prefer a human conversation?{' '}
+        <span className="sr-only" id="paid-tool-conversation-hint">Arrow keys move between Pandits, optional notes and free tools. Escape blurs. Skip remains site-content.</span>
         <LinkKeyboardGroup as="span" aria-label="Paid tool conversation alternatives" aria-describedby="paid-tool-conversation-hint">
-          <Link href="/how-it-works#booking-availability-how">Get a note when No Timer opens</Link>
-          {' · '}
           <Link href="/pandits">Explore Pandits</Link>
           {' · '}
           <Link href="/guidance/start">Prepare a private draft</Link>

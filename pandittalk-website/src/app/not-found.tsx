@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import { GoBackButton } from '@/components/site/GoBackButton';
 import { FocusMainHeading } from '@/components/site/FocusMainHeading';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
 import { supportEmail } from '@/content/siteIdentity';
 
 export const metadata: Metadata = {
@@ -38,34 +37,30 @@ export default function NotFound() {
             <li><Link href="/tools">Try an astrology tool</Link></li>
             <li><Link href="/articles">Read the journal</Link></li>
             <li><Link href="/how-it-works">How conversations work</Link></li>
-            <li><Link href="/how-it-works#booking-availability-how">Get a note when booking opens</Link></li>
+            <li><Link href="/pandits">Choose a Pandit to book</Link></li>
             <li><Link href="/login">Sign in to your account</Link></li>
             <li><Link href="/contact">Contact support</Link></li>
           </ul>
         </LinkKeyboardGroup>
       </nav>
-      <aside className="notice" role="status" aria-label="Booking availability">
+      <aside className="notice" role="status" aria-label="Page recovery">
         <p>
-          New No Timer bookings are not open yet — a missing page does not create or cancel a booking.
-          Still stuck? Email{' '}
+          A missing page does not create or cancel a booking. Still stuck? Email{' '}
           <a href={`mailto:${supportEmail}?subject=${encodeURIComponent('Broken link on Pandit Talk')}`}>
             {supportEmail}
             <span className="sr-only"> (opens your email app)</span>
           </a>{' '}
           from the <Link href="/contact">contact page</Link> with the URL you expected.
           {' '}
-          <span className="sr-only" id="not-found-notify-hint">Arrow keys move between booking-how, tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span>
-          <LinkKeyboardGroup as="span" aria-label="404 booking alternatives" aria-describedby="not-found-notify-hint">
-            <Link href="/how-it-works#booking-availability-how">How booking will work</Link>
+          <span className="sr-only" id="not-found-notify-hint">Arrow keys move between Pandits, tools and optional notes. Escape blurs. Skip remains site-content.</span>
+          <LinkKeyboardGroup as="span" aria-label="404 recovery alternatives" aria-describedby="not-found-notify-hint">
+            <Link href="/pandits">Choose a Pandit</Link>
             {' · '}
             <Link href="/tools">Try free tools</Link>
             {' · '}
-            <Link href="/guidance/start">Prepare a draft</Link>
+            <Link href="/guidance/start">Prepare an optional note</Link>
           </LinkKeyboardGroup>
         </p>
-        <div className="notify-inline" style={{ marginTop: 12 }}>
-          <NotifyOpenForm source="website_404" />
-        </div>
       </aside>
     </main>
   );

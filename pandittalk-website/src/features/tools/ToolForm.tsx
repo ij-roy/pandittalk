@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from "react";
 import { LinkKeyboardGroup } from "@/components/site/LinkKeyboardGroup";
-import { NotifyOpenForm } from "@/components/site/NotifyOpenForm";
 import { api } from "@/lib/api/client";
 import { todayIstIso } from "@/lib/time/ist";
 import { birthPayload, signs, validateResult, type ToolKind } from "./schemas";
@@ -29,7 +28,7 @@ export function BirthFields({ prefix = "", title = "Birth details" }: { prefix?:
     <small id={prefix + "dob-help"}>Use the calendar day in Indian Standard Time.</small>
     <span className="sr-only" id={prefix + "dob-help-keyboard-hint"}>Press Escape to clear the focused field.</span>
     <label className="field">Birth time (Indian Standard Time)<input type="time" name={prefix + "timeOfBirth"} required enterKeyHint="next" aria-describedby={`${prefix}tob-help ${prefix}tob-help-keyboard-hint`} onKeyDown={clearOnEscape} /></label>
-    <small id={prefix + "tob-help"}>Enter the known birth time in IST. Do not guess — unknown time or births outside India cannot be fixed by this free tool. A Pandit can help when No Timer opens; prepare a draft meanwhile.</small>
+    <small id={prefix + "tob-help"}>Enter the known birth time in IST. Do not guess — unknown time or births outside India cannot be fixed by this free tool. A Pandit can help in a timed session or Chat Now; you can add an optional note before booking.</small>
     <span className="sr-only" id={prefix + "tob-help-keyboard-hint"}>Press Escape to clear the focused field.</span>
     <label className="field">Birth city, India<input name={prefix + "placeOfBirth"} required maxLength={255} placeholder="e.g. Delhi" autoComplete="address-level2" autoCapitalize="words" enterKeyHint="next" onKeyDown={clearOnEscape} /></label>
     <label className="field">Coordinates (optional)<input name={prefix + "coordinates"} maxLength={50} placeholder="28.6139, 77.2090" autoComplete="off" enterKeyHint="done" inputMode="decimal" aria-describedby={coordError ? `${helpId} ${helpId}-keyboard-hint ${errorId}` : `${helpId} ${helpId}-keyboard-hint`} aria-invalid={coordError ? true : undefined} onKeyDown={event => {
@@ -56,7 +55,7 @@ export function BirthFields({ prefix = "", title = "Birth details" }: { prefix?:
         field?.focus();
       });
     }}>{coordError} Use the field above to correct the coordinates.</p>}
-    <p className="expert-meta">Birth calculations currently support Indian Standard Time. Unknown time or births outside India cannot be fixed by this free tool — please do not guess. A Pandit can help when No Timer opens; prepare a draft meanwhile. <span className="sr-only" id={`${prefix}birth-next-hint`}>Arrow keys move between Explore Pandits, Prepare a draft and free tools. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Birth details next steps" aria-describedby={`${prefix}birth-next-hint`}><Link className="text-link" href="/pandits">Explore Pandits</Link> · <Link className="text-link" href="/guidance/start">Prepare a draft</Link> · <Link className="text-link" href="/tools">Other free tools</Link></LinkKeyboardGroup>.</p>
+    <p className="expert-meta">Birth calculations currently support Indian Standard Time. Unknown time or births outside India cannot be fixed by this free tool — please do not guess. <span className="sr-only" id={`${prefix}birth-next-hint`}>Arrow keys move between Explore Pandits, Prepare a draft and free tools. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Birth details next steps" aria-describedby={`${prefix}birth-next-hint`}><Link className="text-link" href="/pandits">Explore Pandits</Link> · <Link className="text-link" href="/guidance/start">Prepare an optional note</Link> · <Link className="text-link" href="/tools">Other free tools</Link></LinkKeyboardGroup>.</p>
   </fieldset>;
 }
 
@@ -484,18 +483,16 @@ export default function ToolForm({ kind }: { kind: ToolKind }) {
             </div>
           </aside>
           <aside className="panel stack">
-            <h3>Bookings paused — prepare a draft next</h3>
-            <p>Automated tools offer reflection. When you want a human conversation, prepare a private draft. New No Timer bookings are not open yet — preparing a draft does not create a charge.</p>
-            <p className="sr-only" id="tool-reading-next-hint">Arrow keys move between next-step links. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
+            <h3>Ready for a human conversation?</h3>
+            <p>Automated tools offer reflection. When you want a human conversation, choose a Pandit to see a scheduled session or Chat Now, with duration and total before you confirm.</p>
+            <p className="sr-only" id="tool-reading-next-hint">Arrow keys move between next-step links. Escape blurs. Skip remains site-content.</p>
             <LinkKeyboardGroup className="actions" aria-label="After your reading" aria-describedby="tool-reading-next-hint">
-              <Link className="button" href="/guidance/start">Prepare a draft</Link>
-              <Link className="button secondary" href="/pandits">Explore Pandits</Link>
+              <Link className="button" href="/pandits">Explore Pandits</Link>
+              <Link className="button secondary" href="/guidance/start">Prepare an optional note</Link>
               <Link className="button secondary" href="/tools">More free tools</Link>
-              <Link className="text-link" href="/how-it-works#booking-availability-how">Get booking updates →</Link>
+              <Link className="text-link" href="/guidance/start">Prepare an optional note →</Link>
               <Link className="text-link" href="/contact">Contact support →</Link>
             </LinkKeyboardGroup>
-            <p className="expert-meta">Leave your email if you want a note when No Timer opens.</p>
-            <NotifyOpenForm source={`website_after_reading_${kind}`} />
           </aside>
           <p className="sr-only" id="reading-tools-hint">Arrow keys move between Clear and Print. Escape blurs the focused control. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="Reading tools" aria-describedby="reading-tools-hint">

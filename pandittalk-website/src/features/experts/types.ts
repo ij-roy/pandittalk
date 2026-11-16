@@ -90,10 +90,10 @@ export function isPublicReview(review: { user_first_name?: string | null; rating
   return true;
 }
 
-/** Presence copy while website bookings are paused — never implies an immediate start. */
+/** Presence copy for profile discovery; Chat Now still checks the live booking service. */
 export function presenceLabel(isOnline: boolean, compact = false) {
-  if (compact) return isOnline ? 'Usually online in the app (not bookable here)' : 'Not usually online in the app';
-  return isOnline ? 'Usually online in the practitioner app — not bookable on this website' : 'Not usually online in the app right now';
+  if (compact) return isOnline ? 'Usually online · check Chat Now' : 'Not usually online right now';
+  return isOnline ? 'Online presence reported · check Chat Now' : 'Offline right now · scheduled times may still be available';
 }
 
 export function filterExperts(rows: Expert[], language: string, sort: string) {

@@ -9,15 +9,14 @@ async function handle(request: NextRequest, context: { params: Promise<{ path: s
   if (!allowedEndpoint(request.method, path)) return failure(404, 'This service route is unavailable.');
   if (request.method !== 'GET' && !trustedMutation(requestOrigin(request), request.headers.get('origin'), request.headers.get('content-type'))) return failure(403, 'Please submit this action from the website.');
   const session = await readSession();
-  const publicRoute = request.method === 'GET' && path.startsWith('/experts') || request.method === 'POST' && (/^\/tools\/(kundli|horoscope|compatibility|tarot|palm-reading)$/.test(path) || path === '/pandit-applications');
+  const publicRoute = request.method === 'GET' && (path.startsWith('/experts') || path.startsWith('/booking-catalog')) || request.method === 'POST' && (/^\/tools\/(kundli|horoscope|compatibility|tarot|palm-reading)$/.test(path) || path === '/pandit-applications');
   if (!publicRoute && !session) return failure(401, 'Please sign in to continue.');
   if (!backendOrigin()) return failure(503, 'The service connection is not configured for this preview.', 'BACKEND_UNCONFIGURED');
-  // No environment toggle can turn legacy timed contracts into the reviewed offer.
-  if (request.method === 'POST' && /^\/bookings(?:\/chat-now(?:\/queue)?)?$/.test(path)) return failure(503, 'New conversations need the approved No Timer service contract before booking can open. You will not be charged.', 'NO_TIMER_CONTRACT_REQUIRED');
   if (request.method === 'POST' && /^\/tools\/(unlock|monthly-horoscope)$/.test(path)) return failure(503, 'Paid report unlock is temporarily unavailable. You will not be charged.', 'PAID_REPORT_CONTRACT_REQUIRED');
   if (path === '/wallet/create-order' && process.env.PAYMENTS_TEST_ENABLED !== 'true') return failure(503, 'Recharge is not enabled in this preview. You will not be charged. Existing wallet records remain available.', 'PAYMENTS_DISABLED');
   if (request.method === 'DELETE' && path === '/users/profile' && (!session || Date.now() - session.authenticatedAt > 5 * 60 * 1000)) return failure(403, 'Please sign in again immediately before deleting your account.', 'REAUTH_REQUIRED');
   const headers = new Headers();
+  headers.set('X-Client-Platform', 'web');
   if (session) headers.set('Authorization', `Bearer ${session.accessToken}`);
   let body: ArrayBuffer | undefined;
   if (request.method !== 'GET') {
@@ -35,7 +34,7 @@ async function handle(request: NextRequest, context: { params: Promise<{ path: s
   }
   const query = new URLSearchParams();
   // Private text, auth and arbitrary upstream parameters never pass through a URL.
-  for (const name of ['search','area','date','limit','offset','page','status']) {
+  for (const name of ['search','area','date','duration','panditId','depth','format','mode','limit','offset','page','status']) {
     const value = request.nextUrl.searchParams.get(name);
     if (value && value.length <= 150 && request.method === 'GET') query.set(name, value);
   }

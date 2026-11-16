@@ -92,16 +92,16 @@ export default function Notifications() {
       <div>
         <p className="eyebrow">Keep up with your conversations</p>
         <h1>Notifications</h1>
-        <p className="lede">Booking reminders, session updates and messages, together. Opening this list does not create a booking or charge — new No Timer bookings stay paused.</p>
+        <p className="lede">Booking reminders, session updates and messages, together. Opening this list does not create a booking or charge.</p>
       </div>
       <aside className="notice" role="status">
         <p>
-          <strong>Notifications are about existing activity.</strong> They are not a booking-open signal.{' '}
-          <span className="sr-only" id="notifications-pause-hint">Arrow keys move between booking updates, draft and free tools. Escape blurs. Skip remains site-content.</span>
-          <LinkKeyboardGroup as="span" aria-label="Notifications pause next steps" aria-describedby="notifications-pause-hint">
-            <Link href="/how-it-works#booking-availability-how">Get a note when booking opens</Link>
+          <strong>Notifications are about your account and conversations.</strong> New booking choices start from a Pandit profile.{' '}
+          <span className="sr-only" id="notifications-pause-hint">Arrow keys move between Pandits, optional notes and free tools. Escape blurs. Skip remains site-content.</span>
+          <LinkKeyboardGroup as="span" aria-label="Notifications next steps" aria-describedby="notifications-pause-hint">
+            <Link href="/pandits">Explore Pandits</Link>
             {' · '}
-            <Link href="/guidance/start">Prepare a draft</Link>
+            <Link href="/guidance/start">Prepare an optional note</Link>
             {' · '}
             <Link href="/tools">Try free tools</Link>
           </LinkKeyboardGroup>
@@ -248,18 +248,18 @@ export default function Notifications() {
         }}>
           <h2>No notifications yet</h2>
           <p>
-            Booking reminders, session updates and important account messages will appear here. An empty inbox is not a booking-open signal — new No Timer bookings stay paused. Opening this page never charges coins. Press Escape to leave this notice.
+            Booking reminders, session updates and important account messages will appear here. Opening this page never charges coins. Press Escape to leave this notice.
           </p>
           <p className="sr-only" id="notifications-empty-hint">Arrow keys move between draft, free tools, booking updates, bookings, preferences and help. Escape blurs. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="Empty notifications recovery" aria-describedby="notifications-empty-hint">
-            <Link className="button" href="/guidance/start">
-              Prepare a draft
+            <Link className="button" href="/pandits">
+              Explore Pandits
             </Link>
             <Link className="button secondary" href="/tools">
               Try free tools
             </Link>
-            <Link className="button secondary" href="/how-it-works#booking-availability-how">
-              Booking updates
+            <Link className="button secondary" href="/guidance/start">
+              Prepare an optional note
             </Link>
             <Link className="button secondary" href="/bookings">
               View your bookings
@@ -388,8 +388,8 @@ export default function Notifications() {
         <Link className="text-link" href="/account/notifications">
           Manage notification preferences →
         </Link>
-        <Link className="text-link" href="/how-it-works#booking-availability-how">
-          Booking waitlist →
+        <Link className="text-link" href="/pandits">
+          Choose a Pandit →
         </Link>
         <Link className="text-link" href="/tools">
           Try free tools →

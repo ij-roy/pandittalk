@@ -38,7 +38,7 @@ export default function Error({
         event.preventDefault();
         (event.currentTarget as HTMLElement).blur();
       }}>This page could not be shown.</h1>
-      <p className="lede">Please try again. If you were editing a draft or form, your browser may still hold what you typed — check the page after reload before starting over. New No Timer bookings are not open yet — this error does not create or cancel a booking.</p>
+      <p className="lede">Please try again. If you were editing a draft or form, your browser may still hold what you typed — check the page after reload before starting over. This error does not create or cancel a booking.</p>
       <p className="sr-only" id="error-recovery-hint">Arrow keys move between recovery actions including free tools and draft. Escape blurs the focused control. Skip to content still targets site-content.</p>
       <LinkKeyboardGroup className="actions" aria-label="Route error recovery" aria-describedby="error-recovery-hint">
         <button
@@ -63,7 +63,7 @@ export default function Error({
         <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
         <Link className="button secondary" href="/tools">Try free tools</Link>
         <Link className="button secondary" href="/help">Help centre</Link>
-        <Link className="button secondary" href="/how-it-works#booking-availability-how">Booking updates</Link>
+        <Link className="button secondary" href="/how-it-works">How bookings work</Link>
         <Link className="button secondary" href="/contact">Contact support</Link>
         {error.digest ? (
           <a className="button secondary" href={contactHref}>

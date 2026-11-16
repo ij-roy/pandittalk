@@ -93,14 +93,14 @@ export function HomeOverview() {
           (event.currentTarget as HTMLElement).blur();
         }}>
           <p>
-            Nothing personal to show yet. Explore Pandits or prepare a draft while No Timer booking stays closed. Press Escape to leave this notice.
+            Nothing personal to show yet. Explore Pandits to choose a scheduled session or Chat Now. Press Escape to leave this notice.
           </p>
           <p className="sr-only" id="home-empty-hint">Arrow keys move between empty-home recovery links. Escape blurs the focused link. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="Empty home recovery" aria-describedby="home-empty-hint">
             <Link className="button secondary" href="/pandits">Explore Pandits</Link>
-            <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
+            <Link className="button secondary" href="/guidance/start">Prepare an optional note</Link>
             <Link className="button secondary" href="/tools">Try a free tool</Link>
-            <Link className="text-link" href="/how-it-works#booking-availability-how">Get booking updates →</Link>
+            <Link className="text-link" href="/how-it-works">How it works →</Link>
           </LinkKeyboardGroup>
         </div>
       )}

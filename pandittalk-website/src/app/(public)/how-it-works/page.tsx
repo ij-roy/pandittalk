@@ -1,19 +1,15 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { InformationPage } from '../about/InformationPage';
-import { EscapeBlurNotice } from '@/components/site/EscapeBlurNotice';
-import { FocusOnHash } from '@/components/site/FocusOnHash';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
-import { SiteIcon } from '@/components/site/SiteIcon';
 
 export const metadata: Metadata = {
   title: 'How it works',
-  description: 'New No Timer bookings are not open yet. Browse Pandits, prepare a draft, and see how a conversation will work once terms are ready.',
+  description: 'See how Pandit Talk scheduled sessions and Chat Now work, including timing, quotes and refunds.',
   alternates: { canonical: '/how-it-works' },
   openGraph: {
     title: 'How it works · Pandit Talk',
-    description: 'New No Timer bookings are not open yet. Browse Pandits, prepare a draft, and see how a conversation will work once terms are ready.',
+    description: 'See how Pandit Talk scheduled sessions and Chat Now work, including timing, quotes and refunds.',
     url: '/how-it-works',
   },
 };
@@ -23,7 +19,7 @@ export default function Page() {
     <InformationPage
       eyebrow="A clear path"
       title="How a conversation works"
-      intro="New No Timer bookings are not open yet. You can browse Pandits and prepare a private draft now. Sign in for existing bookings, wallet and reports. When bookings open, you will review the person, topic, format, scope and total before any payment."
+      intro="Browse a Pandit profile, choose a scheduled time or Chat Now, and review the live duration and total before the booking service confirms anything. Notes are optional."
     >
       <ol className="how-steps">
         <li className="panel info-card">
@@ -52,7 +48,7 @@ export default function Page() {
         <li className="panel info-card">
           <span className="info-step" aria-hidden="true">03</span>
           <h2>Understand the commitment.</h2>
-          <p>New No Timer bookings are not open yet. Pricing, completion, breaks and interruption terms are being finalized. Existing bookings keep their agreed terms.</p>
+          <p>The booking service supplies the current duration, total, availability and cancellation terms. Scheduled bookings use a server countdown once the session begins; Chat Now follows the same timed session rules.</p>
           <p className="sr-only" id="how-pricing-hint">Arrow keys move between pricing-step links. Escape blurs. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="How it works pricing step" aria-describedby="how-pricing-hint">
             <Link className="text-link" href="/pricing">Read pricing and availability →</Link>
@@ -64,11 +60,11 @@ export default function Page() {
         <li className="panel info-card">
           <span className="info-step" aria-hidden="true">04</span>
           <h2>Talk, then choose a next step.</h2>
-          <p>For existing bookings only: join chat, audio or video from an eligible booking. Ending the conversation remains your choice. New No Timer bookings are not open yet. Automated tools are labelled separately from a human conversation.</p>
+          <p>Join chat, audio or video from the confirmed booking. The server controls the countdown, and reconnecting does not create a second charge. Automated tools are labelled separately from a human conversation.</p>
           <p className="sr-only" id="how-join-hint">Arrow keys move between join-step links including free tools and draft. Escape blurs. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="How it works join step" aria-describedby="how-join-hint">
             <Link className="button secondary" href="/login?returnTo=%2Fbookings&reason=auth">Sign in to view bookings</Link>
-            <Link className="text-link" href="/help/first-consultation">First-consultation guide (bookings paused) →</Link>
+            <Link className="text-link" href="/help/first-consultation">First-consultation guide →</Link>
             <Link className="text-link" href="/tools">Try free tools →</Link>
             <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
           </LinkKeyboardGroup>
@@ -78,7 +74,7 @@ export default function Page() {
       <section className="panel info-card" id="formats">
         <p className="info-label">Formats</p>
         <h2>Chat, audio or video — when a booking allows it</h2>
-        <p>Eligible existing bookings can open chat, audio or video from the customer session pages. Camera and microphone permissions apply only on audio or video sessions. If a session disconnects, use the reconnect help for that format rather than starting a new unpaid booking.</p>
+          <p>Scheduled bookings can use chat, audio or video when the Pandit offers that format. Chat Now is a live chat path. Camera and microphone permissions apply only on audio or video sessions; if a session disconnects, use reconnect help rather than starting a second booking.</p>
         <p className="sr-only" id="how-format-hint">Arrow keys move between format help, free tools and draft. Escape blurs. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="How it works format help" aria-describedby="how-format-hint">
           <Link className="text-link" href="/help/joining-audio-video">Joining audio or video →</Link>
@@ -113,26 +109,6 @@ export default function Page() {
         </LinkKeyboardGroup>
       </section>
 
-      <FocusOnHash hash="#booking-availability-how" targetId="booking-availability-how" />
-      <EscapeBlurNotice
-        className="notice offer-notice"
-        aria-label="Get availability updates"
-        id="booking-availability-how"
-      >
-        <SiteIcon name="info" size={19} />
-        <div className="offer-notice-body">
-          <p>
-            <strong>Want a note when No Timer opens?</strong> Leave your email and we will write when conversations can begin. Press Escape to leave this notice.{' '}
-            <span className="sr-only" id="how-notify-hint">Arrow keys move between free tools and draft while you wait. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</span>
-            <LinkKeyboardGroup as="span" aria-label="How it works notify alternatives" aria-describedby="how-notify-hint">
-              <Link href="/tools">Try free tools</Link>
-              {' · '}
-              <Link href="/guidance/start">Prepare a draft</Link>
-            </LinkKeyboardGroup>
-          </p>
-          <NotifyOpenForm source="website_how_it_works" />
-        </div>
-      </EscapeBlurNotice>
     </InformationPage>
   );
 }

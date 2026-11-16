@@ -57,11 +57,11 @@ Backend must validate package ID and calculate INR amount. Razorpay creates the 
 
 Require idempotent payment verification, duplicate webhook handling, atomic wallet debit/booking creation, slot contention protection, negative-balance prevention and idempotent refunds. Existing source contains portions of these flows; proving these properties requires integration tests. Do not claim they are missing solely because this review did not audit every transaction.
 
-A new quote/catalogue contract is recommended because current pricing constants are distributed across app and backend. Proposed response fields: `quoteId`, `expiresAt`, `serviceType`, `sessionModel`, `scopeDescription`, `completionPolicyVersion`, `coinsRequired`, `currency`, `taxDisclosure`, `policyVersion`. These fields are a proposed backend change. Until available, derive display from a single approved versioned catalogue and reconcile against server totals before commitment; block stale prices instead of silently charging another amount.
+A versioned booking catalogue and quote contract is now required at the backend boundary because the app and website must not maintain separate pricing decisions. The public catalogue exposes the supported areas, timed depths, formats, Chat Now rules, session policy and cancellation/refund policy. The quote endpoint returns the authoritative `sessionModel`, depth, format, duration and total coins. The website displays those returned values and submits no client-calculated amount or duration; stale, unavailable or conflicting quotes stop confirmation instead of silently changing the charge.
 
 ## Real-time and media
 
-Source socket commands include `joinSession`, `leaveSession`, `sendMessage`, `typing`, `endSession`; audio/video join/leave/end; `requestGraceRefund`; `videoCameraState`. Inspect both `lib/chatSocket.ts` and `chat.gateway.ts` for exact payload/acknowledgement/event names and namespace. Reuse participant authorization and reconcile refund authority; replace fixed-minute termination under D11. Preserve operational timestamps without customer countdowns. Socket disconnect is not proof a booking ended.
+Source socket commands include `joinSession`, `leaveSession`, `sendMessage`, `typing`, `endSession`; audio/video join/leave/end; `requestGraceRefund`; `videoCameraState`. Inspect both `lib/chatSocket.ts` and `chat.gateway.ts` for exact payload/acknowledgement/event names and namespace. Reuse participant authorization and keep the server as the authority for timed session end and refund calculations. The browser renders `sessionStarted`, `timeRemaining` and terminal/refund events; it must not extend or invent the countdown. Socket disconnect is not proof a booking ended.
 
 Use browser WebRTC with the provider-neutral session config and Socket.IO signaling boundary. Run a browser↔existing Pandit dashboard proof before building polished video UI. Use device consent, track cleanup, reconnection, free STUN by default, and optional coturn for restrictive networks. Native `react-native-webrtc` is a custom-dev-client adapter, not browser code.
 
@@ -87,19 +87,17 @@ Palm uploads require MIME decoding, size/pixel limits, safe image conversion, me
 - **D08 Privacy controls:** actual retention/deletion behavior, consent records and optional export workflow. Owner: legal/operations + backend.
 - **D09 Provenance:** tool disclosures, practitioner claims and reviewed brand content. Owner: product/editorial.
 - **D10 Story continuity (required):** private context persistence, customer edit/delete, explicit per-consultation recipient sharing and practitioner access controls. Remaining reflection/media enhancements are optional. Owner: product + backend.
-- **D11 No-timer service model (required):** approved pricing/scope, lifecycle, capacity scheduling, queue, interruption/refund/completion/follow-up rules and legacy migration across app, website and Pandit dashboard. Owner: product + operations + backend.
+- **D11 Timed booking parity (required):** the app and website share the versioned catalogue/quote, timed scheduled depths and formats, Chat Now presence/queue rules, server session timer, cancellation, interruption and refund behavior. Existing records retain their stored terms. Owner: product + operations + backend.
 
 ## Testing/deployment shape
 
-### D11 implementation boundary: no-timer conversations
+### D11 implementation boundary: timed app parity
 
-Add a versioned service-model discriminator to quotes and persisted bookings, separating legacy timed bookings from new no-timer conversations. Proposed values are `legacy_timed` and `no_timer`; these are new contract requirements, not existing API fields. The server must reject client attempts to switch an existing booking's model or price. Auth expiry, heartbeat timestamps, start times and technical wait timeouts remain separate from paid conversation duration.
+Keep `legacy_timed` as the model for new website bookings and reject `no_timer` for new creation. The backend catalogue owns Entry (15m), Standard (25m), Deep (45m), scheduled chat/audio/video adjustments, Chat Now (15m), queue limits, waiting timeout, server countdown, cancellation and refund rules. The website reads the catalogue and quotes; it never copies those values into a charge request.
 
-For the new model, remove sold-minute auto-completion in jobs, socket handlers and media teardown paths. Do not merely remove the UI timer. Store explicit completion/leave/interruption reasons, preserve the customer's end action and define the practitioner completion process without forcing a customer to declare their life problem solved. No extra charge or new debit because elapsed minutes increased. Keep abuse/security controls and let technical outages produce a recoverable state under an approved policy.
+The server remains authoritative for slot contention, wallet debits, session start/end, waiting/no-show refunds, Pandit disconnect refunds and rejoin eligibility. The browser renders server timestamps/events and preserves the distinction between leaving, rejoining and ending. Existing bookings retain their stored duration, amount and model; a copy migration must not reinterpret them.
 
-Capacity planning must prevent overlap without treating a planning estimate as a hidden customer cutoff. Define practitioner capacity, unavailable/busy states, accepted queue expectations and handling when a previous conversation runs beyond an internal planning estimate. Do not fabricate a maximum duration, queue SLA or unlimited follow-up entitlement. Product/operations must settle the offer economics and completion/fair-use policy; backend implementation and claim publication depend on that decision.
-
-Deploy model-aware changes across mobile, website and Pandit dashboard before enabling new-model bookings. Existing timed bookings keep the terms purchased and their clearly identified legacy behavior. No-timer advertising must route to the supported new offer; silently falling back to the old offer is prohibited.
+Deploy the backend contract before presenting web booking as available. Verify the same quote, booking, timer, cancellation and refund outcomes against the app, then enable scheduled and Chat Now entry points together. A missing deployed catalogue/quote route is a release blocker, not a reason to fall back to duplicated website pricing.
 
 ### D10 implementation boundary: story continuity
 

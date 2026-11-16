@@ -36,7 +36,7 @@ export default function Page() {
     <main id="main-content" className="page stack">
       <p className="eyebrow">Explore at your pace</p>
       <h1>Tools for a little perspective.</h1>
-      <p className="lede">Automated readings can start a reflection. Explore them separately from a future conversation with a Pandit. New conversations are opening soon, and these tools never charge your wallet.</p>
+      <p className="lede">Automated readings can start a reflection. Explore them separately from a conversation with a Pandit; scheduled sessions and Chat Now are available from Pandit profiles.</p>
 
       <section className="stack" aria-labelledby="free-tools-title">
         <div>
@@ -102,7 +102,7 @@ export default function Page() {
           {' · '}
           <Link href="/guidance/start">prepare a private draft</Link>
           {' · '}
-          <Link href="/how-it-works#booking-availability-how">Get booking updates</Link>
+          <Link href="/pandits">Choose a Pandit</Link>
         </LinkKeyboardGroup>
         . Free tools never charge your wallet; detailed purchases stay paused.
       </aside>

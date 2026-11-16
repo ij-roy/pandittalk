@@ -58,13 +58,13 @@ export function SoftResourceNotFound({
       </LinkKeyboardGroup>
       <aside className="notice" role="status" aria-label="Booking availability">
         <p>
-          New No Timer bookings are not open yet — a missing page does not create or cancel a booking.
+          A missing page does not create or cancel a booking.
           {' '}
-          <span className="sr-only" id="soft-missing-notify-hint">Arrow keys move between free tools, draft and how booking works. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span>
+          <span className="sr-only" id="soft-missing-notify-hint">Arrow keys move between free tools, optional notes and how booking works. Escape blurs. Skip remains site-content.</span>
           <LinkKeyboardGroup as="span" aria-label="While this page is missing" aria-describedby="soft-missing-notify-hint">
             <Link href="/tools">Try free tools</Link>
             {' · '}
-            <Link href="/guidance/start">Prepare a draft</Link>
+            <Link href="/guidance/start">Prepare an optional note</Link>
             {' · '}
             <Link href="/how-it-works#booking-availability-how">How booking will work</Link>
           </LinkKeyboardGroup>

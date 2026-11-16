@@ -1,10 +1,8 @@
 ﻿import type { Metadata } from 'next';
 import Link from 'next/link';
 import { EscapeBlurNotice } from '@/components/site/EscapeBlurNotice';
-import { OfferNotice } from '@/components/site/OfferNotice';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { HomeOverview } from '@/features/account/HomeOverview';
-import { availabilityCopy } from '@/content/availability';
 
 export const metadata: Metadata = {
   title: 'Your home',
@@ -17,7 +15,7 @@ export default function Page() {
     <main id="main-content" className="page stack">
       <p className="eyebrow">Your Pandit Talk home</p>
       <h1>Welcome back.</h1>
-      <p className="lede">Pick up an existing booking, review saved reports, manage your account, or prepare for a future conversation. {availabilityCopy.publicStatus}</p>
+      <p className="lede">Pick up an existing booking, review saved reports, manage your account, or choose a Pandit for a scheduled session or Chat Now.</p>
 
       <HomeOverview />
 
@@ -25,7 +23,7 @@ export default function Page() {
       <LinkKeyboardGroup className="grid home-tiles" role="navigation" aria-label="Your Pandit Talk shortcuts" aria-describedby="home-tiles-hint">
         <Link className="panel" href="/bookings">
           <h2>Bookings</h2>
-          <p>See existing conversations. New conversations will appear here when they open.</p>
+          <p>See your scheduled sessions and Chat Now conversations.</p>
           <span className="text-link">Open bookings</span>
         </Link>
         <Link className="panel" href="/wallet">
@@ -55,25 +53,24 @@ export default function Page() {
         </Link>
         <Link className="panel" href="/pandits">
           <h2>Explore Pandits</h2>
-          <p>Read introductions and prepare your next conversation while new conversations are opening soon.</p>
+          <p>Read introductions and choose a scheduled session or Chat Now.</p>
           <span className="text-link">Browse directory</span>
         </Link>
         <Link className="panel" href="/guidance/start">
           <h2>Prepare a draft</h2>
-          <p>Write the question you want to bring when conversations open.</p>
+          <p>Write an optional note to bring into a confirmed conversation.</p>
           <span className="text-link">Start a draft</span>
         </Link>
         <Link className="panel" href="/tools">
           <h2>Free tools</h2>
-          <p>Try daily horoscope, kundli, tarot and other free readings while booking stays closed.</p>
+          <p>Try daily horoscope, kundli, tarot and other free readings separately from a conversation.</p>
           <span className="text-link">Open free tools</span>
         </Link>
       </LinkKeyboardGroup>
 
-      <OfferNotice compact source="website_customer_home" />
       <EscapeBlurNotice role="status">
         <strong>Website top-ups are not available yet.</strong> Existing bookings and wallet records remain available. Press Escape to leave this notice.{' '}
-        <span className="sr-only" id="home-wallet-pause-hint">Arrow keys move between recharge, wallet, tools, draft and booking updates. Escape blurs. OfferNotice still requires source. Skip remains site-content.</span>
+        <span className="sr-only" id="home-wallet-pause-hint">Arrow keys move between recharge, wallet, tools and optional notes. Escape blurs. Skip remains site-content.</span>
         <LinkKeyboardGroup as="span" aria-label="Customer home wallet pause links" aria-describedby="home-wallet-pause-hint">
           <Link href="/wallet/recharge">Recharge updates</Link>
           {' · '}
@@ -82,8 +79,6 @@ export default function Page() {
           <Link href="/tools">Try free tools</Link>
           {' · '}
           <Link href="/guidance/start">Prepare a draft</Link>
-          {' · '}
-          <Link href="/how-it-works#booking-availability-how">Booking updates</Link>
         </LinkKeyboardGroup>
         .
       </EscapeBlurNotice>

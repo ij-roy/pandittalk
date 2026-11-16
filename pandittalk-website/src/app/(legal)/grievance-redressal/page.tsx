@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  const grievanceMailto = `mailto:${grievanceEmail}?subject=${encodeURIComponent('Formal grievance')}&body=${encodeURIComponent('Booking or payment reference:\n\nWhat happened and when:\n\nNote: New No Timer bookings are not open yet — use this for an existing booking, payment, or account concern.\n\nPage: /grievance-redressal\n')}`;
-  const supportMailto = `mailto:${supportEmail}?subject=${encodeURIComponent('Everyday support')}&body=${encodeURIComponent('Booking or payment reference (if any):\n\nWhat happened:\n\nNote: New No Timer bookings are not open yet.\n\nPage: /grievance-redressal\n')}`;
+  const grievanceMailto = `mailto:${grievanceEmail}?subject=${encodeURIComponent('Formal grievance')}&body=${encodeURIComponent('Booking or payment reference:\n\nWhat happened and when:\n\nPlease include the relevant account or booking context.\n\nPage: /grievance-redressal\n')}`;
+  const supportMailto = `mailto:${supportEmail}?subject=${encodeURIComponent('Everyday support')}&body=${encodeURIComponent('Booking or payment reference (if any):\n\nWhat happened:\n\nPlease include the relevant account or booking context.\n\nPage: /grievance-redressal\n')}`;
 
   return (
     <InformationPage
@@ -24,8 +24,8 @@ export default function Page() {
     >
       <aside className="notice" role="status">
         <p>
-          <strong>New No Timer bookings stay paused.</strong> Use this path for an existing booking, payment, privacy, or account concern — not to request a new consultation.
-          {' '}<span className="sr-only" id="grievance-pause-hint">Arrow keys move between booking updates and everyday contact. Escape blurs. NotifyOpenForm still requires source.</span><LinkKeyboardGroup as="span" aria-label="Grievance pause next steps" aria-describedby="grievance-pause-hint"><Link href="/how-it-works#booking-availability-how">Get a note when booking opens</Link>
+          <strong>Use the right channel for a recorded concern.</strong> This path is for an existing booking, payment, privacy, or account issue.
+          {' '}<span className="sr-only" id="grievance-pause-hint">Arrow keys move between Pandits and everyday contact. Escape blurs. Skip remains site-content.</span><LinkKeyboardGroup as="span" aria-label="Grievance next steps" aria-describedby="grievance-pause-hint"><Link href="/pandits">Explore Pandits</Link>
           {' · '}<Link href="/contact">Everyday contact</Link>
           {' · '}<Link href="/tools">Try free tools</Link></LinkKeyboardGroup>
         </p>
@@ -40,7 +40,7 @@ export default function Page() {
           <li>Keep private conversation text out of the first message unless asked.</li>
         </ol>
         <p className="expert-meta">We acknowledge formal grievances by email at <a href={grievanceMailto}>{grievanceEmail}<span className="sr-only"> (opens your email app)</span></a>. Until a named officer and SLA are published, this mailbox is the formal channel — include your booking or payment reference so we can route the review.</p>
-        <p className="sr-only" id="grievance-contact-hint">Arrow keys move between grievance email, support, tools and draft. Escape blurs. NotifyOpenForm still requires source.</p>
+        <p className="sr-only" id="grievance-contact-hint">Arrow keys move between grievance email, support, tools and optional notes. Escape blurs. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="Grievance contact actions" aria-describedby="grievance-contact-hint">
           <a className="button" href={grievanceMailto}>Email grievance desk <span aria-hidden="true">↗</span><span className="sr-only"> (opens your email app)</span></a>
           <a className="button secondary" href={supportMailto}>Everyday support · {supportEmail}<span className="sr-only"> (opens your email app)</span></a>

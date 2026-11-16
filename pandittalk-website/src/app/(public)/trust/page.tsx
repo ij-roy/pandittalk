@@ -1,18 +1,16 @@
 import Link from 'next/link';
 import { FocusOnHash } from '@/components/site/FocusOnHash';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
-import { SiteIcon } from '@/components/site/SiteIcon';
 import { InformationPage } from '../about/InformationPage';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Trust and care',
-  description: 'What Pandit Talk asks of this service: respectful listening, honest claims, and care with what you share. Browsing never charges coins while new No Timer bookings stay closed.',
+  description: 'What Pandit Talk asks of this service: respectful listening, honest claims, and care with what you share during timed conversations.',
   alternates: { canonical: '/trust' },
   openGraph: {
     title: 'Trust and care · Pandit Talk',
-    description: 'Respectful listening, honest claims, and care with what you share. New bookings stay paused.',
+    description: 'Respectful listening, honest claims, and care with what you share during timed conversations.',
     url: '/trust',
   },
 };
@@ -30,10 +28,10 @@ export default function Page() {
           <h2>What is already true</h2>
           <ul>
             <li>Pandit profiles show practitioner-provided introductions, languages and practice areas — not invented testimonials.</li>
-            <li>App presence is informational only; it does not open a booking on this website.</li>
+            <li>App presence is a signal, not a guarantee; the booking flow rechecks live availability before Chat Now.</li>
             <li>Published reviews appear only when they pass our public eligibility checks.</li>
-            <li>New No Timer bookings stay closed until service terms are finalized.</li>
-            <li>Browsing profiles, preparing a draft, signing in, or opening wallet history never charges coins while booking stays closed.</li>
+            <li>Scheduled and Chat Now bookings show the current duration, total and terms before confirmation.</li>
+            <li>Browsing profiles and preparing an optional note never charges coins; the booking service charges only after confirmation.</li>
             <li>Automated tools are labelled separately from a live conversation.</li>
             <li>Spiritual guidance does not replace medical, legal or financial advice.</li>
           </ul>
@@ -57,7 +55,7 @@ export default function Page() {
         <ul>
           <li>Profile text should read like an introduction from the practitioner — not a marketing blurb inventing results.</li>
           <li>Reviews should sit on a profile only when eligibility checks allow them to appear publicly.</li>
-          <li>“Online” or app presence describes availability elsewhere; it does not open a website booking while No Timer stays closed.</li>
+          <li>“Online” or app presence is only a signal; the Chat Now booking service makes the final availability decision.</li>
           <li>Tools and journal pieces should say whether a person or an automated process produced them.</li>
         </ul>
         <p className="sr-only" id="trust-check-hint">Arrow keys move between how-to-check links. Escape blurs the focused link.</p>
@@ -91,7 +89,7 @@ export default function Page() {
         </section>
         <section className="panel info-card">
           <h2>Raise a concern</h2>
-          <p>If something needs a closer look, contact our team with a short description and the relevant booking or payment reference. We aim to reply as soon as we can; formal grievances and refund paths stay separate from the booking waitlist.</p>
+          <p>If something needs a closer look, contact our team with a short description and the relevant booking or payment reference. We aim to reply as soon as we can; formal grievances and refund paths stay separate from the booking flow.</p>
           <p className="sr-only" id="trust-concern-hint">Arrow keys move between contact, refunds help, grievance and refund policy. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
           <LinkKeyboardGroup className="actions" aria-label="Trust concern links" aria-describedby="trust-concern-hint">
             <Link className="text-link" href="/contact">Contact support →</Link>
@@ -104,7 +102,7 @@ export default function Page() {
 
       <section className="panel info-card">
         <h2>What we will not claim without evidence</h2>
-        <p>We do not invent testimonials, inflate ratings, or promise medical, legal or financial outcomes. App “online” presence is informational only and does not open a website booking while No Timer stays closed.</p>
+        <p>We do not invent testimonials, inflate ratings, or promise medical, legal or financial outcomes. App “online” presence is not treated as a booking guarantee.</p>
         <p className="sr-only" id="trust-evidence-hint">Arrow keys move between evidence boundary links. Escape blurs the focused link.</p>
         <LinkKeyboardGroup className="actions" aria-label="Trust evidence boundary links" aria-describedby="trust-evidence-hint">
           <Link className="text-link" href="/accessibility">Accessibility commitments →</Link>
@@ -120,13 +118,6 @@ export default function Page() {
         <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
       </LinkKeyboardGroup>
 
-      <aside className="notice offer-notice" aria-label="Get availability updates">
-        <SiteIcon name="info" size={19} />
-        <div className="offer-notice-body">
-          <p><strong>Want a note when terms finalize?</strong> Leave your email and we will write when No Timer opens.</p>
-          <NotifyOpenForm source="website_trust" />
-        </div>
-      </aside>
     </InformationPage>
   );
 }

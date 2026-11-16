@@ -320,7 +320,7 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
 .filters-actions .actions { margin:0 }
 .presence { display:inline-flex; align-items:center; gap:7px }
 .presence::before { content:''; width:8px; height:8px; border-radius:50%; background:#a79caf; flex-shrink:0 }
-/* Neutral presence while website bookings are paused — green read as live bookability. */
+/* Keep presence indicators restrained; availability is confirmed by the booking service. */
 .presence.is-online::before { background:#898a7c; box-shadow:0 0 0 3px rgba(134,87,19,.12) }
 .expert-loading { display:flex; flex-direction:column; gap:0 }
 .expert-loading-help { margin:16px 0; padding:14px 16px; border:1px solid var(--glass-border); border-radius:14px; background:var(--surface); }

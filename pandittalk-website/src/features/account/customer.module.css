@@ -29,6 +29,10 @@
 }
 .fullWidth { grid-column: 1 / -1; }
 .helper { margin: 0; font-size: .85rem; color: var(--muted); }
+.sessionTimer { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; padding: 15px 18px; border: 1px solid #e5d2a8; border-radius: 14px; background: linear-gradient(135deg, #fff8e7, #fffdf8); }
+.sessionTimer strong { color: var(--ink); font-variant-numeric: tabular-nums; font-size: 1.3rem; }
+.sessionTimer span { color: var(--muted); font-size: .85rem; }
+.sessionTimer[data-warning='true'] { border-color: #c87532; background: #fff0df; }
 .identity { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; }
 .identity img { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255, 255, 255, .8); }
 .identity > div { flex: 1; min-width: 0; }

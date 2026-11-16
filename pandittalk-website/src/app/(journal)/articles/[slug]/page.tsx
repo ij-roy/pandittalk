@@ -200,7 +200,7 @@ export default async function ArticlePage({
             </LinkKeyboardGroup>
           ) : (
             <LinkKeyboardGroup className="journal-related__empty" as="p" aria-label="Journal empty related next steps" aria-describedby="journal-related-keys">
-              No other published pieces are available yet. New No Timer bookings stay closed — reading here does not create a charge.{' '}
+              No other published pieces are available yet. Reading here does not create a charge.{' '}
               <Link href="/articles">Browse the journal</Link>
               {' · '}
               <Link href="/guidance">Explore guidance topics</Link>

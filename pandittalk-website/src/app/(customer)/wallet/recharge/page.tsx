@@ -8,7 +8,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Wallet recharge',
-  description: 'Coin top-ups are paused on Pandit Talk. Nothing is charged from this page — check your wallet balance or get notified when recharge opens.',
+  description: 'Coin top-ups are not available on this page. Nothing is charged here — check your wallet balance or payment history.',
   alternates: { canonical: '/wallet/recharge' },
   robots: { index: false, follow: false },
   openGraph: {
@@ -24,11 +24,11 @@ export default function Page() {
       <FocusMainHeading id="recharge-title" />
       <Link className="text-link" href="/wallet">← Your wallet</Link>
       <p className="eyebrow">Coins and top-ups</p>
-      <h1 id="recharge-title" tabIndex={-1}>Recharge is not open yet</h1>
-      <p className="lede">New coin top-ups are paused while payment and No Timer service terms are finalized. Your existing balance and transaction history remain available.</p>
+      <h1 id="recharge-title" tabIndex={-1}>Recharge is unavailable here</h1>
+      <p className="lede">There is no payment form on the website yet. Your existing balance and transaction history remain available.</p>
       <aside className="notice" role="status" aria-label="Recharge availability">
-        <p><strong>Nothing will be charged from this page.</strong> There is no payment form here — leave your email if you want a note when recharge opens.</p>
-        <p className="sr-only" id="recharge-notify-alt-hint">Arrow keys move between free tools and draft while you wait. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</p>
+        <p><strong>Nothing will be charged from this page.</strong> There is no payment form here. Use your existing wallet balance for eligible bookings or check a previous payment below.</p>
+        <p className="sr-only" id="recharge-notify-alt-hint">Arrow keys move between free tools and draft. Escape blurs. Skip remains site-content.</p>
         <p className="expert-meta">
           <LinkKeyboardGroup as="span" aria-label="While waiting for recharge updates" aria-describedby="recharge-notify-alt-hint">
             <Link href="/tools">Try free tools</Link>
@@ -39,9 +39,9 @@ export default function Page() {
         <NotifyOpenForm source="website_wallet_recharge" />
       </aside>
       <div className="panel stack">
-        <h2>While recharge is paused</h2>
-        <p className="sr-only" id="recharge-links-hint">Arrow keys move between recharge alternatives including free tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
-        <LinkKeyboardGroup as="nav" aria-label="While recharge is paused" aria-describedby="recharge-links-hint">
+        <h2>Manage your wallet</h2>
+        <p className="sr-only" id="recharge-links-hint">Arrow keys move between wallet, payment, free tools and draft links. Escape blurs. Skip remains site-content.</p>
+        <LinkKeyboardGroup as="nav" aria-label="Manage your wallet" aria-describedby="recharge-links-hint">
           <ul className="link-list">
             <li><Link href="/wallet">Check your current coin balance</Link></li>
             <li><Link href="/wallet/payment-status">Look up a previous payment status</Link></li>
@@ -51,11 +51,11 @@ export default function Page() {
             <li><Link href="/pricing-policy">Formal pricing policy</Link></li>
             <li><Link href="/refund-and-cancellation-policy">Refunds and cancellations</Link></li>
             <li><Link href="/help/coins-and-payment-pending">Payment and coin help</Link></li>
-            <li><Link href="/how-it-works#booking-availability-how">Join the No Timer booking list (separate)</Link></li>
+            <li><Link href="/pandits">View Pandits and live booking options</Link></li>
           </ul>
         </LinkKeyboardGroup>
         <p className="expert-meta">
-          The email form above is for wallet recharge only — not No Timer booking.
+          The email form above is for wallet recharge only. Booking availability is shown on each Pandit profile.
         </p>
       </div>
       <p className="sr-only" id="recharge-footer-hint">Arrow keys move between wallet, help, free tools and draft. Escape blurs. Skip remains site-content.</p>

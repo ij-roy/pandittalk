@@ -25,7 +25,7 @@ export async function generateMetadata({
     return {
       title: 'Articles',
       description:
-        'Read astrology, vastu, numerology, tarot and spiritual guidance from Pandit Talk writers. The journal is not a live consultation — new No Timer bookings stay paused.',
+        'Read astrology, vastu, numerology, tarot and spiritual guidance from Pandit Talk writers. The journal is not a live consultation; choose a Pandit separately when you are ready to talk.',
       alternates: { canonical: '/articles' },
     };
   }
@@ -40,7 +40,7 @@ export async function generateMetadata({
   const label = CATEGORY_LABELS[category];
   return {
     title: `${label} articles`,
-    description: `Read ${label.toLowerCase()} articles from Pandit Talk writers — thoughtful perspective, named authors. Not a live consultation; new bookings stay paused.`,
+    description: `Read ${label.toLowerCase()} articles from Pandit Talk writers — thoughtful perspective, named authors. Not a live consultation; choose a timed session or Chat Now from a Pandit profile.`,
     alternates: { canonical: `/articles?category=${category}` },
     openGraph: {
       title: `${label} · Pandit Talk Journal`,

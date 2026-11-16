@@ -1,14 +1,13 @@
 ﻿import Link from 'next/link';
 import { InformationPage } from '../../(public)/about/InformationPage';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Refunds and cancellation',
-  description: 'Refund and cancellation terms for existing Pandit Talk bookings and coin purchases. New No Timer bookings and new paid purchases stay paused on the website.',
+  description: 'Refund and cancellation terms for Pandit Talk bookings and coin purchases.',
   alternates: { canonical: '/refund-and-cancellation-policy' },
-  openGraph: { title: 'Refunds and cancellation · Pandit Talk', description: 'Terms for existing bookings and purchases. New website bookings and paid unlocks stay paused.', url: '/refund-and-cancellation-policy' },
+  openGraph: { title: 'Refunds and cancellation · Pandit Talk', description: 'Terms for bookings and purchases.', url: '/refund-and-cancellation-policy' },
 };
 
 export default function Page() {
@@ -16,41 +15,29 @@ export default function Page() {
     <InformationPage
       eyebrow="Policy review required"
       title="Refunds and cancellation"
-      intro="Eligibility depends on the persisted payment, booking, connection and report state. New No Timer bookings and new paid purchases stay closed on the website — this policy does not open a purchase path."
+      intro="Eligibility depends on the persisted payment, booking, connection and report state. The booking service applies the terms shown for the session you confirm; existing bookings retain their original terms."
     >
       <section className="panel info-card">
         <h2>What stays true today</h2>
         <ul>
           <li>Existing bookings keep the terms agreed when they were made.</li>
-          <li>New No Timer bookings and new paid purchases remain closed until terms are finalized.</li>
+          <li>New timed bookings use the duration, total, cancellation and refund terms shown before confirmation.</li>
           <li>Support reviews recorded payment and booking status before deciding on a refund path.</li>
         </ul>
       </section>
       <aside className="notice" role="status">
         No refund promise is made by this preview page. Contact support with the opaque payment or booking reference for a recorded decision.
         {' '}
-        <span className="sr-only" id="refund-pause-hint">Arrow keys move between booking updates and contact. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</span>
-        <LinkKeyboardGroup as="span" aria-label="Refund pause next steps" aria-describedby="refund-pause-hint">
-          <Link href="/how-it-works#booking-availability-how">New bookings stay paused — get updates →</Link>
+        <span className="sr-only" id="refund-pause-hint">Arrow keys move between Pandits and contact. Escape blurs. Skip remains site-content.</span>
+        <LinkKeyboardGroup as="span" aria-label="Refund next steps" aria-describedby="refund-pause-hint">
+          <Link href="/pandits">Choose a Pandit and review terms →</Link>
           {' · '}
           <Link href="/contact">Contact support →</Link>
         </LinkKeyboardGroup>
       </aside>
-      <aside className="notice offer-notice" aria-label="Booking availability">
-        <p>
-          <strong>Want a note when No Timer opens?</strong> Refund questions stay separate — this list is only for booking availability.{' '}
-          <span className="sr-only" id="refund-notify-hint">Arrow keys move between free tools and draft while you wait. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</span>
-          <LinkKeyboardGroup as="span" aria-label="Refund notify alternatives" aria-describedby="refund-notify-hint">
-            <Link href="/tools">Try free tools</Link>
-            {' · '}
-            <Link href="/guidance/start">Prepare a draft</Link>
-          </LinkKeyboardGroup>
-        </p>
-        <NotifyOpenForm source="website_refund_policy" helpText="Booking-open emails only — separate from refund replies. See our" />
-      </aside>
       <section className="panel info-card">
-        <h2>Useful places while purchases stay paused</h2>
-        <p className="sr-only" id="refund-places-hint">Arrow keys move between paused-purchase destinations. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
+        <h2>Useful places for booking and payment questions</h2>
+        <p className="sr-only" id="refund-places-hint">Arrow keys move between wallet, booking, pricing, optional notes and free tools. Escape blurs. Skip remains site-content.</p>
         <LinkKeyboardGroup as="nav" aria-label="Refund useful places" aria-describedby="refund-places-hint">
           <ul className="link-list">
             <li><Link href="/wallet">Check wallet balance and history</Link> (sign-in required)</li>

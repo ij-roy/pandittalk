@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { ArticleCard } from '@/components/articles/ArticleCard';
 import { EscapeBlurNotice } from '@/components/site/EscapeBlurNotice';
 import { FocusMainHeading } from '@/components/site/FocusMainHeading';
-import { OfferNotice } from '@/components/site/OfferNotice';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { SoftResourceNotFound } from '@/components/site/SoftResourceNotFound';
 import { fetchAuthor } from '@/lib/articles/api';
@@ -118,8 +117,7 @@ export default async function AuthorPage({
             </a>
             <Link className="text-link" href="/download">iPhone App Store waitlist →</Link>
           </LinkKeyboardGroup>
-          <p className="expert-meta">Preparing a draft does not create a charge. The Android app may still offer timed Chat Now or Book Session while website No Timer booking stays closed.</p>
-          <OfferNotice compact source="website_journal_author" />
+          <p className="expert-meta">Preparing an optional note does not create a charge. Explore the Pandit profile to see scheduled availability or Chat Now before you decide.</p>
         </div>
       </header>
       <h2 className="journal-section-title">Published articles</h2>
@@ -129,9 +127,9 @@ export default async function AuthorPage({
           <h3 id="author-empty-title" tabIndex={-1}>No published articles yet</h3>
           <p>
             This Pandit has not published journal articles here yet. You can still explore their consultation profile,
-            prepare a private draft, or browse other journal pieces. New No Timer bookings are not open yet — preparing a draft does not notify them or create a charge. Press Escape to leave this notice.
+            prepare an optional note, or browse other journal pieces. Preparing a note does not notify the Pandit or create a charge. Press Escape to leave this notice.
           </p>
-          <p className="sr-only" id="author-empty-hint">Arrow keys move between journal, profile or Pandits, draft when shown, free tools, editorial policy and booking updates. Escape blurs. Skip remains site-content. OfferNotice still requires source.</p>
+          <p className="sr-only" id="author-empty-hint">Arrow keys move between journal, profile or Pandits, optional note when shown, free tools and editorial policy. Escape blurs. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="Author empty articles next steps" aria-describedby="author-empty-hint">
             <Link className="button secondary" href="/articles">Explore the journal</Link>
             {hasExpert
@@ -144,7 +142,7 @@ export default async function AuthorPage({
             )}
             <Link className="button secondary" href="/tools">Try free tools</Link>
             <Link className="text-link" href="/editorial-policy">Editorial policy →</Link>
-            <Link className="text-link" href="/how-it-works#booking-availability-how">Get booking updates →</Link>
+            <Link className="text-link" href="/pandits">Explore Pandits →</Link>
           </LinkKeyboardGroup>
         </EscapeBlurNotice>
       ) : (

@@ -18,21 +18,21 @@ export const helpArticles: Record<string, HelpArticle> = {
 
     title: 'Preparing for a consultation',
 
-    summary: 'New No Timer bookings are not open yet. You can browse without an account, prepare a private draft, and review how a future booking will work — nothing here creates a charge.',
+    summary: 'Choose a Pandit profile, review the live options, and confirm a timed booking only after the exact duration and total are shown.',
 
     steps: [
 
       'Explore Pandit introductions and choose a language that feels comfortable — browsing does not open a booking.',
 
-      'Prepare a private draft with the area and notes you want to bring (it does not notify a Pandit).',
+      'Choose a scheduled time or Chat Now, then review the person, format, duration and total before confirming.',
 
-      'When booking opens later, confirm the person, format, total and cancellation terms before any payment.',
+      'Add a short note only if it helps. Notes are optional and are sent with the confirmed booking.',
 
       'Bring only what feels relevant — you do not need a perfect question.',
 
     ],
 
-    tip: 'New No Timer bookings are not open yet. Preparing a draft or exploring profiles does not create a consultation or charge coins.',
+    tip: 'The booking service is the source of truth for availability and price. A booking is created only after confirmation.',
 
   },
 
@@ -106,7 +106,7 @@ export const helpArticles: Record<string, HelpArticle> = {
 
     title: 'Booking and cancellation',
 
-    summary: 'For an existing booking only — new No Timer bookings are not open yet. Check that booking’s status and the cancellation terms that apply to it.',
+    summary: 'Check an existing booking’s status and the cancellation terms that apply to it.',
 
     steps: [
 
@@ -128,7 +128,7 @@ export const helpArticles: Record<string, HelpArticle> = {
 
     title: 'Joining audio or video',
 
-    summary: 'For an existing eligible booking only — new No Timer bookings are not open yet. Allow the browser microphone or camera only after reviewing the waiting room.',
+    summary: 'For an eligible audio or video booking. Allow the browser microphone or camera only after reviewing the waiting room.',
 
     steps: [
 
@@ -150,7 +150,7 @@ export const helpArticles: Record<string, HelpArticle> = {
 
     title: 'Chat reconnect',
 
-    summary: 'Return to an existing booking and refresh to reconnect and load conversation history. New No Timer bookings are not open yet — reconnect never starts a new unpaid chat.',
+    summary: 'Return to the same booking and refresh to reconnect and load conversation history. Reconnect never starts a new unpaid chat.',
 
     steps: [
 

@@ -72,7 +72,7 @@ export function Wallet() {
     });
   }, [q.data]);
   return <main id="main-content" className="page stack" aria-busy={q.loading || undefined}>
-    <div><p className="eyebrow">Your balance, in one place</p><h1>Wallet</h1><p className="lede">View your available coins, payments and refunds. New recharge stays paused — opening this page never starts a top-up or No Timer booking.</p></div>
+    <div><p className="eyebrow">Your balance, in one place</p><h1>Wallet</h1><p className="lede">View your available coins, payments and refunds. Opening this page never starts a top-up or booking.</p></div>
     {q.loading && <>
       <p className="notice" role="status">Loading your wallet…</p>
       <p className="sr-only" id="wallet-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
@@ -88,7 +88,7 @@ export function Wallet() {
       (event.currentTarget as HTMLElement).blur();
     }}><p>{q.error.message} Press Escape to leave this alert.</p><p className="sr-only" id="wallet-load-hint">Arrow keys move between wallet load recovery links. Escape blurs. Skip remains site-content.</p><LinkKeyboardGroup className="actions" aria-label="Wallet load recovery" aria-describedby="wallet-load-hint"><button type="button" className="button secondary" onClick={q.reload} disabled={q.loading} aria-busy={q.loading || undefined}>{q.loading ? 'Trying again…' : 'Try again'}</button><Link className="button secondary" href="/help/coins-and-payment-pending">Payment help</Link><Link className="button secondary" href="/tools">Try free tools</Link><Link className="button secondary" href="/guidance/start">Prepare a draft</Link><Link className="text-link" href="/contact">Contact support →</Link></LinkKeyboardGroup></div>}
     {q.data && <>
-      <section className="panel" aria-label="Available wallet balance"><p className="eyebrow">Available balance</p><p className={styles.balance} aria-live="polite">{q.data.coinBalance.toLocaleString('en-IN')} <span>coins</span></p><p>Your balance is shared with your Pandit Talk app account. Pending payments are not included until they settle. An existing balance is not a top-up offer and does not unlock new No Timer bookings while they stay paused.</p></section>
+      <section className="panel" aria-label="Available wallet balance"><p className="eyebrow">Available balance</p><p className={styles.balance} aria-live="polite">{q.data.coinBalance.toLocaleString('en-IN')} <span>coins</span></p><p>Your balance is shared with your Pandit Talk app account. Pending payments are not included until they settle. Confirmed booking charges and refunds are recorded here.</p></section>
       <div className="notice" role="status"><strong>Recharge is currently unavailable</strong><p>Your existing balance and transaction history are still available. <span className="sr-only" id="wallet-recharge-pause-hint">Arrow keys move between recharge pause, support, help, tools and draft. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Wallet recharge pause links" aria-describedby="wallet-recharge-pause-hint"><Link href="/wallet/recharge">Why recharge is paused</Link> · <Link href="/contact">Contact support</Link> for payment or refund help · <Link href="/help">Help centre</Link> · <Link href="/tools">Try free tools</Link> · <Link href="/guidance/start">Prepare a draft</Link></LinkKeyboardGroup>.</p></div>
       {q.data.coinBalance === 0 && (
         <aside className="notice" role="status" tabIndex={-1} ref={zeroRef} onKeyDown={event => {
@@ -177,17 +177,17 @@ export function Wallet() {
         <h2>No transactions yet</h2>
         <p>
           {q.data.coinBalance === 0
-            ? 'No payment or refund history yet. A zero balance does not open recharge — new top-ups stay paused while terms are verified. Press Escape to leave this notice.'
-            : 'Coin payments and refunds will appear here when you use your wallet. Recharge stays paused; an existing balance is not a top-up offer. Press Escape to leave this notice.'}
+            ? 'No payment or refund history yet. A zero balance does not open recharge; use this page to review wallet status and previous payments. Press Escape to leave this notice.'
+            : 'Coin payments and refunds will appear here when you use your wallet. Recharge is handled separately; an existing balance is not a top-up offer. Press Escape to leave this notice.'}
         </p>
-        <p className="sr-only" id="wallet-empty-hint">Arrow keys move between recharge pause, pricing, Pandits, free tools, draft and booking updates. Escape blurs the focused link. Skip remains site-content. NotifyOpenForm still requires source.</p>
+        <p className="sr-only" id="wallet-empty-hint">Arrow keys move between recharge, pricing, Pandits, free tools, draft and booking links. Escape blurs the focused link. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="Empty wallet next steps" aria-describedby="wallet-empty-hint">
-          <Link className="button secondary" href="/wallet/recharge">Why recharge is paused</Link>
+          <Link className="button secondary" href="/wallet/recharge">Wallet recharge</Link>
           <Link className="button secondary" href="/pricing">Understand pricing</Link>
           <Link className="button secondary" href="/pandits">Explore Pandits</Link>
           <Link className="button secondary" href="/tools">Try free tools</Link>
           <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
-          <Link className="text-link" href="/how-it-works#booking-availability-how">Notify me when booking opens →</Link>
+          <Link className="text-link" href="/pandits">Choose a Pandit →</Link>
         </LinkKeyboardGroup>
       </section>}
       {q.data.transactions?.length ? <p className="sr-only" id="wallet-tx-hint">Arrow keys move between payment follow-up links and settled rows. Home and End jump to the first or last. Escape blurs the focused control.</p> : null}

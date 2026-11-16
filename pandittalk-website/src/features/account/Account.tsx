@@ -17,7 +17,7 @@ export default function Account() {
   const errorRef = useRef<HTMLParagraphElement>(null);
   const links = [
     ['profile', 'Personal details', 'Manage your profile photo, personal and birth details.'],
-    ['story', 'Your story', 'Save a private note for a future conversation — new bookings stay paused.'],
+    ['story', 'Your story', 'Save an optional private note for a conversation you choose.'],
     ['notifications', 'Notification preferences', 'Choose the updates you want to receive.'],
     ['phone', 'Phone number', 'Securely update the number linked to your account.'],
     ['privacy', 'Privacy & data', 'Find your data controls and privacy support.'],
@@ -26,7 +26,7 @@ export default function Account() {
   return <main id="main-content" className="page stack" aria-busy={busy || undefined}>
     <div><p className="eyebrow">Your Pandit Talk</p><h1>Your account</h1><p className="lede">Your details, your preferences, your space.</p></div>
     <aside className="notice" role="status">
-      <p>New No Timer bookings and wallet recharge stay paused. Account settings below still work for existing records and future access. <span className="sr-only" id="account-pause-hint">Arrow keys move between booking updates, free tools and draft. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Account pause next steps" aria-describedby="account-pause-hint"><Link href="/how-it-works#booking-availability-how">Get a note when booking opens</Link> · <Link href="/tools">Try free tools</Link> · <Link href="/guidance/start">Prepare a draft</Link> · <Link href="/pandits">Explore Pandits</Link></LinkKeyboardGroup>.</p>
+      <p>Manage your account, then explore Pandits when you are ready to choose a scheduled session or Chat Now. <span className="sr-only" id="account-pause-hint">Arrow keys move between booking, free tools and optional-note links. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Account next steps" aria-describedby="account-pause-hint"><Link href="/pandits">Explore Pandits</Link> · <Link href="/tools">Try free tools</Link> · <Link href="/guidance/start">Prepare an optional note</Link></LinkKeyboardGroup>.</p>
     </aside>
     <p className="sr-only" id="account-shortcuts-hint">Arrow keys move between account shortcuts including free tools and draft. Escape blurs. Skip remains site-content.</p>
     <LinkKeyboardGroup className="actions" aria-label="Account shortcuts" aria-describedby="account-shortcuts-hint">
@@ -141,15 +141,15 @@ export function Preferences() {
       });
     }
   }
-  return <main id="main-content" className="page stack" aria-busy={q.loading || !!busyKey || undefined}><Link className="text-link" href="/account">← Your account</Link><h1>Notification preferences</h1><p className="lede">Choose the updates that are useful to you. Changes save automatically. Turning a preference on does not open No Timer booking or wallet recharge.</p>
+  return <main id="main-content" className="page stack" aria-busy={q.loading || !!busyKey || undefined}><Link className="text-link" href="/account">← Your account</Link><h1>Notification preferences</h1><p className="lede">Choose the updates that are useful to you. Changes save automatically. Turning a preference on does not create a booking or charge coins.</p>
     <aside className="notice" role="status">
       <p>
-        <strong>Account alerts stay separate from public waitlists.</strong> Booking-open and recharge emails live on public pages, not these checkboxes.{' '}
-        <span className="sr-only" id="pref-pause-hint">Arrow keys move between booking waitlist, recharge waitlist, free tools and draft. Escape blurs. Skip remains site-content.</span>
-        <LinkKeyboardGroup as="span" aria-label="Preference pause waitlist links" aria-describedby="pref-pause-hint">
-          <Link href="/how-it-works#booking-availability-how">Booking waitlist</Link>
+        <strong>Account alerts stay separate from booking actions.</strong> Booking and recharge actions happen in their own flows, not these checkboxes.{' '}
+        <span className="sr-only" id="pref-pause-hint">Arrow keys move between Pandits, recharge, free tools and optional notes. Escape blurs. Skip remains site-content.</span>
+        <LinkKeyboardGroup as="span" aria-label="Preference related links" aria-describedby="pref-pause-hint">
+          <Link href="/pandits">Explore Pandits</Link>
           {' · '}
-          <Link href="/wallet/recharge">Recharge waitlist</Link>
+          <Link href="/wallet/recharge">Wallet recharge</Link>
           {' · '}
           <Link href="/tools">Try free tools</Link>
           {' · '}
@@ -205,12 +205,12 @@ export function Preferences() {
         </LinkKeyboardGroup>
       </>
     ) : null}
-    <p className={styles.helper}>Service and safety messages may still be sent when necessary. Booking-open and recharge waitlists on public pages are separate from these account preferences. Product news is not a booking or recharge alert.</p>
+    <p className={styles.helper}>Service and safety messages may still be sent when necessary. Product news is not a booking or recharge alert.</p>
     <p className="sr-only" id="pref-links-hint">Arrow keys move between preference recovery links. Escape blurs. Skip remains site-content.</p>
     <LinkKeyboardGroup className="actions" aria-label="Preference related links" aria-describedby="pref-links-hint">
       <Link className="text-link" href="/notifications">View your notifications →</Link>
-      <Link className="text-link" href="/how-it-works#booking-availability-how">Booking waitlist →</Link>
-      <Link className="text-link" href="/wallet/recharge">Recharge waitlist →</Link>
+      <Link className="text-link" href="/pandits">Explore Pandits →</Link>
+      <Link className="text-link" href="/wallet/recharge">Wallet recharge →</Link>
       <Link className="text-link" href="/tools">Try free tools →</Link>
       <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
     </LinkKeyboardGroup>
@@ -280,7 +280,7 @@ export function PhoneChange() {
     }
     finally { setBusy(false); }
   }
-  return <main id="main-content" className="page stack" aria-busy={busy || undefined}><Link className="text-link" href="/account">← Your account</Link><h1>Change phone number</h1><p className="lede">We will send a verification code to your new number. Once verified, you will need to sign in again on your devices. Changing your number never opens No Timer booking or wallet recharge.</p>
+  return <main id="main-content" className="page stack" aria-busy={busy || undefined}><Link className="text-link" href="/account">← Your account</Link><h1>Change phone number</h1><p className="lede">We will send a verification code to your new number. Once verified, you will need to sign in again on your devices. Changing your number never creates a booking or charges coins.</p>
     <aside className="notice" role="status">
       <p><strong>Account security only.</strong> A successful phone change updates sign-in access — it does not create a booking, move coins, or end the website pause. <span className="sr-only" id="phone-pause-hint">Arrow keys move between booking updates, free tools and draft. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Phone change pause next steps" aria-describedby="phone-pause-hint"><Link href="/how-it-works#booking-availability-how">Booking updates</Link> · <Link href="/tools">Try free tools</Link> · <Link href="/guidance/start">Prepare a draft</Link></LinkKeyboardGroup>.</p>
     </aside>
@@ -367,7 +367,7 @@ export function DeleteAccount() {
 
   return <main id="main-content" className="page stack" aria-busy={busy || undefined}><Link className="text-link" href="/account">← Your account</Link><h1>Delete your account</h1>
     <div inert={confirmOpen ? true : undefined}>
-    <section className="panel stack"><h2>Before you continue</h2><p>This deactivates your account and removes your profile details and photo. Some transaction, booking and report records may be retained.</p><p>If you have an active booking or a remaining wallet balance, contact support first to understand what happens to them. New No Timer bookings and recharge are already paused on the website, so deletion mainly affects your signed-in records and future access.</p><p className="sr-only" id="delete-before-hint">Arrow keys move between support, privacy, tools and draft. Escape blurs. Skip remains site-content.</p><LinkKeyboardGroup className="actions" aria-label="Delete account before you continue" aria-describedby="delete-before-hint"><Link className="button secondary" href="/contact">Contact support</Link><Link className="text-link" href="/account/privacy">Privacy and data controls</Link><Link className="text-link" href="/tools">Try free tools</Link><Link className="text-link" href="/guidance/start">Prepare a draft</Link><Link className="text-link" href="/delete-account">Public deletion instructions →</Link></LinkKeyboardGroup></section>
+    <section className="panel stack"><h2>Before you continue</h2><p>This deactivates your account and removes your profile details and photo. Some transaction, booking and report records may be retained.</p><p>If you have an active booking or a remaining wallet balance, contact support first to understand what happens to them. Deletion mainly affects your signed-in records and future access.</p><p className="sr-only" id="delete-before-hint">Arrow keys move between support, privacy, tools and optional notes. Escape blurs. Skip remains site-content.</p><LinkKeyboardGroup className="actions" aria-label="Delete account before you continue" aria-describedby="delete-before-hint"><Link className="button secondary" href="/contact">Contact support</Link><Link className="text-link" href="/account/privacy">Privacy and data controls</Link><Link className="text-link" href="/tools">Try free tools</Link><Link className="text-link" href="/guidance/start">Prepare an optional note</Link><Link className="text-link" href="/delete-account">Public deletion instructions →</Link></LinkKeyboardGroup></section>
     <form onSubmit={requestDelete} className="panel stack" aria-busy={busy} onInvalid={event => {
       const target = event.target;
       if (target instanceof HTMLElement) requestAnimationFrame(() => {

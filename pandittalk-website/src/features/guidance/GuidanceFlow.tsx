@@ -265,7 +265,7 @@ export default function GuidanceFlow() {
             <dt>Format</dt><dd>{draft.format ? formats[draft.format] : 'Not selected'}</dd>
             <dt>Pandit</dt><dd>{selectedExpert ? expertName(selectedExpert) : draft.panditId ? experts.loading ? 'Loading selected profile…' : 'Selected profile is currently unavailable' : 'Not selected'}</dd>
             <dt>Your notes</dt><dd style={{ whiteSpace: 'pre-wrap' }}>{draft.notes || 'No notes added'}</dd>
-            <dt>Charge</dt><dd>None while new bookings are paused — saving this draft never spends coins</dd>
+            <dt>Charge</dt><dd>None — this optional draft never spends coins or reserves a time</dd>
           </dl>
           <label className="field">Preferred date (optional)<input type="date" value={draft.date} min={new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date())} aria-describedby="guidance-date-help" onChange={event => setDraft({ ...draft, date: event.target.value })} onKeyDown={event => {
             if (event.key !== 'Escape' || !draft.date) return;
@@ -274,10 +274,7 @@ export default function GuidanceFlow() {
           }} /></label>
           <p id="guidance-date-help" className="expert-meta">Your date is a preference in Indian Standard Time. It does not reserve a time or confirm availability.{draft.date ? ' Press Escape to clear.' : ''}</p>
           <p className="notice" role="status" id="booking-block">{newBookingBlock}</p>
-          <div className="notify-inline stack" aria-describedby="booking-block">
-            <p className="expert-meta">Your draft is saved in this browser. Leave your email for a note when conversations open — exploring Pandits does not start a booking.</p>
-            <NotifyOpenForm source="website_guidance_review" />
-          </div>
+          <p className="expert-meta">Your draft is saved in this browser. To book, open a Pandit profile and choose a scheduled time or Chat Now.</p>
           <p className="sr-only" id="guidance-review-hint">Arrow keys move between guidance review next steps. Escape blurs the focused link. Skip remains site-content. NotifyOpenForm still requires source.</p>
           <LinkKeyboardGroup className="actions" aria-label="Guidance review next steps" aria-describedby="guidance-review-hint">
             <Link className="button secondary" href="/pandits">Browse Pandit profiles</Link>

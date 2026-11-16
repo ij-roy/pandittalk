@@ -1,7 +1,6 @@
 ﻿import Link from 'next/link';
 import { FocusMainHeading } from '@/components/site/FocusMainHeading';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
 import { privacyEmail } from '@/content/siteIdentity';
 import type { Metadata } from 'next';
 
@@ -23,15 +22,15 @@ export default function Page() {
 
       <aside className="notice" role="status">
         <p>
-          <strong>Booking and recharge stay paused on the website.</strong> These controls still apply to your signed-in profile, stories, cookies and deletion. New No Timer bookings do not open from this page.
+          <strong>Your privacy choices apply to every booking path.</strong> These controls still apply to your signed-in profile, stories, cookies and deletion. Booking details are only shared when you choose to book.
         </p>
-        <p className="sr-only" id="privacy-pause-actions-hint">Arrow keys move between pause-related links. Escape blurs the focused link. NotifyOpenForm still requires source. Skip remains site-content.</p>
-        <LinkKeyboardGroup className="actions" style={{ marginTop: 12 }} aria-label="While booking stays paused" aria-describedby="privacy-pause-actions-hint">
+        <p className="sr-only" id="privacy-pause-actions-hint">Arrow keys move between booking, wallet, tools and draft links. Escape blurs the focused link. Skip remains site-content.</p>
+        <LinkKeyboardGroup className="actions" style={{ marginTop: 12 }} aria-label="Booking and privacy links" aria-describedby="privacy-pause-actions-hint">
           <Link className="text-link" href="/bookings">View bookings →</Link>
           <Link className="text-link" href="/wallet">Open wallet →</Link>
           <Link className="text-link" href="/tools">Try free tools →</Link>
           <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
-          <Link className="text-link" href="/how-it-works#booking-availability-how">Booking waitlist →</Link>
+          <Link className="text-link" href="/pandits">Choose a Pandit →</Link>
         </LinkKeyboardGroup>
       </aside>
 
@@ -95,20 +94,6 @@ export default function Page() {
         </LinkKeyboardGroup>
       </section>
 
-      <aside className="notice offer-notice" role="status" aria-label="Booking availability">
-        <p>
-          <strong>Want a note when No Timer opens?</strong> This waitlist is separate from privacy requests.{' '}
-          <span className="sr-only" id="privacy-notify-hint">Arrow keys move between booking-how, tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</span>
-          <LinkKeyboardGroup as="span" aria-label="Account privacy booking alternatives" aria-describedby="privacy-notify-hint">
-            <Link href="/how-it-works#booking-availability-how">How booking will work</Link>
-            {' · '}
-            <Link href="/tools">Try free tools</Link>
-            {' · '}
-            <Link href="/guidance/start">Prepare a draft</Link>
-          </LinkKeyboardGroup>
-        </p>
-        <NotifyOpenForm source="website_account_privacy" helpText="Booking-open emails only — not privacy replies. See our" />
-      </aside>
     </main>
   );
 }

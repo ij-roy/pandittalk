@@ -3,7 +3,7 @@ import GuidanceFlow from '@/features/guidance/GuidanceFlow';
 
 export const metadata: Metadata = {
   title: 'Prepare a private draft',
-  description: 'Capture the area, format and notes you want to bring later. New No Timer bookings are not open yet — this saves a private draft only and never charges coins.',
+  description: 'Capture the area, format and notes you want to bring before choosing a timed conversation. This optional note never charges coins by itself.',
   alternates: { canonical: '/guidance/start' },
   openGraph: {
     title: 'Prepare a private draft · Pandit Talk',

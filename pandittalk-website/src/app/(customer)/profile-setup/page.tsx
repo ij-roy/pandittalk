@@ -6,7 +6,7 @@ import View from "@/features/account/ProfileForm";
 
 export const metadata: Metadata = {
   title: 'Complete your profile',
-  description: 'Add optional personal details at your pace. New No Timer bookings are not open yet — completing a profile does not create a booking.',
+  description: 'Add optional personal details at your pace. Completing a profile does not create a booking.',
   robots: { index: false, follow: false },
 };
 export default function Page() {

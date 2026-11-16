@@ -68,7 +68,7 @@ export default function Page() {
         <SiteIcon name="info" size={19} />
         <div className="offer-notice-body">
           <p>
-            <strong>Reading first, booking later.</strong> New No Timer bookings stay closed for now — leave your email for a note when they open.{' '}
+            <strong>Reading and booking are separate choices.</strong> Journal reading stays free; choose a Pandit profile when you want a timed session or Chat Now.{' '}
             <span className="sr-only" id="editorial-notify-hint">Arrow keys move between free tools and draft while you wait. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</span>
             <LinkKeyboardGroup as="span" aria-label="Editorial notify alternatives" aria-describedby="editorial-notify-hint">
               <Link href="/tools">Try free tools</Link>

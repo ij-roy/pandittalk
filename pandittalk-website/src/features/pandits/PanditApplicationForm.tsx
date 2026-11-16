@@ -106,7 +106,7 @@ export default function PanditApplicationForm() {
 
   return <form className="panel stack" onSubmit={submit} aria-busy={busy} noValidate>
     <h2>Tell us about your practice</h2>
-    <p className="expert-meta">Fields are required unless marked optional. Validation messages appear below the form. Submitting does not publish a public profile, open customer No Timer bookings, or charge anyone.</p>
+    <p className="expert-meta">Fields are required unless marked optional. Validation messages appear below the form. Submitting does not publish a public profile, create customer bookings, or charge anyone.</p>
     {done && !failed && (
       <aside className="notice" role="status" id="application-status" tabIndex={-1} onKeyDown={e => {
         if (e.key !== 'Escape') return;

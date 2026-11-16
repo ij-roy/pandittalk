@@ -160,13 +160,13 @@ export default function StoryContext() {
     <Link className="text-link" href="/account">← Your account</Link>
     <div><p className="eyebrow">Your story belongs to you</p><h1>A little context.<br />A better conversation.</h1><p className="lede">Save what matters privately. You decide when to share it with a Pandit for a specific existing booking — saving never creates a booking or charge.</p></div>
     <aside className="notice" role="status">
-      <p><strong>New No Timer bookings stay paused.</strong> You can still save private notes now. Sharing requires an existing booking with a Pandit — preparing a draft does not notify anyone.</p>
-      <p className="sr-only" id="story-pause-hint">Arrow keys move between story pause links. Escape blurs the focused link. Skip remains site-content.</p>
-      <LinkKeyboardGroup className="actions" aria-label="Story pause next steps" aria-describedby="story-pause-hint">
-        <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
+       <p><strong>Your story stays private until you choose to share it.</strong> Sharing requires an existing booking with a Pandit — saving or preparing a note does not notify anyone.</p>
+       <p className="sr-only" id="story-pause-hint">Arrow keys move between story next-step links. Escape blurs the focused link. Skip remains site-content.</p>
+       <LinkKeyboardGroup className="actions" aria-label="Story next steps" aria-describedby="story-pause-hint">
+         <Link className="text-link" href="/guidance/start">Prepare an optional note →</Link>
         <Link className="text-link" href="/tools">Try free tools →</Link>
         <Link className="text-link" href="/bookings">View bookings →</Link>
-        <Link className="text-link" href="/how-it-works#booking-availability-how">Booking updates →</Link>
+         <Link className="text-link" href="/pandits">Choose a Pandit →</Link>
       </LinkKeyboardGroup>
     </aside>
     <form className="panel stack" aria-busy={busy} inert={pending ? true : undefined} onSubmit={e => { e.preventDefault(); void save(); }}>
@@ -231,14 +231,14 @@ export default function StoryContext() {
       (e.currentTarget as HTMLElement).blur();
     }}>
       <h2>A space for what matters</h2>
-      <p>Your saved stories will appear here. Start with a few words whenever you are ready. Nothing is shared until you choose an existing booking — new No Timer bookings stay paused, so sharing may wait until you have one. Press Escape to leave this notice.</p>
-      <p className="sr-only" id="story-empty-hint">Arrow keys move between Write first note, story how-to, draft, free tools and booking updates. Escape blurs the focused control. Skip remains site-content.</p>
+      <p>Your saved stories will appear here. Start with a few words whenever you are ready. Nothing is shared until you choose an existing booking. Press Escape to leave this notice.</p>
+      <p className="sr-only" id="story-empty-hint">Arrow keys move between Write first note, story how-to, optional note, free tools and Pandits. Escape blurs the focused control. Skip remains site-content.</p>
       <LinkKeyboardGroup className="actions" aria-label="Empty story next steps" aria-describedby="story-empty-hint">
         <button className="button secondary" type="button" onClick={() => editor.current?.focus()}>Write your first note</button>
         <Link className="text-link" href="/how-it-works#your-story">How your story stays with you →</Link>
-        <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
+        <Link className="text-link" href="/guidance/start">Prepare an optional note →</Link>
         <Link className="text-link" href="/tools">Try free tools →</Link>
-        <Link className="text-link" href="/how-it-works#booking-availability-how">Booking updates →</Link>
+        <Link className="text-link" href="/pandits">Choose a Pandit →</Link>
       </LinkKeyboardGroup>
     </section>}
     <div inert={pending ? true : undefined}>
@@ -264,11 +264,11 @@ export default function StoryContext() {
           if (e.key !== 'Escape') return;
           e.preventDefault();
           (e.currentTarget as HTMLElement).blur();
-        }}><p>{bookings.error?.message || bookingError} Press Escape to leave this alert.</p><p className="sr-only" id={`story-share-booking-${item.id}-hint`}>Arrow keys move between Retry bookings, View bookings, free tools and Prepare a draft. Escape blurs. Skip remains site-content.</p><LinkKeyboardGroup className="actions" aria-label="Story share booking recovery" aria-describedby={`story-share-booking-${item.id}-hint`}><button type="button" className="button secondary" onClick={bookings.reload} disabled={bookings.loading} aria-busy={bookings.loading || undefined}>{bookings.loading ? 'Retrying…' : 'Retry bookings'}</button><Link className="button secondary" href="/bookings">View bookings</Link><Link className="button secondary" href="/tools">Try free tools</Link><Link className="text-link" href="/guidance/start">Prepare a draft →</Link></LinkKeyboardGroup><p className="expert-meta" style={{ marginTop: 8 }}>Sharing needs an existing booking. New No Timer bookings stay paused.</p></div> : bookingOptions.length ? <><label className="field" htmlFor={`share-booking-${item.id}`}>Booking<select id={`share-booking-${item.id}`} value={selectedBookings[item.id] || ''} disabled={busy} onChange={e => setSelectedBookings(old => ({ ...old, [item.id]: e.target.value }))} onKeyDown={e => {
+        }}><p>{bookings.error?.message || bookingError} Press Escape to leave this alert.</p><p className="sr-only" id={`story-share-booking-${item.id}-hint`}>Arrow keys move between Retry bookings, View bookings, free tools and Prepare an optional note. Escape blurs. Skip remains site-content.</p><LinkKeyboardGroup className="actions" aria-label="Story share booking recovery" aria-describedby={`story-share-booking-${item.id}-hint`}><button type="button" className="button secondary" onClick={bookings.reload} disabled={bookings.loading} aria-busy={bookings.loading || undefined}>{bookings.loading ? 'Retrying…' : 'Retry bookings'}</button><Link className="button secondary" href="/bookings">View bookings</Link><Link className="button secondary" href="/tools">Try free tools</Link><Link className="text-link" href="/guidance/start">Prepare an optional note →</Link></LinkKeyboardGroup><p className="expert-meta" style={{ marginTop: 8 }}>Sharing needs an existing booking.</p></div> : bookingOptions.length ? <><label className="field" htmlFor={`share-booking-${item.id}`}>Booking<select id={`share-booking-${item.id}`} value={selectedBookings[item.id] || ''} disabled={busy} onChange={e => setSelectedBookings(old => ({ ...old, [item.id]: e.target.value }))} onKeyDown={e => {
           if (e.key !== 'Escape' || !selectedBookings[item.id]) return;
           e.preventDefault();
           setSelectedBookings(old => ({ ...old, [item.id]: '' }));
-        }}><option value="">Choose a consultation</option>{bookingOptions.map(b => <option key={b.id} value={b.id}>{b.panditName || b.pandit?.name || 'Pandit consultation'} · {formatIstDate(b.startTime)} · {b.format}</option>)}</select></label><button type="button" className="button" disabled={busy || !selectedBookings[item.id]} aria-busy={busy || undefined} onClick={() => requestShare(item.id)}>Share this version</button></> : <><p className="sr-only" id={`story-share-empty-${item.id}-hint`}>Arrow keys move between bookings, draft and free tools while sharing needs a booking. Escape blurs. Skip remains site-content.</p><LinkKeyboardGroup as="p" aria-label="Story share needs a booking" aria-describedby={`story-share-empty-${item.id}-hint`}>You need a booking before sharing. New No Timer bookings are not open yet. <Link href="/bookings">View your bookings</Link> or <Link href="/guidance/start">prepare a draft</Link> · <Link href="/tools">try free tools</Link>.</LinkKeyboardGroup></>}
+        }}><option value="">Choose a consultation</option>{bookingOptions.map(b => <option key={b.id} value={b.id}>{b.panditName || b.pandit?.name || 'Pandit consultation'} · {formatIstDate(b.startTime)} · {b.format}</option>)}</select></label><button type="button" className="button" disabled={busy || !selectedBookings[item.id]} aria-busy={busy || undefined} onClick={() => requestShare(item.id)}>Share this version</button></> : <><p className="sr-only" id={`story-share-empty-${item.id}-hint`}>Arrow keys move between bookings, optional notes and free tools while sharing needs a booking. Escape blurs. Skip remains site-content.</p><LinkKeyboardGroup as="p" aria-label="Story share needs a booking" aria-describedby={`story-share-empty-${item.id}-hint`}>You need a booking before sharing. <Link href="/bookings">View your bookings</Link> or <Link href="/guidance/start">prepare an optional note</Link> · <Link href="/tools">try free tools</Link>.</LinkKeyboardGroup></>}
       </div></details>
     </article>)}
     </div>

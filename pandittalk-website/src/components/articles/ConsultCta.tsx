@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { OfferNotice } from '@/components/site/OfferNotice';
 import { recordArticleEvent } from '@/lib/articles/events';
 import { PLAY_STORE_URL } from '@/lib/articles/site';
 import { expertFirstName } from '@/features/experts/types';
@@ -27,18 +26,18 @@ export function ConsultCta({
 
   return (
     <aside className="journal-consult" aria-labelledby="journal-consult-title">
-      <p className="eyebrow">A personal conversation · bookings paused</p>
-      <h2 id="journal-consult-title">Prepare a private draft</h2>
+      <p className="eyebrow">A personal conversation</p>
+      <h2 id="journal-consult-title">Choose how to continue</h2>
       <p>
-        {authorName} writes on Pandit Talk. Explore their profile or prepare a private draft. New No Timer bookings are not open yet — preparing a draft does not create a charge or notify the Pandit.
+        {authorName} writes on Pandit Talk. Explore their profile to see scheduled availability or check Chat Now. You can also prepare an optional private note.
       </p>
       <p className="sr-only" id="journal-consult-keys">Arrow keys move between prepare actions. Escape blurs.</p>
-      <LinkKeyboardGroup className="journal-consult__actions" aria-label="Prepare a private draft" aria-describedby="journal-consult-keys">
+      <LinkKeyboardGroup className="journal-consult__actions" aria-label="Continue from this article" aria-describedby="journal-consult-keys">
         <Link className="button" href={profileHref} onClick={track}>
           {authorId ? `View ${shortName}'s profile` : 'Explore Pandits'}
         </Link>
         <Link className="button secondary" href={prepareHref} onClick={track}>
-          Prepare a draft
+          Prepare an optional note
         </Link>
         <details
           className="journal-consult__more"
@@ -64,20 +63,19 @@ export function ConsultCta({
                 Try free tools →
               </Link>
               <Link className="text-link" href="/how-it-works#booking-availability-how" onClick={track}>
-                Get booking updates →
+                How bookings work →
               </Link>
               <a className="text-link" href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" onClick={track}>
-                Android app on Google Play →<span className="sr-only"> (opens in a new tab; timed in-app packages may still apply — not website No Timer)</span>
+                Android app on Google Play →<span className="sr-only"> (opens in a new tab)</span>
               </a>
               <Link className="text-link" href="/download" onClick={track}>
                 App download details →
               </Link>
             </LinkKeyboardGroup>
-            <p className="expert-meta">The Android app may still offer timed Chat Now or Book Session while website No Timer booking stays closed.</p>
+            <p className="expert-meta">The app and website use timed conversation rules. Check the booking confirmation for the terms of the booking you choose.</p>
           </div>
         </details>
       </LinkKeyboardGroup>
-      <OfferNotice compact source="website_article_consult" />
     </aside>
   );
 }

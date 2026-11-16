@@ -30,6 +30,12 @@ import { PanditQueueService } from './pandit-queue.service';
 import { publicReviewWhere } from '../experts/public-reviews';
 import { isAtLeastAge, MINIMUM_ACCOUNT_AGE } from '../lib/age';
 import { isPanditPresent } from '../experts/presence-fresh';
+import {
+  BOOKING_CATALOG,
+  calculateBookingQuote,
+  chatNowQuote,
+  durationForDepth,
+} from './booking-catalog';
 
 import type {
   BookingDepth,
@@ -41,36 +47,6 @@ import type { BookingStatusUpdate } from './dto/update-booking-status.dto';
 
 const AGE_GATE_MARKETPLACE_MESSAGE =
   'Confirm your date of birth in Profile (you must be 18+) before booking or chatting.';
-
-const DEPTH_PRICES: Record<BookingDepth, number> = {
-  entry: 151,
-
-  standard: 301,
-
-  deep: 501,
-};
-
-const FORMAT_SURCHARGE: Record<BookingFormat, number> = {
-  video: 150,
-
-  audio: 0,
-
-  chat: -50,
-};
-
-const DEPTH_DURATION_MINUTES: Record<BookingDepth, number> = {
-  entry: 15,
-
-  standard: 25,
-
-  deep: 45,
-};
-
-const BOOKING_BUFFER_MINUTES = 5;
-
-const CHAT_NOW_PRICE = 101;
-const CHAT_NOW_DURATION_MINUTES = 15;
-const CHAT_NOW_BUFFER_MINUTES = 5;
 
 export interface BookingListItem {
   id: string;
@@ -223,13 +199,6 @@ export interface RefundResult {
   applied: boolean;
 }
 
-function calculateTotalPrice(
-  depth: BookingDepth,
-  format: BookingFormat,
-): number {
-  return DEPTH_PRICES[depth] + FORMAT_SURCHARGE[format];
-}
-
 @Injectable()
 export class BookingsService {
   constructor(
@@ -296,16 +265,15 @@ export class BookingsService {
       throw new BadRequestException('Pandit not found');
     }
 
-    const totalPrice = calculateTotalPrice(depth, format);
-
-    const coinsDeducted = totalPrice;
-
-    const durationMinutes = DEPTH_DURATION_MINUTES[depth];
+    const quote = calculateBookingQuote(depth, format);
+    const totalPrice = quote.totalPrice;
+    const coinsDeducted = quote.coinsDeducted;
+    const durationMinutes = quote.durationMinutes;
 
     const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
 
     const bufferEndTime = new Date(
-      endTime.getTime() + BOOKING_BUFFER_MINUTES * 60 * 1000,
+      endTime.getTime() + BOOKING_CATALOG.scheduled.bufferMinutes * 60 * 1000,
     );
 
     const user = await this.prisma.user.findFirst({
@@ -458,7 +426,8 @@ export class BookingsService {
 
     this.assertAdultDob(user.dob);
 
-    if (Number(user.walletBalance) < CHAT_NOW_PRICE) {
+    const quote = chatNowQuote();
+    if (Number(user.walletBalance) < quote.coinsDeducted) {
       throw new BadRequestException('Insufficient balance');
     }
 
@@ -478,10 +447,10 @@ export class BookingsService {
     }
 
     const endTime = new Date(
-      now.getTime() + CHAT_NOW_DURATION_MINUTES * 60 * 1000,
+      now.getTime() + quote.durationMinutes * 60 * 1000,
     );
     const bufferEndTime = new Date(
-      endTime.getTime() + CHAT_NOW_BUFFER_MINUTES * 60 * 1000,
+      endTime.getTime() + BOOKING_CATALOG.scheduled.bufferMinutes * 60 * 1000,
     );
 
     const booking = await this.prisma.$transaction(async (tx) => {
@@ -508,8 +477,12 @@ export class BookingsService {
       }
 
       const walletUpdate = await tx.user.updateMany({
-        where: { id: userId, isActive: true, walletBalance: { gte: 101 } },
-        data: { walletBalance: { decrement: 101 } },
+        where: {
+          id: userId,
+          isActive: true,
+          walletBalance: { gte: quote.coinsDeducted },
+        },
+        data: { walletBalance: { decrement: quote.coinsDeducted } },
       });
 
       if (walletUpdate.count === 0) {
@@ -523,12 +496,12 @@ export class BookingsService {
           area: dto.area,
           depth: 'entry',
           format: 'chat',
-          durationMinutes: CHAT_NOW_DURATION_MINUTES,
+          durationMinutes: quote.durationMinutes,
           startTime: now,
           endTime,
           bufferEndTime,
-          totalPrice: CHAT_NOW_PRICE,
-          coinsDeducted: 101,
+          totalPrice: quote.totalPrice,
+          coinsDeducted: quote.coinsDeducted,
           status: 'confirmed',
           notes: dto.notes ?? null,
         },
@@ -539,7 +512,7 @@ export class BookingsService {
           userId,
           type: 'booking_debit',
           status: TransactionStatus.SUCCESS,
-          coinsAmount: 101,
+          coinsAmount: quote.coinsDeducted,
           amountInr: newBooking.totalPrice,
           bookingId: newBooking.id,
           description: 'Chat Now Session',
@@ -788,14 +761,14 @@ export class BookingsService {
     }
 
     const depth = booking.depth as BookingDepth;
-    const durationMinutes = DEPTH_DURATION_MINUTES[depth];
+    const durationMinutes = durationForDepth(depth);
     if (!durationMinutes) {
       throw new BadRequestException('This session cannot be rescheduled.');
     }
 
     const endTime = new Date(startTime.getTime() + durationMinutes * 60 * 1000);
     const bufferEndTime = new Date(
-      endTime.getTime() + BOOKING_BUFFER_MINUTES * 60 * 1000,
+      endTime.getTime() + BOOKING_CATALOG.scheduled.bufferMinutes * 60 * 1000,
     );
 
     await this.prisma.$transaction(async (tx) => {

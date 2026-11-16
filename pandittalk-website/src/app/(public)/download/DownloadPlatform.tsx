@@ -47,7 +47,7 @@ export function DownloadPlatform() {
       <p className="info-label">Android</p>
       <h2>Android app on Google Play</h2>
       <p>Sign in with the same Indian mobile number to open wallet, bookings and reports on Android where supported. Opening the Play Store listing does not create a website booking or charge coins here.</p>
-      <p className="expert-meta">Honest note: the Android app may still offer timed Chat Now or Book Session while website No Timer booking stays closed. App prices and durations follow the in-app confirmation, not this website&apos;s paused offer.</p>
+      <p className="expert-meta">The Android app and website use timed Chat Now and Book Session rules. Prices and durations come from the booking service and are shown in the confirmation step.</p>
       <p className="sr-only" id="download-android-hint">Arrow keys move between Play Store, draft, free tools and booking-update links. Escape blurs.</p>
       <LinkKeyboardGroup className="actions" aria-label="Android download next steps" aria-describedby="download-android-hint">
         <a className="button" href={PLAY_STORE_URL} rel="noopener noreferrer" target="_blank">
@@ -56,7 +56,7 @@ export function DownloadPlatform() {
         </a>
         <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
         <Link className="button secondary" href="/tools">Try free tools</Link>
-        <Link className="text-link" href="/how-it-works#booking-availability-how">Get a note when No Timer opens →</Link>
+        <Link className="text-link" href="/pandits">Explore web booking →</Link>
       </LinkKeyboardGroup>
       {ios && (
         <p className="expert-meta" style={{ marginTop: 12 }}>
@@ -75,7 +75,7 @@ export function DownloadPlatform() {
         (event.currentTarget as HTMLElement).blur();
       }}>{ios ? 'You’re on iPhone — join the waitlist' : 'Coming to the App Store'}</h2>
       <p>
-        Pandit Talk is <strong>not available on the App Store yet</strong>. This email list is only for App Store launch updates — it does not notify you about No Timer booking availability.
+        Pandit Talk is <strong>not available on the App Store yet</strong>. This email list is only for App Store launch updates.
       </p>
       <NotifyOpenForm
         source="website_ios_waitlist"
@@ -84,7 +84,7 @@ export function DownloadPlatform() {
       />
       <p className="sr-only" id="download-ios-hint">Arrow keys move between waitlist follow-up links. Escape blurs.</p>
       <LinkKeyboardGroup className="actions download-ios-actions" style={{ marginTop: 12 }} aria-label="iOS waitlist follow-up links" aria-describedby="download-ios-hint" as="p">
-        <span>Prefer booking updates instead? <Link href="/how-it-works#booking-availability-how">Join the No Timer list</Link></span>
+        <span>Prefer to book now? <Link href="/pandits">Explore Pandits</Link></span>
         <Link href="/guidance/start">Prepare a draft</Link>
         <Link href="/tools">Try free tools</Link>
         {ios ? (

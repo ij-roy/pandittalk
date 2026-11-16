@@ -9,7 +9,7 @@ Date: 10 September 2026
 - ECS task definition 14 reached steady state with one running task.
 - `https://api.pandittalk.com/` returned the user-service health payload with HTTP 200.
 - The production API returned HTTP 401 for protected endpoints when no session was supplied.
-- `https://pandittalk.com/` returned HTTP 200 and contained the required No Timer homepage messaging.
+- The current timed-booking parity implementation is verified locally, but production availability is not claimed until the deployed backend exposes the catalogue and quote routes and an authenticated staging booking is verified.
 
 ## Website hosting checklist
 
@@ -31,7 +31,7 @@ The unauthenticated directory request should return HTTP 200 and a JSON array. P
 
 ## Product release guard
 
-New No Timer bookings remain disabled until the approved scope, pricing, fair-use, completion, follow-up and media lifecycle policies are implemented. Existing bookings retain their stored terms. This is an intentional service guard, not a deployment failure.
+New website bookings must use the app's timed model through the backend catalogue, quote, availability, wallet and booking services. Do not enable the website entry points until `GET /booking-catalog`, `GET /booking-catalog/quote`, scheduled creation and Chat Now creation are deployed and verified. Existing bookings retain their stored duration, price and session terms. A missing catalogue/quote route is a deployment failure, not a reason to restore No Timer copy or duplicate prices in the website.
 
 ## Rollback
 

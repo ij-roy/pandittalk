@@ -7,6 +7,7 @@ import { createSessionSocket } from './socket';
 import { Message, parseMessage, reconcileMessages } from './events';
 import { formatIstDateTime } from '@/lib/time/ist';
 import styles from '../account/customer.module.css';
+import { formatSessionRemaining } from './sessionTimer';
 
 const chatDraftKey = (bookingId: string) => `pandittalk-chat-draft:${bookingId}`;
 
@@ -23,6 +24,8 @@ export default function ChatRoom({ id }: { id: string }) {
   const [state, setState] = useState('Connecting');
   const [connected, setConnected] = useState(false);
   const [ended, setEnded] = useState(false);
+  const [sessionEndAt, setSessionEndAt] = useState<number | null>(null);
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [confirmGrace, setConfirmGrace] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -44,6 +47,14 @@ export default function ChatRoom({ id }: { id: string }) {
     sawChatEmpty.current = true;
     requestAnimationFrame(() => document.getElementById('chat-empty-log')?.focus());
   }, [messages.length, dialogOpen]);
+
+  useEffect(() => {
+    if (!sessionEndAt || ended) return;
+    const update = () => setSecondsRemaining(Math.max(0, Math.ceil((sessionEndAt - Date.now()) / 1000)));
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [sessionEndAt, ended]);
 
   useEffect(() => {
     let disposed = false;
@@ -88,10 +99,17 @@ export default function ChatRoom({ id }: { id: string }) {
       });
       s.on('waitingForPandit', () => setState('Waiting for your Pandit'));
       s.on('waitingForStart', () => setState('Waiting for the scheduled start'));
-      s.on('sessionStarted', () => setState('Conversation started'));
+      s.on('sessionStarted', (p: { endTime?: number; durationMinutes?: number }) => {
+        if (Number.isFinite(p.endTime)) setSessionEndAt(Number(p.endTime));
+        setState('Conversation started');
+      });
+      s.on('timeRemaining', (p: { secondsLeft?: number }) => {
+        if (Number.isFinite(p.secondsLeft)) setSecondsRemaining(Math.max(0, Number(p.secondsLeft)));
+      });
       for (const e of ['sessionEnded', 'sessionTimeUp', 'sessionGraceEnded']) {
         s.on(e, () => {
           setEnded(true);
+          setSecondsRemaining(0);
           setState('Your consultation has ended. Return to your booking for the final details.');
         });
       }
@@ -99,6 +117,7 @@ export default function ChatRoom({ id }: { id: string }) {
       for (const e of ['sessionRefunded', 'sessionEndedWithRefund']) {
         s.on(e, (p: { message?: string; coinsRefunded?: number }) => {
           setEnded(true);
+          setSecondsRemaining(0);
           setState(`${p.message || 'Session refund update'}${Number.isFinite(p.coinsRefunded) ? ` (${p.coinsRefunded} coins)` : ''}. Check your wallet for the refund details.`);
         });
       }
@@ -225,6 +244,7 @@ export default function ChatRoom({ id }: { id: string }) {
   return (
     <section className="stack">
       <p id="chat-session-state" role="status" className="notice" tabIndex={-1} inert={dialogOpen ? true : undefined}>{state}</p>
+      {secondsRemaining !== null && !ended && <div className={styles.sessionTimer} role="status" aria-live="polite" data-warning={secondsRemaining <= 300 ? 'true' : undefined}><strong>{formatSessionRemaining(secondsRemaining)}</strong><span>remaining · server timer</span></div>}
       {error && (
         <div className="error" role="alert" tabIndex={-1} ref={errorRef} inert={dialogOpen ? true : undefined} onKeyDown={e => {
           if (e.key !== 'Escape') return;
@@ -340,7 +360,7 @@ export default function ChatRoom({ id }: { id: string }) {
             event.preventDefault();
             (event.currentTarget as HTMLElement).blur();
           }}>
-            <p><strong>This consultation has ended.</strong> Ending here does not create a new booking or charge coins. If a refund was mentioned, confirm the amount in your wallet — this room is not a payment receipt. New No Timer bookings stay paused. Press Escape to leave this notice.</p>
+            <p><strong>This consultation has ended.</strong> Ending here does not create a new booking or charge coins. If a refund was mentioned, confirm the amount in your wallet — this room is not a payment receipt. Press Escape to leave this notice.</p>
           </aside>
           <p className="sr-only" id="chat-ended-hint">Arrow keys move between post-chat links. Escape blurs the focused link. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="After chat ended" aria-describedby="chat-ended-hint" inert={dialogOpen ? true : undefined}>

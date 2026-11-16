@@ -2,17 +2,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
-import { NotifyOpenForm } from '@/components/site/NotifyOpenForm';
-import { SiteIcon } from '@/components/site/SiteIcon';
 import { InformationPage } from '../about/InformationPage';
 
 export const metadata: Metadata = {
   title: 'Our approach',
-  description: 'Direction without fear — human conversations, clear boundaries, and your choice of what comes next. New No Timer bookings stay paused on the website.',
+  description: 'Direction without fear — human conversations, clear boundaries, and your choice of what comes next.',
   alternates: { canonical: '/our-approach' },
   openGraph: {
     title: 'Our approach · Pandit Talk',
-    description: 'Direction without fear while new No Timer bookings stay paused — prepare a draft, explore Pandits, try free tools.',
+    description: 'Direction without fear — prepare a question, explore Pandits, and choose what comes next.',
     url: '/our-approach',
   },
 };
@@ -22,7 +20,7 @@ export default function Page() {
     <InformationPage
       eyebrow={<span lang="hi">Ek Soch. Ek Sach. Ek Koshish.</span>}
       title="Direction without fear."
-      intro="Traditional wisdom can help someone frame a question, prepare for possibilities and choose a next step. It cannot guarantee an external outcome. New No Timer bookings are not open yet — exploring this page never charges coins."
+      intro="Traditional wisdom can help someone frame a question, prepare for possibilities and choose a next step. It cannot guarantee an external outcome. Choose a timed conversation only when the person, availability and total feel right."
     >
       <div className="info-columns">
         <section className="panel info-card">
@@ -66,7 +64,7 @@ export default function Page() {
           <li>Not a guarantee of marriage, career, health or money outcomes.</li>
           <li>Not a place where automated tools are presented as a live Pandit.</li>
         </ul>
-        <p className="sr-only" id="approach-boundary-hint">Arrow keys move between boundary links. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
+        <p className="sr-only" id="approach-boundary-hint">Arrow keys move between boundary links. Escape blurs. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="Our approach boundary links" aria-describedby="approach-boundary-hint">
           <Link className="text-link" href="/disclaimer">Read the disclaimer →</Link>
           <Link className="text-link" href="/trust">Trust and care →</Link>
@@ -75,30 +73,15 @@ export default function Page() {
         </LinkKeyboardGroup>
       </section>
 
-      <p className="sr-only" id="approach-next-hint">Arrow keys move between Our approach next steps. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
+      <p className="sr-only" id="approach-next-hint">Arrow keys move between Our approach next steps. Escape blurs. Skip remains site-content.</p>
       <LinkKeyboardGroup className="actions" aria-label="Our approach next steps" aria-describedby="approach-next-hint">
         <Link className="button" href="/pandits">Explore Pandits</Link>
         <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
         <Link className="button secondary" href="/tools">Try free tools</Link>
         <Link className="button secondary" href="/how-it-works">How it works</Link>
-        <Link className="text-link" href="/how-it-works#booking-availability-how">Get booking updates →</Link>
+        <Link className="text-link" href="/pandits">Choose a Pandit →</Link>
       </LinkKeyboardGroup>
 
-      <aside className="notice offer-notice" aria-label="Get availability updates">
-        <SiteIcon name="info" size={19} />
-        <div className="offer-notice-body">
-          <p>
-            <strong>Want booking updates?</strong> Leave your email for a note when No Timer website booking opens.{' '}
-            <span className="sr-only" id="approach-notify-hint">Arrow keys move between free tools and draft while you wait. Escape blurs. NotifyOpenForm still requires source. Skip remains site-content.</span>
-            <LinkKeyboardGroup as="span" aria-label="Our approach notify alternatives" aria-describedby="approach-notify-hint">
-              <Link href="/tools">Try free tools</Link>
-              {' · '}
-              <Link href="/guidance/start">Prepare a draft</Link>
-            </LinkKeyboardGroup>
-          </p>
-          <NotifyOpenForm source="website_our_approach" />
-        </div>
-      </aside>
     </InformationPage>
   );
 }

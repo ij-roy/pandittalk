@@ -37,94 +37,20 @@ function successCopy(source: string, duplicate = false) {
       ? 'You’re already on the list. We’ll write when wallet recharge opens.'
       : 'You’re on the list. We’ll write when wallet recharge opens.';
   }
-  if (source.includes('pricing')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when pricing and booking open.'
-      : 'You’re on the list. We’ll write when pricing and No Timer booking open.';
-  }
-  if (source.includes('cookie') || source.includes('account_privacy') || source.includes('privacy')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens — separate from privacy or cookie questions.'
-      : 'You’re on the list. We’ll write when No Timer opens — separate from privacy or cookie replies.';
-  }
-  if (source.includes('delete_account')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens — this does not restore a deleted account.'
-      : 'You’re on the list. We’ll write when No Timer opens — this does not restore a deleted account.';
-  }
-  if (source.includes('disclaimer') || source.includes('trust')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens.'
-      : 'You’re on the list. We’ll write when No Timer conversations open.';
-  }
+  if (source.includes('pricing')) return duplicate ? 'You’re already on the list. We’ll send booking and pricing updates.' : 'You’re on the list for booking and pricing updates.';
   if (source.includes('paid_tool') || source.includes('tools_index_paid')) {
     return duplicate
       ? 'You’re already on the list. We’ll write when paid reports open.'
       : 'You’re on the list. We’ll write when paid reports open again.';
   }
-  if (source.includes('after_reading') || source.includes('free_reading')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens.'
-      : 'You’re on the list. We’ll write when No Timer conversations open.';
-  }
-  if (source.includes('contact')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens — this is separate from support email replies.'
-      : 'You’re on the list. We’ll write when No Timer opens — this is separate from support email replies.';
-  }
-  if (source.includes('refund')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens — this is separate from refund replies.'
-      : 'You’re on the list. We’ll write when No Timer opens — this is separate from refund support.';
-  }
-  if (source.includes('grievance')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens — this is separate from your grievance email.'
-      : 'You’re on the list. We’ll write when No Timer opens — this is separate from grievance replies.';
-  }
-  if (source.includes('help')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens — separate from this help topic.'
-      : 'You’re on the list. We’ll write when No Timer opens — separate from this help topic.';
-  }
-  if (source.includes('editorial') || source.includes('about') || source.includes('our_approach') || source.includes('how_it_works') || source.includes('tools_index')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer conversations open.'
-      : 'You’re on the list. We’ll write when No Timer conversations open — browsing this page stays free.';
-  }
   if (source.includes('for_pandits') || source.includes('for-pandits')) {
     return duplicate
-      ? 'You’re already on the practitioner updates list. We’ll write about onboarding notes — not customer booking-open mail, and not your application decision.'
-      : 'You’re on the practitioner updates list. We’ll write about onboarding notes — application decisions and customer booking-open mail stay separate.';
-  }
-  if (source.includes('journal') || source.includes('article')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens — reading the journal stays free.'
-      : 'You’re on the list. We’ll write when No Timer conversations open — reading the journal stays free.';
-  }
-  if (source.includes('cookie') || source.includes('privacy') || source.includes('terms') || source.includes('delete_account') || source.includes('account_privacy')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens — separate from legal or privacy replies.'
-      : 'You’re on the list. We’ll write when No Timer conversations open — separate from legal or privacy replies.';
-  }
-  if (source.includes('customer_home') || source.includes('accessibility') || source.includes('404')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens.'
-      : 'You’re on the list. We’ll write when No Timer conversations open.';
-  }
-  if (source.includes('guidance')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer opens — your draft stays in this browser until then.'
-      : 'You’re on the list. We’ll write when No Timer opens — your guidance draft stays saved in this browser.';
-  }
-  if (source.includes('directory') || source.includes('pandit')) {
-    return duplicate
-      ? 'You’re already on the list. We’ll write when No Timer booking with Pandits opens — signing up never charges or creates a booking.'
-      : 'You’re on the list. We’ll write when No Timer booking with Pandits opens — signing up never charges or creates a booking.';
+      ? 'You’re already on the practitioner updates list. We’ll write about onboarding notes and availability.'
+      : 'You’re on the practitioner updates list. We’ll write about onboarding notes and availability.';
   }
   return duplicate
-    ? 'You’re already on the list. We’ll write when No Timer opens — signing up never charges coins or creates a booking.'
-    : 'You’re on the list. We’ll write when No Timer conversations open — signing up never charges coins or creates a booking.';
+    ? 'You’re already on the list. We’ll send occasional Pandit Talk updates.'
+    : 'You’re on the list for occasional Pandit Talk updates.';
 }
 
 export function NotifyOpenForm({
