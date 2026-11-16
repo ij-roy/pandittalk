@@ -6,6 +6,7 @@ Date: 16 November 2026
 
 - Backend catalogue and quote contract: `pandittalk-backend/apps/user-service/src/bookings/booking-catalog.ts` and `booking-catalog.controller.ts`.
 - Scheduled and Chat Now booking creation use the shared backend catalogue; the website does not submit price, coin or duration fields.
+- Scheduled offers are Audio and Video only, matching the app; Chat is retained for existing records and created only through the Chat Now endpoint.
 - Website flow: `pandittalk-website/src/features/bookings/BookingFlow.tsx`.
 - Session countdown rendering consumes server lifecycle/time-remaining events in the chat and media rooms.
 - Existing booking detail actions preserve stored terms; rescheduling uses live slots and server eligibility.

@@ -16,7 +16,6 @@ export const BOOKING_DEPTHS = [
 ] as const;
 
 export const BOOKING_FORMATS = [
-  { key: 'chat', label: 'Chat', surcharge: -50 },
   { key: 'audio', label: 'Audio', surcharge: 0 },
   { key: 'video', label: 'Video', surcharge: 150 },
 ] as const;

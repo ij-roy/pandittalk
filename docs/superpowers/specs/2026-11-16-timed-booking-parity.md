@@ -8,7 +8,7 @@ Make the website offer the same timed scheduled consultations and Chat Now servi
 
 - Scheduled sessions use the existing `legacy_timed` model. New `no_timer` creation remains rejected by the backend and must not be advertised by the website.
 - Scheduled depths are Entry (15 minutes, 151 coins), Standard (25 minutes, 301 coins), and Deep (45 minutes, 501 coins).
-- Scheduled formats are audio (no surcharge), video (+150 coins), and chat (-50 coins from the depth price). The website must display the returned backend quote instead of reproducing these numbers in UI code.
+- Scheduled formats are audio (no surcharge) and video (+150 coins). Chat is a separate Chat Now service, not a scheduled format. The website must display the returned backend quote instead of reproducing these numbers in UI code.
 - Scheduled booking charges the wallet atomically, rejects conflicts, and preserves the selected Pandit, topic, depth, format, notes, and start time.
 - Chat Now is enabled for an online/present Pandit, costs 101 coins, starts immediately, and has a 15-minute timed session. A busy Pandit is not silently booked; the backend returns live status and the app may join a queue of at most five with a 15-minute maximum wait and a 60-second turn timeout.
 - If the Pandit does not join within the backend waiting timeout (currently 10 minutes), the full booking charge returns to the wallet. Ending before the Pandit joins also follows the full-refund path.
@@ -21,7 +21,7 @@ Make the website offer the same timed scheduled consultations and Chat Now servi
 1. The public Pandit profile presents two meaningful actions: a scheduled booking path and Chat Now only when the backend presence/status allows it. Notes are optional inside booking, never a hero CTA.
 2. The booking flow loads the backend catalog and quote, then loads the backend’s slots for the selected duration. It shows format, duration, total coins, Pandit, topic, and cancellation/refund summary before the final confirmation.
 3. The first vertical slice is scheduled audio: select depth, topic, date/time, optional note, review backend quote, confirm, and land on the existing booking detail page.
-4. Video and scheduled chat reuse the same flow after the first slice is proven. Chat Now uses the separate backend endpoint and status/queue response; it never pretends an offline or busy Pandit is immediately available.
+4. Video reuses the scheduled flow after the first slice is proven. Chat Now uses the separate backend endpoint and status/queue response; it never pretends an offline or busy Pandit is immediately available.
 5. Bookings and sessions use the same existing website proxy and session bootstrap. The proxy forwards `X-Client-Platform: web`, allows only the required paths, and does not expose access tokens to browser JavaScript.
 6. The chat/audio/video room visibly renders server timer events, waiting/no-show status, end-of-session status, disconnect recovery, and wallet-refund confirmation. The UI cannot invent or extend time locally.
 7. Remove website-only “No Timer”, “opening soon”, “new bookings paused”, and draft-only booking messaging from the live booking surfaces once the flow is connected. Keep honest legacy-booking language only where it describes existing records.

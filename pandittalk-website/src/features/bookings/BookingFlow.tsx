@@ -11,6 +11,7 @@ import {
   createChatNow,
   createScheduledBooking,
   expertSlotsPath,
+  getChatQueuePosition,
   getChatNowQuote,
   getPanditStatus,
   joinChatQueue,
@@ -18,10 +19,11 @@ import {
   type BookingCatalog,
   type BookingDepth,
   type BookingQuote,
+  type ChatNowQuote,
   type DisplaySlot,
   type PanditLiveStatus,
 } from './bookingApi';
-import type { Format } from './types';
+import type { ScheduledFormat } from './types';
 import styles from './booking-flow.module.css';
 
 const timeFormatter = new Intl.DateTimeFormat('en-IN', {
@@ -47,12 +49,12 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
   const catalogQuery = useApi<BookingCatalog>('/booking-catalog');
   const walletQuery = useApi<{ coinBalance: number }>('/wallet');
   const [depth, setDepth] = useState<BookingDepth | ''>('');
-  const [format, setFormat] = useState<Format | ''>('');
+  const [format, setFormat] = useState<ScheduledFormat | ''>('');
   const [area, setArea] = useState('');
   const [date, setDate] = useState(todayIstIso());
   const [selectedSlot, setSelectedSlot] = useState('');
   const [notes, setNotes] = useState('');
-  const [quote, setQuote] = useState<BookingQuote>();
+  const [quote, setQuote] = useState<BookingQuote | ChatNowQuote>();
   const [quoteError, setQuoteError] = useState('');
   const [slots, setSlots] = useState<DisplaySlot[]>();
   const [slotsError, setSlotsError] = useState('');
@@ -64,6 +66,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
   const [queued, setQueued] = useState(false);
   const [queueInfo, setQueueInfo] = useState<{ position: number; estimatedWaitMinutes: number; queueLength: number }>();
   const [queueBusy, setQueueBusy] = useState(false);
+  const [queueStatus, setQueueStatus] = useState('');
 
   const catalog = catalogQuery.data;
   const expert = expertQuery.data;
@@ -75,19 +78,19 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
   useEffect(() => {
     if (!catalog) return;
     if (!depth && catalog.scheduled.depths[0]) setDepth(catalog.scheduled.depths[0].key);
-    if (!format) setFormat((isChatNow ? catalog.scheduled.formats.find(item => item.key === 'chat')?.key : catalog.scheduled.formats.find(item => item.key === 'audio')?.key) || catalog.scheduled.formats[0]?.key || '');
+    if (!isChatNow && !format) setFormat(catalog.scheduled.formats.find(item => item.key === 'audio')?.key || catalog.scheduled.formats[0]?.key || '');
     if (!area && catalog.areas[0]) setArea(catalog.areas[0].key);
   }, [catalog, depth, format, area, isChatNow]);
 
   useEffect(() => {
-    if ((!isChatNow && !depth) || !format) {
+    if (!isChatNow && (!depth || !format)) {
       setQuote(undefined);
       return;
     }
     let active = true;
     setQuote(undefined);
     setQuoteError('');
-    (isChatNow ? getChatNowQuote() : api<BookingQuote>(bookingQuotePath(depth as BookingDepth, format)))
+    (isChatNow ? getChatNowQuote() : api<BookingQuote>(bookingQuotePath(depth as BookingDepth, format as ScheduledFormat)))
       .then(value => { if (active) setQuote(value); })
       .catch(error => { if (active) setQuoteError(friendlyError(error)); });
     return () => { active = false; };
@@ -123,6 +126,30 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
     return () => { active = false; window.clearInterval(timer); };
   }, [expertId, isChatNow]);
 
+  useEffect(() => {
+    if (!isChatNow || !expertId || !queued) return;
+    let active = true;
+    const refreshQueue = () => {
+      getChatQueuePosition(expertId)
+        .then(value => {
+          if (!active) return;
+          if (value.position === null) {
+            setQueued(false);
+            setQueueInfo(undefined);
+            setQueueStatus('Your queue place is no longer active. Nothing was charged. Check Chat Now availability again or choose a scheduled time.');
+            return;
+          }
+          setQueueInfo({ position: value.position, estimatedWaitMinutes: value.position * 15, queueLength: value.queueLength });
+        })
+        .catch(() => {
+          // Keep the last known queue position; the next refresh can recover it.
+        });
+    };
+    refreshQueue();
+    const timer = window.setInterval(refreshQueue, 10000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [expertId, isChatNow, queued]);
+
   function reviewBooking(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError('');
@@ -155,7 +182,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
           startTime: selectedSlot,
           area,
           depth: depth as BookingDepth,
-          format: format as Format,
+          format: format as ScheduledFormat,
           ...(notes.trim() ? { notes: notes.trim() } : {}),
         });
       if (!created?.id) throw new Error('The booking service did not return a booking reference.');
@@ -171,6 +198,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
     if (!expertId) return;
     setQueueBusy(true);
     setFormError('');
+    setQueueStatus('');
     try {
       setQueueInfo(await joinChatQueue(expertId));
       setQueued(true);
@@ -188,6 +216,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
       await leaveChatQueue(expertId);
       setQueued(false);
       setQueueInfo(undefined);
+      setQueueStatus('You left the queue. Nothing was charged.');
     } catch (error) {
       setFormError(friendlyError(error));
     } finally {
@@ -229,6 +258,8 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
             {!presenceLoading && presence?.state === 'busy' && <><strong>Currently in another conversation</strong><span>{presence.queueLength} people are waiting. You can join the queue if a place is available.</span>{queued && queueInfo && <span>You are #{queueInfo.position} in line · estimated wait {queueInfo.estimatedWaitMinutes} minutes.</span>}</>}
             {!presenceLoading && presence?.state === 'offline' && <><strong>Not available right now</strong><span>Try a scheduled time instead.</span></>}
           </div>
+          {queueStatus && <p className="notice" role="status">{queueStatus}</p>}
+          {!presenceLoading && presence?.state === 'busy' && presence.queueLength >= presence.maxQueueDepth && <p className="notice" role="status">The Chat Now queue is full right now. Nothing is charged unless a booking is confirmed.</p>}
           {presence?.state === 'busy' && !queued && presence.canJoinQueue && <button className="button secondary" type="button" onClick={() => void handleJoinQueue()} disabled={queueBusy}>{queueBusy ? 'Joining queue…' : 'Join the Chat Now queue'}</button>}
           {queued && <button className="text-link" type="button" onClick={() => void handleLeaveQueue()} disabled={queueBusy}>{queueBusy ? 'Updating queue…' : 'Leave the queue'}</button>}
           {quoteError && <p className="error" role="alert">{quoteError}</p>}
@@ -243,7 +274,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
           <div className={styles.grid}>
             <label className="field">Topic<select aria-label="Topic" value={area} onChange={event => setArea(event.target.value)} disabled={!catalog}>{catalog?.areas.map(item => <option value={item.key} key={item.key}>{item.label}</option>)}</select></label>
             <label className="field">Session depth<select aria-label="Session depth" value={depth} onChange={event => setDepth(event.target.value as BookingDepth)} disabled={!catalog}>{catalog?.scheduled.depths.map(item => <option value={item.key} key={item.key}>{item.label} · {item.durationMinutes} minutes</option>)}</select></label>
-            <label className="field">Format<select aria-label="Format" value={format} onChange={event => setFormat(event.target.value as Format)} disabled={!catalog}>{catalog?.scheduled.formats.map(item => <option value={item.key} key={item.key}>{item.label}{item.surcharge ? ` · ${item.surcharge > 0 ? '+' : ''}${item.surcharge} coins` : ''}</option>)}</select></label>
+            <label className="field">Format<select aria-label="Format" value={format} onChange={event => setFormat(event.target.value as ScheduledFormat)} disabled={!catalog}>{catalog?.scheduled.formats.map(item => <option value={item.key} key={item.key}>{item.label}{item.surcharge ? ` · ${item.surcharge > 0 ? '+' : ''}${item.surcharge} coins` : ''}</option>)}</select></label>
             <label className="field">Date<input aria-label="Date" type="date" min={todayIstIso()} value={date} onChange={event => setDate(event.target.value)} /></label>
           </div>
 
@@ -273,8 +304,9 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
             <div><dt>Total</dt><dd><strong>{quote?.totalPrice} coins</strong></dd></div>
           </dl>
           {notes.trim() && <div className={styles.notes}><span>Optional note</span><p>{notes.trim()}</p></div>}
+          {balance !== undefined && quote && balance < quote.totalPrice && <div className="error" role="alert"><strong>Not enough coins to confirm.</strong> Add {quote.totalPrice - balance} coins to your wallet, then return here to keep these details.</div>}
           <p className="helper">Your wallet is charged only when the booking service confirms this slot. The server keeps the timer and session terms for the booking.</p>
-          <div className="actions"><button className="button" type="button" onClick={() => void confirmBooking()} disabled={submitting}>{submitting ? 'Confirming…' : isChatNow ? `Start Chat Now · ${quote?.totalPrice} coins` : `Confirm booking · ${quote?.totalPrice} coins`}</button><button className="button secondary" type="button" onClick={() => setStep('choose')} disabled={submitting}>Change details</button></div>
+          <div className="actions"><button className="button" type="button" onClick={() => void confirmBooking()} disabled={submitting || (balance !== undefined && !!quote && balance < quote.totalPrice)}>{submitting ? 'Confirming…' : isChatNow ? `Start Chat Now · ${quote?.totalPrice} coins` : `Confirm booking · ${quote?.totalPrice} coins`}</button>{balance !== undefined && quote && balance < quote.totalPrice && <Link className="button secondary" href={`/wallet/recharge?returnTo=${encodeURIComponent(`/bookings/new?expertId=${expertId}${isChatNow ? '&mode=chat-now' : ''}`)}`}>Add coins</Link>}<button className="button secondary" type="button" onClick={() => setStep('choose')} disabled={submitting}>Change details</button></div>
         </section>
       )}
     </main>

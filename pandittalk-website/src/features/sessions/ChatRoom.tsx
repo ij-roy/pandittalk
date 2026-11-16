@@ -24,7 +24,6 @@ export default function ChatRoom({ id }: { id: string }) {
   const [state, setState] = useState('Connecting');
   const [connected, setConnected] = useState(false);
   const [ended, setEnded] = useState(false);
-  const [sessionEndAt, setSessionEndAt] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [confirmGrace, setConfirmGrace] = useState(false);
@@ -47,14 +46,6 @@ export default function ChatRoom({ id }: { id: string }) {
     sawChatEmpty.current = true;
     requestAnimationFrame(() => document.getElementById('chat-empty-log')?.focus());
   }, [messages.length, dialogOpen]);
-
-  useEffect(() => {
-    if (!sessionEndAt || ended) return;
-    const update = () => setSecondsRemaining(Math.max(0, Math.ceil((sessionEndAt - Date.now()) / 1000)));
-    update();
-    const timer = window.setInterval(update, 1000);
-    return () => window.clearInterval(timer);
-  }, [sessionEndAt, ended]);
 
   useEffect(() => {
     let disposed = false;
@@ -99,8 +90,7 @@ export default function ChatRoom({ id }: { id: string }) {
       });
       s.on('waitingForPandit', () => setState('Waiting for your Pandit'));
       s.on('waitingForStart', () => setState('Waiting for the scheduled start'));
-      s.on('sessionStarted', (p: { endTime?: number; durationMinutes?: number }) => {
-        if (Number.isFinite(p.endTime)) setSessionEndAt(Number(p.endTime));
+      s.on('sessionStarted', () => {
         setState('Conversation started');
       });
       s.on('timeRemaining', (p: { secondsLeft?: number }) => {

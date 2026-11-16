@@ -7,7 +7,9 @@ import {
 } from 'class-validator';
 
 export const BOOKING_DEPTHS = ['entry', 'standard', 'deep'] as const;
-export const BOOKING_FORMATS = ['video', 'audio', 'chat'] as const;
+// Scheduled bookings match the app: chat is created only through /bookings/chat-now.
+// Existing stored Chat Now bookings remain readable as persisted records.
+export const BOOKING_FORMATS = ['video', 'audio'] as const;
 export const BOOKING_SESSION_MODELS = ['legacy_timed', 'no_timer'] as const;
 
 export type BookingDepth = (typeof BOOKING_DEPTHS)[number];

@@ -88,7 +88,7 @@
 - [ ] Implement the first end-to-end scheduled audio path using only backend data.
 - [ ] Run the focused UI test against a local preview/staging configuration and fix responsive overflow.
 
-### Task 4: Other scheduled formats and Chat Now
+### Task 4: Other scheduled format and Chat Now
 
 **Files:**
 - Modify: `pandittalk-website/src/features/bookings/BookingFlow.tsx`
@@ -97,7 +97,7 @@
 - Modify: `pandittalk-website/src/features/bookings/QueuePanel.tsx`
 - Test: `pandittalk-website/tests/ui/timed-booking.spec.ts`
 
-- [ ] Add video and scheduled chat formats through the same quote/slot flow.
+- [ ] Add video through the same quote/slot flow. Keep Chat out of scheduled formats; it uses the separate Chat Now path.
 - [ ] Add Chat Now status, confirmation, queue join/leave, busy, offline, insufficient-wallet, and queue-expired recovery.
 - [ ] Add booking detail actions for reschedule, cancel/refund, and session links without changing existing booking terms.
 - [ ] Run focused UI tests at 360px, 768px, 1024px, and desktop widths.

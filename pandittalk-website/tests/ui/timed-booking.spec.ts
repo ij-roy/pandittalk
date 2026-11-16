@@ -17,7 +17,6 @@ const catalog = {
       { key: 'deep', label: 'Deep', durationMinutes: 45, basePrice: 501 },
     ],
     formats: [
-      { key: 'chat', label: 'Chat', surcharge: -50 },
       { key: 'audio', label: 'Audio', surcharge: 0 },
       { key: 'video', label: 'Video', surcharge: 150 },
     ],
@@ -52,6 +51,8 @@ test('completes a scheduled audio booking with a backend quote and no client pri
 
   await page.goto('/bookings/new?expertId=expert-a');
   await expect(page.getByRole('heading', { name: 'Book a timed consultation', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Format').locator('option')).toHaveCount(2);
+  await expect(page.getByLabel('Format').locator('option', { hasText: 'Chat' })).toHaveCount(0);
   await page.getByLabel('Topic').selectOption('career');
   await page.getByLabel('Session depth').selectOption('entry');
   await page.getByLabel('Format').selectOption('audio');

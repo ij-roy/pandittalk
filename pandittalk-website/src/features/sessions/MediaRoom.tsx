@@ -36,21 +36,12 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
   const [graceRequested, setGraceRequested] = useState(false);
   const [leftRoom, setLeftRoom] = useState(false);
   const [ended, setEnded] = useState(false);
-  const [sessionEndAt, setSessionEndAt] = useState<number | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const events = sessionEvents(format);
   const dialogOpen = confirmEnd || confirmLeave || confirmGrace;
   const joinRef = useRef<HTMLButtonElement | null>(null);
   const rejoinRef = useRef<HTMLButtonElement | null>(null);
   const endedRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (!sessionEndAt || ended) return;
-    const update = () => setSecondsRemaining(Math.max(0, Math.ceil((sessionEndAt - Date.now()) / 1000)));
-    update();
-    const timer = window.setInterval(update, 1000);
-    return () => window.clearInterval(timer);
-  }, [sessionEndAt, ended]);
 
   useEffect(() => {
     if (error) requestAnimationFrame(() => errorRef.current?.focus());
@@ -180,8 +171,7 @@ export default function MediaRoom({ id, format }: { id: string; format: 'audio' 
       s.on('connect_error', () =>
         setError('We could not reconnect your consultation yet. Keep this page open, or return from your booking and try again.'),
       );
-      s.on(events.started, (p: { endTime?: number; durationMinutes?: number }) => {
-        if (Number.isFinite(p.endTime)) setSessionEndAt(Number(p.endTime));
+      s.on(events.started, () => {
         session.enableSessionMedia();
         setState('Consultation started');
       });

@@ -1,5 +1,6 @@
 export const newBookingBlock = 'This optional note stays in your browser and does not create a booking or charge coins. To book, open a Pandit profile and choose a scheduled time or Chat Now; the booking service supplies the duration, availability and total.';
 export type Format = 'chat' | 'audio' | 'video';
+export type ScheduledFormat = Exclude<Format, 'chat'>;
 export type BookingStatus = 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
 export type Booking = { id: string; panditId: string; panditName?: string; pandit?: {name: string}; area: string; format: Format; status: BookingStatus; startTime: string; endTime?: string; durationMinutes: number; coinsDeducted: number; totalPrice: number; notes: string|null; review: {id: string;rating:number;comment:string|null}|null };
 
