@@ -1,9 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
 import { useApi } from '@/lib/api/client';
-import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
 import { LoadingState } from '@/components/site/Skeleton';
 import { canResume, parseBooking, type Booking } from '@/features/bookings/types';
 import { formatIstDateTime } from '@/lib/time/ist';
@@ -11,245 +9,181 @@ import { formatIstDateTime } from '@/lib/time/ist';
 type Wallet = { coinBalance: number };
 type Unread = { count: number };
 
+function RefreshIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+      <path d="M20 11a8.1 8.1 0 0 0-14.8-3.7L4 9" />
+      <path d="M4 4v5h5" />
+      <path d="M4 13a8.1 8.1 0 0 0 14.8 3.7L20 15" />
+      <path d="M20 20v-5h-5" />
+    </svg>
+  );
+}
+
+function SummaryCard({ label, value, description, href }: { label: string; value: string; description: string; href: string }) {
+  return (
+    <Link className="panel" data-home-summary href={href}>
+      <span className="eyebrow home-summary-label">{label}</span>
+      <strong className="home-summary-value">{value}</strong>
+      <span className="home-summary-description">{description}</span>
+      <span className="text-link">Open {label.toLowerCase()}</span>
+    </Link>
+  );
+}
+
+function EmptyPrimary() {
+  return (
+    <div className="home-primary-copy">
+      <span className="eyebrow">Your next step</span>
+      <h2>Find your next conversation</h2>
+      <p>Choose a Pandit and see the available options, including Chat Now and scheduled sessions, before you decide.</p>
+      <div className="actions home-primary-actions">
+        <Link className="button" href="/pandits">Explore Pandits <span aria-hidden="true">→</span></Link>
+        <Link className="text-link" href="/how-it-works">See how booking works <span aria-hidden="true">→</span></Link>
+      </div>
+    </div>
+  );
+}
+
+function NextBookingPrimary({ booking }: { booking: Booking }) {
+  const name = booking.panditName || booking.pandit?.name || 'your Pandit';
+  const sessionHref = `/sessions/${encodeURIComponent(booking.id)}/${booking.format}`;
+
+  return (
+    <div className="home-primary-copy">
+      <span className="eyebrow">Your next conversation</span>
+      <h2>{name}</h2>
+      <p>{formatIstDateTime(booking.startTime)} · {booking.format} · {booking.durationMinutes} minutes</p>
+      <div className="home-booking-details">
+        <span>Confirmed booking</span>
+        <strong>{booking.totalPrice.toLocaleString('en-IN')} coins</strong>
+      </div>
+      <div className="actions home-primary-actions">
+        <Link className="button" href={`/bookings/${encodeURIComponent(booking.id)}`}>Open booking <span aria-hidden="true">→</span></Link>
+        <Link className="text-link" href={sessionHref}>Open existing {booking.format} session <span aria-hidden="true">→</span></Link>
+      </div>
+    </div>
+  );
+}
+
+function PastBookingsPrimary({ count }: { count: number }) {
+  return (
+    <div className="home-primary-copy">
+      <span className="eyebrow">Your Pandit Talk space</span>
+      <h2>Your bookings are here</h2>
+      <p>You have {count} saved {count === 1 ? 'booking' : 'bookings'}. Explore the directory when you are ready for another conversation.</p>
+      <div className="actions home-primary-actions">
+        <Link className="button" href="/pandits">Explore Pandits <span aria-hidden="true">→</span></Link>
+        <Link className="text-link" href="/bookings">View bookings <span aria-hidden="true">→</span></Link>
+      </div>
+    </div>
+  );
+}
+
 export function HomeOverview() {
   const bookings = useApi<unknown[]>('/bookings');
   const wallet = useApi<Wallet>('/wallet');
   const unread = useApi<Unread>('/notifications/unread-count');
-  const errorRef = useRef<HTMLDivElement>(null);
-  const emptyRef = useRef<HTMLDivElement>(null);
-  const sawEmpty = useRef(false);
+  const reports = useApi<unknown[]>('/reports');
 
-  let next: Booking | undefined;
-  let bookingCount = 0;
+  let parsedBookings: Booking[] = [];
   if (Array.isArray(bookings.data)) {
-    const parsed = bookings.data.flatMap((row) => {
+    parsedBookings = bookings.data.flatMap(row => {
       try { return [parseBooking(row)]; } catch { return []; }
     });
-    bookingCount = parsed.length;
-    const now = Date.now();
-    next = parsed
-      .filter(b => canResume(b) && Date.parse(b.startTime) + (b.durationMinutes || 60) * 60000 > now)
-      .sort((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime))[0];
   }
 
+  const now = Date.now();
+  const next = parsedBookings
+    .filter(booking => canResume(booking) && Date.parse(booking.startTime) + booking.durationMinutes * 60000 > now)
+    .sort((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime))[0];
   const unreadCount = unread.data && Number.isInteger(unread.data.count) ? unread.data.count : null;
   const balance = wallet.data && Number.isFinite(wallet.data.coinBalance) ? wallet.data.coinBalance : null;
-  const emptyHome = !bookings.loading && !bookings.error && bookingCount === 0;
-  const anyError = Boolean(bookings.error || wallet.error || unread.error);
-  const loading = bookings.loading || wallet.loading || unread.loading;
-
-  useEffect(() => {
-    if (anyError) requestAnimationFrame(() => errorRef.current?.focus());
-  }, [anyError]);
-
-  useEffect(() => {
-    if (!emptyHome || anyError) {
-      if (!emptyHome) sawEmpty.current = false;
-      return;
-    }
-    if (sawEmpty.current) return;
-    sawEmpty.current = true;
-    requestAnimationFrame(() => emptyRef.current?.focus());
-  }, [emptyHome, anyError]);
+  const reportCount = Array.isArray(reports.data) ? reports.data.length : null;
+  const loading = bookings.loading || wallet.loading || unread.loading || reports.loading;
+  const anyError = Boolean(bookings.error || wallet.error || unread.error || reports.error);
+  const bookingError = bookings.error?.message;
+  const hasPastBookings = parsedBookings.length > 0 && !next;
 
   function retryAll() {
     bookings.reload();
     wallet.reload();
     unread.reload();
+    reports.reload();
   }
 
   return (
-    <section className="panel stack" aria-label="At a glance" aria-busy={loading || undefined}>
-      <div className="actions" style={{ margin: 0, justifyContent: 'space-between' }}>
-        <h2 style={{ margin: 0 }}>At a glance</h2>
-        <p className="sr-only" id="home-overview-refresh-hint">Arrow keys move between Refresh, free tools and draft. Escape blurs. Skip remains site-content.</p>
-        <LinkKeyboardGroup className="actions" style={{ margin: 0 }} aria-label="Home overview toolbar" aria-describedby="home-overview-refresh-hint">
-          <button
-            type="button"
-            className="button secondary"
-            disabled={loading}
-            aria-busy={loading || undefined}
-            onClick={retryAll}
-          >
-            {loading ? 'Refreshing…' : 'Refresh overview'}
-          </button>
-          <Link className="text-link" href="/tools">Free tools</Link>
-          <Link className="text-link" href="/guidance/start">Prepare a draft</Link>
-        </LinkKeyboardGroup>
+    <section className="home-dashboard" aria-label="Your home overview" aria-busy={loading || undefined}>
+      <div className="home-dashboard-header">
+        <div>
+          <span className="eyebrow">At a glance</span>
+          <p>What needs your attention now.</p>
+        </div>
+        <button className="home-refresh-button" type="button" onClick={retryAll} disabled={loading} aria-label="Refresh home overview" aria-busy={loading || undefined}>
+          <RefreshIcon />
+          <span className="sr-only">{loading ? 'Refreshing home overview' : 'Refresh home overview'}</span>
+        </button>
       </div>
-      {loading && !anyError && !emptyHome && (
-        <>
-          <LoadingState label="Refreshing your overview…" variant="rows" />
-          <p className="sr-only" id="home-overview-loading-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft if loading takes longer than expected.</p>
-          <LinkKeyboardGroup className="actions" aria-label="While home overview loads" aria-describedby="home-overview-loading-hint">
-            <Link className="button secondary" href="/tools">Try free tools</Link>
-            <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
-          </LinkKeyboardGroup>
-        </>
-      )}
-      {emptyHome && (
-        <div className="notice stack" role="status" tabIndex={-1} ref={emptyRef} onKeyDown={event => {
-          if (event.key !== 'Escape') return;
-          event.preventDefault();
-          (event.currentTarget as HTMLElement).blur();
-        }}>
-          <p>
-            Nothing personal to show yet. Explore Pandits to choose a scheduled session or Chat Now. Press Escape to leave this notice.
-          </p>
-          <p className="sr-only" id="home-empty-hint">Arrow keys move between empty-home recovery links. Escape blurs the focused link. Skip remains site-content.</p>
-          <LinkKeyboardGroup className="actions" aria-label="Empty home recovery" aria-describedby="home-empty-hint">
-            <Link className="button secondary" href="/pandits">Explore Pandits</Link>
-            <Link className="button secondary" href="/guidance/start">Prepare an optional note</Link>
-            <Link className="button secondary" href="/tools">Try a free tool</Link>
-            <Link className="text-link" href="/how-it-works">How it works →</Link>
-          </LinkKeyboardGroup>
+
+      {loading && !anyError ? (
+        <div className="panel home-primary" data-home-primary>
+          <LoadingState label="Loading your home overview…" variant="detail" />
         </div>
-      )}
-      {anyError && (
-        <div className="error" role="alert" tabIndex={-1} ref={errorRef} onKeyDown={event => {
-          if (event.key !== 'Escape') return;
-          event.preventDefault();
-          (event.currentTarget as HTMLElement).blur();
-        }}>
-          <p>Some overview details could not be loaded. You can retry, or open each section below. Press Escape to leave this alert.</p>
-          <p className="sr-only" id="home-error-hint">Arrow keys move between home overview error recovery links. Escape blurs the focused control. Skip remains site-content.</p>
-          <LinkKeyboardGroup className="actions" aria-label="Home overview error recovery" aria-describedby="home-error-hint">
-            <button type="button" className="button secondary" onClick={retryAll} disabled={loading} aria-busy={loading || undefined}>{loading ? 'Retrying…' : 'Retry overview'}</button>
-            <Link className="button secondary" href="/bookings">Bookings</Link>
-            <Link className="button secondary" href="/wallet">Wallet</Link>
-            <Link className="button secondary" href="/tools">Try free tools</Link>
-            <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
-            <Link className="text-link" href="/contact">Contact support →</Link>
-          </LinkKeyboardGroup>
-        </div>
-      )}
-      {!emptyHome || anyError ? (
-      <ul className="topic-question-list">
-        <li>
-          {next ? (
-            <>
-              <span className="sr-only" id="home-glance-booking-hint">Arrow keys move between booking detail and Open session. Escape blurs. Skip remains site-content.</span>
-              <LinkKeyboardGroup as="span" aria-label="Next open booking links" aria-describedby="home-glance-booking-hint">
-                Next open booking:{' '}
-                <Link href={`/bookings/${encodeURIComponent(next.id)}`}>
-                  {formatIstDateTime(next.startTime)}
-                  {(next.panditName || next.pandit?.name) ? ` · ${next.panditName || next.pandit?.name}` : ''}
-                </Link>
-                {' · '}{next.format}
-                {' · '}
-                <Link href={`/sessions/${encodeURIComponent(next.id)}/${next.format}`}>
-                  Open existing {next.format} session
-                </Link>
-                <span> (no new charge)</span>
-              </LinkKeyboardGroup>
-            </>
-          ) : bookings.loading ? 'Checking bookings…' : bookings.error ? (
-            <>
-              <span className="sr-only" id="home-glance-booking-retry-hint">Arrow keys move between Try again, Open bookings, free tools and draft. Escape blurs. Skip remains site-content.</span>
-              <LinkKeyboardGroup as="span" aria-label="Bookings overview retry" aria-describedby="home-glance-booking-retry-hint">
-                <span>Bookings unavailable. </span>
-                <button type="button" className="text-link" onClick={bookings.reload} disabled={bookings.loading} aria-busy={bookings.loading || undefined}>{bookings.loading ? 'Trying again…' : 'Try again'}</button>
-                <span> · </span>
-                <Link href="/bookings">Open bookings</Link>
-                {' · '}
-                <Link href="/tools">Free tools</Link>
-                {' · '}
-                <Link href="/guidance/start">Prepare a draft</Link>
-              </LinkKeyboardGroup>
-            </>
+      ) : (
+        <div className="panel home-primary" data-home-primary>
+          {bookingError ? (
+            <div className="home-error" role="alert">
+              <span className="eyebrow">Bookings need a moment</span>
+              <h2>We could not load your next step.</h2>
+              <p>{bookingError}</p>
+              <button className="button secondary" type="button" onClick={retryAll} disabled={loading}>Retry overview</button>
+            </div>
+          ) : next ? (
+            <NextBookingPrimary booking={next} />
+          ) : hasPastBookings ? (
+            <PastBookingsPrimary count={parsedBookings.length} />
           ) : (
-            <>
-              <span className="sr-only" id="home-glance-no-open-hint">Arrow keys move between draft, free tools and booking updates. Escape blurs. Skip remains site-content.</span>
-              <LinkKeyboardGroup as="span" aria-label="No open bookings next steps" aria-describedby="home-glance-no-open-hint">
-                <span>No open bookings right now.</span>
-                {' · '}<Link href="/guidance/start">Prepare a draft</Link>
-                {' · '}<Link href="/tools">Free tools</Link>
-                {' · '}<Link href="/how-it-works#booking-availability-how">Booking updates</Link>
-              </LinkKeyboardGroup>
-            </>
+            <EmptyPrimary />
           )}
-        </li>
-        <li>
-          {balance !== null ? (
-            <>
-              <span className="sr-only" id="home-glance-wallet-hint">Arrow keys move between wallet, add coins, free tools and draft. Escape blurs. Skip remains site-content.</span>
-              <LinkKeyboardGroup as="span" aria-label="Wallet overview links" aria-describedby="home-glance-wallet-hint">
-                Wallet balance: <strong>{balance.toLocaleString('en-IN')} coins</strong>
-                {' · '}<Link href="/wallet/recharge">Add coins</Link>
-                {' · '}<Link href="/wallet">Open wallet</Link>
-                {' · '}<Link href="/tools">Free tools</Link>
-                {' · '}<Link href="/guidance/start">Prepare a draft</Link>
-              </LinkKeyboardGroup>
-            </>
-          ) : wallet.loading ? 'Checking wallet…' : (
-            <>
-              <span className="sr-only" id="home-glance-wallet-retry-hint">Arrow keys move between Try again, Open wallet, free tools and draft. Escape blurs. Skip remains site-content.</span>
-              <LinkKeyboardGroup as="span" aria-label="Wallet overview retry" aria-describedby="home-glance-wallet-retry-hint">
-                <span>Wallet balance unavailable. </span>
-                <button type="button" className="text-link" onClick={wallet.reload} disabled={wallet.loading} aria-busy={wallet.loading || undefined}>{wallet.loading ? 'Trying again…' : 'Try again'}</button>
-                {' · '}
-                <Link href="/wallet">Open wallet</Link>
-                {' · '}
-                <Link href="/tools">Free tools</Link>
-                {' · '}
-                <Link href="/guidance/start">Prepare a draft</Link>
-              </LinkKeyboardGroup>
-            </>
-          )}
-        </li>
-        <li>
-          {unreadCount !== null ? (
-            <>
-              <span className="sr-only" id="home-glance-updates-hint">Arrow keys move between notifications, free tools and draft. Escape blurs. Skip remains site-content.</span>
-              <LinkKeyboardGroup as="span" aria-label="Notifications overview links" aria-describedby="home-glance-updates-hint">
-                Updates: <strong>{unreadCount} unread</strong>
-                {' '}<Link href="/notifications">Open notifications</Link>
-                {' · '}
-                <Link href="/tools">Free tools</Link>
-                {' · '}
-                <Link href="/guidance/start">Prepare a draft</Link>
-              </LinkKeyboardGroup>
-            </>
-          ) : unread.loading ? 'Checking updates…' : (
-            <>
-              <span className="sr-only" id="home-glance-updates-retry-hint">Arrow keys move between Try again, Open notifications, free tools and draft. Escape blurs. Skip remains site-content.</span>
-              <LinkKeyboardGroup as="span" aria-label="Notifications overview retry" aria-describedby="home-glance-updates-retry-hint">
-                <span>Updates unavailable. </span>
-                <button type="button" className="text-link" onClick={unread.reload} disabled={unread.loading} aria-busy={unread.loading || undefined}>{unread.loading ? 'Trying again…' : 'Try again'}</button>
-                {' · '}
-                <Link href="/notifications">Open notifications</Link>
-                {' · '}
-                <Link href="/tools">Free tools</Link>
-                {' · '}
-                <Link href="/guidance/start">Prepare a draft</Link>
-              </LinkKeyboardGroup>
-            </>
-          )}
-        </li>
-        <li>
-          <span className="sr-only" id="home-glance-reports-hint">Arrow keys move between reports, free tools and draft. Escape blurs. Skip remains site-content.</span>
-          <LinkKeyboardGroup as="span" aria-label="Reports and tools overview links" aria-describedby="home-glance-reports-hint">
-            Saved reports:{' '}
-            <Link href="/reports">Open reports</Link>
-            {' · '}
-            <Link href="/tools">Free tools</Link>
-            {' · '}
-            <Link href="/guidance/start">Prepare a draft</Link>
-          </LinkKeyboardGroup>
-        </li>
-      </ul>
-      ) : null}
-      {emptyHome && !anyError && (
-        <p className="expert-meta" role="status">
-          <span className="sr-only" id="home-empty-status-hint">Arrow keys move between wallet, notifications, free tools and draft. Escape blurs. Skip remains site-content.</span>
-          <LinkKeyboardGroup as="span" aria-label="Empty home status links" aria-describedby="home-empty-status-hint">
-            {balance !== null ? <>Wallet: <Link href="/wallet">{balance.toLocaleString('en-IN')} coins</Link> · </> : null}
-            {unreadCount !== null ? <>Updates: <Link href="/notifications">{unreadCount} unread</Link></> : <Link href="/notifications">Open notifications</Link>}
-            {' · '}<Link href="/tools">Free tools</Link>
-            {' · '}<Link href="/guidance/start">Prepare a draft</Link>
-          </LinkKeyboardGroup>
-        </p>
+          <aside className="home-primary-aside" aria-label="Booking formats">
+            <span className="eyebrow">Choose what fits today</span>
+            <div className="home-primary-options">
+              <div className="home-primary-option">
+                <strong>Chat Now</strong>
+                <span>Talk when a Pandit is available.</span>
+              </div>
+              <div className="home-primary-option">
+                <strong>Schedule a session</strong>
+                <span>Pick a time that works for you.</span>
+              </div>
+            </div>
+          </aside>
+        </div>
       )}
+
+      <div className="home-summary" aria-label="Your account summary">
+        <SummaryCard label="Wallet" value={balance === null ? '—' : `${balance.toLocaleString('en-IN')} coins`} description="Available for a confirmed booking." href="/wallet" />
+        <SummaryCard label="Updates" value={unreadCount === null ? '—' : `${unreadCount} unread`} description="Booking and session notices." href="/notifications" />
+        <SummaryCard label="Reports" value={reportCount === null ? '—' : `${reportCount} saved`} description="Paid readings you have kept." href="/reports" />
+      </div>
+
+      {anyError && !bookingError && (
+        <div className="home-partial-status" role="status">
+          Some account details are unavailable. <button className="text-link" type="button" onClick={retryAll}>Retry overview</button>
+        </div>
+      )}
+
+      <section className="home-secondary" aria-labelledby="home-secondary-heading">
+        <div>
+          <span className="eyebrow">When you are ready</span>
+          <h2 id="home-secondary-heading">A few useful places to continue</h2>
+        </div>
+        <div className="home-secondary-links">
+          <Link href="/tools"><strong>Free tools</strong><span>Explore readings on your own.</span><span className="text-link">Open free tools →</span></Link>
+          <Link href="/account/story"><strong>Your story</strong><span>Keep private context for future conversations.</span><span className="text-link">Manage your story →</span></Link>
+          <Link href="/guidance/start"><strong>Optional note</strong><span>Write a browser-only note; it does not book or charge.</span><span className="text-link">Prepare a note →</span></Link>
+        </div>
+      </section>
     </section>
   );
 }
