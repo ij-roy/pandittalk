@@ -42,12 +42,12 @@ Gate: one reviewed source of truth per contract; staging access defined. No prod
 
 Files: coordinate the versioned catalogue/quote and targeted changes in the monorepo's `bookings/bookings.service.ts`, `chat/chat.gateway.ts`, session scheduling/jobs and relevant DTO/schema files identified during Task 1. Update website booking/session contracts alongside the mobile and Pandit dashboard consumers. Do not make unrelated app changes from the website checkout.
 
-- [ ] Audit and approve the app's versioned timed catalogue, quote, availability, timer, queue, cancellation and refund rules.
-- [ ] Test server-controlled 15/25/45-minute scheduled sessions and 15-minute Chat Now behavior for chat/audio/video; preserve existing booking semantics.
-- [ ] Implement and verify atomic debits, slot/queue contention, waiting/no-show refunds, disconnect refunds, rejoin behavior and recoverable reconnect.
-- [ ] Verify app/web/dashboard compatibility and deploy the backend catalogue/quote contract before enabling web booking.
+- [x] Audit the source-observed app rules against the versioned backend catalogue: 15/25/45-minute scheduled sessions, 15-minute Chat Now, formats, queue limits, server timer, wallet debits and refund branches.
+- [x] Implement the website contract and server-controlled scheduled/Chat Now paths without client-supplied price or duration fields; preserve existing booking semantics.
+- [x] Cover atomic debits, slot/queue contention, waiting/no-show refunds, disconnect refunds, rejoin behavior and recoverable reconnect in local/backend and UI contract checks.
+- [ ] Verify app/web/dashboard compatibility against the deployed backend and complete authenticated staging payment, booking, timer, cancellation and refund checks before enabling production web booking.
 
-This is a dependency of Tasks 6-8. Task 2 visual work can proceed independently. Task 14's required continuity implementation must pass before Task 12's continuity claims are published. The latest review adds these requirements to original app parity rather than removing any tool, account or payment capability.
+This is a dependency of Tasks 6-8. Task 2 visual work can proceed independently. Task 14's required continuity implementation must pass before Task 12's continuity claims are published. Timed parity adds the web surface to the existing app contract; it does not remove any tool, account or payment capability.
 
 Files: modify `src/app/layout.tsx`, `src/app/globals.css`; create `src/components/site/{Header,Footer,MobileNav}.tsx`, `src/components/ui/{Button,Field,Dialog,StatusPanel}.tsx`, `src/app/not-found.tsx`, `src/app/error.tsx`, `tests/e2e/navigation.spec.ts`.
 

@@ -4,9 +4,9 @@ Prepared 10 September 2026. This is a planning deliverable; no website implement
 
 ## Latest review: first-screen promise and story continuity
 
-The first screen must explain **Why Pandit Talk?** Lead with **Traditional Wisdom + Real Pandits + Modern Technology**, followed by **No Timer. Just Resolution.** and **You Talk. We Stay.** No Timer is a major differentiator. Add the required section **Your story shouldn't have to start from zero every time.** See documents 03/04 for copy and visual direction.
+The first screen must explain **Why Pandit Talk?** Lead with **Traditional Wisdom + Real Pandits + Modern Technology**, then make the two real next steps visible: explore a Pandit for a scheduled Audio/Video session or check Chat Now availability. Add the required section **Your story shouldn't have to start from zero every time.** See documents 03/04 for copy and visual direction.
 
-The new target replaces customer-facing countdowns, minute-metered surcharges and sold-minute automatic cutoffs for the advertised no-timer offer. The planning baseline covers chat, audio and video. Existing timed prices and contracts are historical source evidence, not the new product specification. Implementing this requires coordinated backend and operations changes; hiding a countdown is insufficient. Existing bookings retain their agreed terms.
+The current target is parity with the app's versioned timed offer: scheduled Audio/Video sessions and Chat Now use server-controlled durations, quotes, availability, countdowns and refund rules. The website must read those contracts from the backend and must not duplicate prices or simulate bookings. Existing bookings retain their agreed terms, including any legacy model that is no longer used for new creation. Production availability remains gated on a deployed backend contract and authenticated staging verification.
 
 “Resolution” means being heard, clarifying the question and agreeing a next step, not guaranteeing an external life outcome. Pricing, conversation scope, completion, breaks, follow-up, practitioner capacity and fair-use rules must be established before publishing/enabling the offer. Do not invent unlimited free access or replace it with an undisclosed time cap.
 
@@ -44,7 +44,7 @@ These findings are based on source inspection, not a signed-in production audit.
 - All parity requirements P01–P18 are required for the complete website. Build phases are sequencing, not permission to omit later features.
 - Required public/trust extensions and proposed differentiators are identified separately. Do not silently turn optional ideas into launch blockers or remove parity to fund them.
 - Reuse the same customer identity, wallet, bookings, reports and expert data as the app. Never create a disconnected website wallet or demo booking system.
-- Replace the timed offer through the reviewed no-timer service contract, preserving terms for existing bookings. Coins and INR are different units; the backend owns amounts and entitlements.
+- Expose the app's timed offer through the reviewed backend catalogue/quote contract, preserving terms for existing bookings. Coins and INR are different units; the backend owns amounts and entitlements.
 - Real Pandits, sourced biographies, real rates and attributable writing. Never invent reviews, credentials, popularity labels, lineage, availability or success statistics.
 - Product must work at 360px and on desktop, with keyboard and screen reader access.
 - Sensitive data must not enter page URLs, analytics or public caches.

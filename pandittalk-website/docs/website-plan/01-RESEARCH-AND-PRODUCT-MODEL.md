@@ -10,7 +10,7 @@ Astrotalk's public site combines consultation discovery with free astrology util
 
 The chat page promotes an introductory free chat; the call page advertises an introductory free call and multiple languages. These are acquisition offers whose exact eligibility and paid conversion were not tested. Borrow the low-friction way to discover a suitable practitioner, but establish Pandit Talk's own offer economics before promising a free session. [Chat](https://astrotalk.com/chat-with-astrologer), [Call](https://astrotalk.com/talk-to-astrologer).
 
-Astrotalk's published refund page describes per-minute chat/call charging and restrictions on refunds, including connected calls and incorrect contact details. Pandit Talk should make its own no-timer service scope and coin-credit rules understandable before purchase and give customers a visible resolution path. This is a product recommendation, not a claim about actual competitor dispute handling. [Refund and cancellation terms](https://astrotalk.com/refund-and-cancellation-policy).
+Astrotalk's published refund page describes per-minute chat/call charging and restrictions on refunds, including connected calls and incorrect contact details. Pandit Talk should make its own timed session scope, quote and coin-credit rules understandable before purchase and give customers a visible resolution path. This is a product recommendation, not a claim about actual competitor dispute handling. [Refund and cancellation terms](https://astrotalk.com/refund-and-cancellation-policy).
 
 ## Competitive lessons and independent recommendations
 
@@ -26,7 +26,7 @@ Do not claim Astrotalk lacks human service, ethical practices or transparent pri
 
 The source describes a service marketplace with scheduled consultations, instant chat, a prepaid coin wallet, free discovery tools and paid detailed reports. Practitioner-written articles form an existing educational channel. The customer app and Pandit dashboard share the backend.
 
-Historical timed-model source values, for migration reconciliation only; these are not the new no-timer offer:
+The current app-aligned timed catalogue, confirmed against the backend booking catalogue for web parity:
 
 - Scheduled audio: Entry 151 / 15 minutes; Standard 301 / 25 minutes; Deep 501 / 45 minutes. The mobile presentation uses INR labels; backend wallet accounting uses coins.
 - Video adds 150 to the base package in the mobile pricing model.
@@ -38,7 +38,7 @@ Evidence: `apps/mobile/lib/bookingPricing.ts`; backend `bookings/bookings.servic
 
 ## Recommended business design
 
-Offer an unrushed conversation with transparent scope, price and a customer-chosen next step. No Timer. Just Resolution. is the primary requested differentiator, not a guarantee of external life outcomes. Explain the cost before the customer commits. Let people browse Pandits and free tool descriptions without creating an account. Ask for sign-in at the point it is needed for wallet, paid entitlement or private records.
+Offer a calm conversation with transparent scope, server-provided duration and total price, and a customer-chosen next step. Explain the cost before the customer commits. Let people browse Pandits and free tool descriptions without creating an account. Ask for sign-in at the point it is needed for wallet, paid entitlement or private records.
 
 Keep practitioner discovery independent of recharge. Use a real, reviewed refund policy and link it beside the booking summary. Give a customer a useful stopping point after a consultation: what was discussed, what remains uncertain, and a next step they choose themselves. Proposed note-taking is customer-controlled and does not imply that sessions are recorded.
 
@@ -52,7 +52,7 @@ Measure completed consultations, connection success, repeat voluntary use, repor
 
 ## Opportunities beyond parity
 
-Required trust extensions: no-timer service delivery and customer-controlled story continuity, pricing explanation, first-session guide, verifiable practitioner stories, complete help/legal routes, accessible session controls, visible automation disclosure and a humane no-results/offline experience.
+Required trust extensions: timed-service clarity, customer-controlled story continuity, pricing explanation, first-session guide, verifiable practitioner stories, complete help/legal routes, accessible session controls, visible automation disclosure and a humane no-results/offline experience.
 
 Proposed differentiators: optional pre-session question sheet, private post-session reflection, practitioner introduction audio with transcript, curated topic reading paths and a clear data-control centre. Backend-dependent persistence must be implemented explicitly; these are not existing app features.
 

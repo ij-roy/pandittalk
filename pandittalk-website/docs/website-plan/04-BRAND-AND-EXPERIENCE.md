@@ -21,25 +21,25 @@ Use this hierarchy:
 
 1. Introductory label: **Why Pandit Talk?**
 2. Primary heading: **Traditional Wisdom + Real Pandits + Modern Technology**
-3. Prominent differentiator: **No Timer. Just Resolution.**
-4. Supporting line: **Aapko apni baat samjhane ki jaldi nahi honi chahiye...**
-5. Explanation: **We believe a meaningful conversation shouldn't feel like a race against a clock.**
+3. Clear choice: **Scheduled Audio or Video** / **Chat Now when available**.
+4. Supporting line: **See the duration, total and available time before you decide.**
+5. Explanation: **The booking service keeps the terms clear from the first choice to the final minute.**
 6. Sign-off: **You Talk. We Stay.**
-7. Primary action: **Find your Pandit**. Secondary action: **How our conversations work**.
+7. Primary action: **Explore Pandits**. Secondary action: **How our conversations work**.
 
 Keep the heading, differentiator and primary action visible in a representative 390 × 844 initial viewport at normal text settings. At 360px or enlarged text, allow natural scrolling rather than shrinking or clipping text. Place the portrait below the copy on mobile. The older “Aapki baat. Dhyaan se.” becomes supporting editorial copy; the manifesto and “Predict. Prepare. Prosper.” remain in supporting brand moments.
 
 ### Visually distinctive composition
 
-Desktop: an asymmetrical two-column opening, with roughly three-fifths devoted to typography and the remainder to one consented real-Pandit portrait. Break the three heading ideas into deliberate lines with restrained ochre plus signs. Give “No Timer. Just Resolution.” a large separate typographic block, generous whitespace and a thin warm accent rule. Do not reduce it to a badge or bury it in a carousel.
+Desktop: an asymmetrical two-column opening, with roughly three-fifths devoted to typography and the remainder to one consented real-Pandit portrait. Break the three heading ideas into deliberate lines with restrained ochre accents. Give the scheduled and Chat Now choices a clear, compact action block with duration and total context. Do not bury the real next step in a badge or carousel.
 
 Use warm ivory, deep ink, restrained saffron and natural photography. Avoid three generic feature cards, fake chat screenshots, ticking clocks, progress rings, rotating slogans and autoplay video. Optional short entrance fades must respect reduced motion and never delay readable content. On mobile preserve the exact semantic reading order and comfortable type size.
 
-### Required section: No Timer. Just Resolution.
+### Required section: How timed conversations work
 
-Place a dedicated section directly after the opening introduction, before large directory/tool sections. Repeat the Hindi supporting line and English explanation above. Explain the experience through **Room to explain. Time to understand. A next step you choose.** Pair calm imagery with links to how conversations work and transparent pricing/service terms.
+Place a dedicated section directly after the opening introduction, before large directory/tool sections. Explain the two paths through **Choose a time. Or check who is available now.** Pair calm imagery with links to how conversations work, current pricing and cancellation/refund terms.
 
-The offer must have no customer countdown, no minute-metered surcharge and no automatic end solely because a sold minute allowance expires. Hiding the display while retaining timed cutoff fails the promise. Customers retain an easy end control. Connection/security timeouts and booking start times remain valid operational needs, not grounds to disguise paid time limits. Do not promise unlimited lifetime access, free service or guaranteed life outcomes. Approved scope, completion, breaks, follow-up, fair use and capacity rules are required before launch.
+The offer must show the backend-provided duration and total before confirmation. The server controls the countdown and end time; the browser cannot extend or invent the session. Scheduled Audio/Video and Chat Now remain separate formats, with availability, queue, cancellation and refund behavior explained in plain language. Do not promise outcomes, hidden free time or a different timer model. Existing bookings retain their stored terms.
 
 ### Required section: your story continues
 
@@ -57,7 +57,7 @@ Calm, direct, warm. Speak to adults with agency. Use natural English with intent
 
 Suggested original copy:
 
-- Hero: **Traditional Wisdom + Real Pandits + Modern Technology**. Differentiator: **No Timer. Just Resolution.** Sign-off: **You Talk. We Stay.**
+- Hero: **Traditional Wisdom + Real Pandits + Modern Technology**. Choice: **Scheduled Audio/Video or Chat Now when available.** Sign-off: **You Talk. We Stay.**
 - Brand signature: “Ek Soch. Ek Sach. Ek Koshish.” Secondary line: “Predict. Prepare. Prosper.”
 - Choice: “What would you like to talk about?”
 - Notes: “Anything you would like your Pandit to know? Share only what feels relevant.”

@@ -12,7 +12,7 @@ Desktop: Pandits, Find guidance, Tools, Learn, Our approach; secondary How it wo
 
 Audience: a curious or uncertain first-time visitor. Primary action: Find your Pandit. Secondary action: See how it works. Structure:
 
-1. First screen: **Why Pandit Talk?** → **Traditional Wisdom + Real Pandits + Modern Technology** → **No Timer. Just Resolution.** → **Aapko apni baat samjhane ki jaldi nahi honi chahiye...** → **We believe a meaningful conversation shouldn't feel like a race against a clock.** → **You Talk. We Stay.** Use the real portrait, typography and responsive hierarchy in document 04.
+1. First screen: **Why Pandit Talk?** → **Traditional Wisdom + Real Pandits + Modern Technology** → scheduled Audio/Video and Chat Now choices → duration and total supplied by the service before confirmation. Use the real portrait, typography and responsive hierarchy in document 04.
 2. Choose what you want to discuss: career, relationships, family, education, business and general direction; preserve the complete topic set in guidance.
 3. A small live practitioner selection with language, practice, availability and actual pricing links. API failure produces a clear browse/retry state, never invented people.
 4. Three-step explanation: choose a person/format, see price, have the conversation.
@@ -21,7 +21,7 @@ Audience: a curious or uncertain first-time visitor. Primary action: Find your P
 7. One genuine practitioner story; real customer feedback only if consent and provenance exist.
 8. First-session questions, pricing/refund links and closing invitation.
 
-Immediately after the hero, before topics/directories, add the dedicated **No Timer. Just Resolution.** section and **Your story shouldn't have to start from zero every time.** section. Follow document 04 for copy, visual composition and actual customer-controlled context.
+Immediately after the hero, before topics/directories, add a concise **How conversations work** section explaining scheduled sessions, Chat Now, server-controlled timers and clear refund paths, followed by **Your story shouldn't have to start from zero every time.** Follow document 04 for copy, visual composition and actual customer-controlled context.
 
 Returning signed-in visitors can reach `/home` directly; do not make the marketing page their only home.
 
@@ -31,9 +31,9 @@ Approach: philosophy, what astrology can and cannot offer, customer agency, huma
 
 ### `/how-it-works`
 
-Explain browse, optional guidance flow, sign-in, coins, no-timer conversation scope and formats, booking, waiting/joining, end/review and support. Include an example using current server-approved price data. Explain microphone/camera browser requirements and why birth information may be requested. Link to a first-session preparation guide.
+Explain browse, optional guidance flow, sign-in, coins, timed session scope and formats, booking, waiting/joining, server countdown, end/review and support. Include an example using current server-approved price data. Explain microphone/camera browser requirements and why birth information may be requested. Link to a first-session preparation guide.
 
-Add a **How your story stays with you** anchor explaining saved context, explicit per-consultation sharing, editing/deletion and starting fresh. Explain approved completion, breaks and follow-up terms next to the no-timer offer.
+Add a **How your story stays with you** anchor explaining saved context, explicit per-consultation sharing, editing/deletion and starting fresh. Explain timed completion, rejoin, cancellation and follow-up terms beside the booking offer.
 
 ### `/pricing`
 

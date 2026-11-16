@@ -1,6 +1,6 @@
 # Mobile capability parity specification
 
-Paths below are relative to the monorepo. Status means source-observed unless explicitly described as a gap. All P requirements are release requirements. The latest no-timer review supersedes timed delivery details; preserve consultation capability and existing booking terms. A redirect alias or layout is accounted for, but is not a separate feature.
+Paths below are relative to the monorepo. Status means source-observed unless explicitly described as a gap. All P requirements are release requirements. The timed-booking parity review supersedes the earlier no-timer direction for new web bookings; preserve consultation capability and existing booking terms. A redirect alias or layout is accounted for, but is not a separate feature.
 
 ## P01 — Home and navigation
 
@@ -32,7 +32,7 @@ Web: `/pandits/[id]`; compatibility redirects from `/experts/[id]` and `/expert/
 
 Source: `app/guidance/start.tsx`, `flow.tsx`, `start-guidance.tsx`, `(tabs)/guidance.tsx`, `store/useGuidanceFlowStore.ts`, `lib/bookingPricing.ts`.
 
-Web: `/guidance`, `/guidance/start`. Preserve area → notes → service scope → format → expert selection, replacing minute-based depth choices with the approved offer and transition to slot selection. Areas: career, love, family, marriage, education, health, business, finance. Notes are optional and private. Preserve draft during back navigation and recharge/login without putting notes into URLs. Explain price changes as scope/format changes; prohibit hidden premium defaults.
+Web: `/guidance`, `/guidance/start`. Preserve area → notes → service scope → format → expert selection, using the backend-approved timed depths and formats before slot selection. Areas: career, love, family, marriage, education, health, business, finance. Notes are optional and private. Preserve draft during back navigation and recharge/login without putting notes into URLs. Explain price changes as scope/format changes; prohibit hidden premium defaults.
 
 Also preserve tool-to-guidance handoff from `lib/guidanceFromTool.ts`: Kundli, detailed Kundli, daily/monthly horoscope, compatibility, detailed compatibility, palm and tarot can prefill relevant notes/topic. Show the prefilled text for customer review and editing. The mobile helper limits notes to 200 characters; reconcile this with the backend DTO. Replace mobile route-parameter notes with private browser state or authenticated draft storage so names and reading context never enter web URLs.
 
@@ -40,7 +40,7 @@ Also preserve tool-to-guidance handoff from `lib/guidanceFromTool.ts`: Kundli, d
 
 Source: `app/booking/select-slot.tsx`, `confirmation.tsx`, `lib/bookingApi.ts`.
 
-Web: `/bookings/new`, `/bookings/[id]`. Include date, capacity-aware availability under the no-timer scheduling policy, explicit timezone, selected Pandit/area/format, notes, coin total, wallet balance, cancel terms and confirmation. Server revalidates slot and total atomically; duplicate clicks cannot create duplicate charges. Recover from slot taken, low coins, timeout and unknown booking outcome. Confirmation is based on persisted booking, not query-string success. Add a downloadable calendar entry as a browser convenience; no external calendar write required.
+Web: `/bookings/new`, `/bookings/[id]`. Include date, capacity-aware availability under the backend timed scheduling policy, explicit timezone, selected Pandit/area/format, notes, coin total, wallet balance, cancel terms and confirmation. Server revalidates slot and total atomically; duplicate clicks cannot create duplicate charges. Recover from slot taken, low coins, timeout and unknown booking outcome. Confirmation is based on persisted booking, not query-string success. Add a downloadable calendar entry as a browser convenience; no external calendar write required.
 
 ## P07 — Instant chat and queue
 
@@ -58,7 +58,7 @@ Include persisted history, message send/receive, typing, connection state, serve
 
 Source: `app/session/audio.tsx`, native WebRTC adapter, backend `webrtc/audio-session.controller.ts`, audio socket events.
 
-Web: `/sessions/[bookingId]/audio`. Browser microphone permission, device check, waiting room, join, mute, participant presence, no-timer lifecycle, reconnect, leave/rejoin, end, grace refund, completed review. Implement browser WebRTC with Socket.IO signaling; native-module imports cannot ship to web. Release browser tracks and subscriptions on exit.
+Web: `/sessions/[bookingId]/audio`. Browser microphone permission, device check, waiting room, join, mute, participant presence, server-controlled timed lifecycle, reconnect, leave/rejoin, end, grace refund, completed review. Implement browser WebRTC with Socket.IO signaling; native-module imports cannot ship to web. Release browser tracks and subscriptions on exit.
 
 ## P10 — Video session
 
