@@ -77,6 +77,8 @@ services:
       REDIS_PORT: 6379
       MONGODB_URI: mongodb://mongo:27017
       MONGODB_DATABASE: pandittalk
+      # Disposable local/CI value only. Production injects JWT_SECRET from Secrets Manager.
+      JWT_SECRET: local-ci-only-do-not-use-in-production
       AVATAR_STORAGE: local
       AVATAR_PUBLIC_BASE_URL: http://localhost:3001/static/avatars
       COOKIE_SECURE: 'false'
