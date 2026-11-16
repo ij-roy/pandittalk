@@ -200,7 +200,7 @@ export default function GuidanceFlow() {
         </>}
         {step === 2 && <>
           <h3>What to expect</h3>
-          <p>{availabilityCopy.noTimerExplanation}</p>
+          <p>{availabilityCopy.timedBookingExplanation}</p>
           <p className="notice" role="status">{newBookingBlock}</p>
           <p>Your draft has no selected paid scope or hidden premium upgrade.</p>
         </>}

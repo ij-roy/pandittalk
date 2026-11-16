@@ -65,3 +65,9 @@ test('guidance copy does not claim timed prices are unavailable', () => {
   assert.match(source, /When you choose a real booking, the booking service supplies the current duration and total/);
   assert.doesNotMatch(source, /Prices are not available yet/);
 });
+
+test('availability copy uses timed-booking language instead of the retired No Timer name', () => {
+  const source = readFileSync(resolve(import.meta.dirname, '../../src/content/availability.ts'), 'utf8');
+  assert.match(source, /timedBookingExplanation/);
+  assert.doesNotMatch(source, /noTimerExplanation/);
+});
