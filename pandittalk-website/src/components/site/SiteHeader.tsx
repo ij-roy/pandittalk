@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { SiteIcon } from './SiteIcon';
 import { availabilityCopy } from '@/content/availability';
 
@@ -18,6 +18,19 @@ export function SiteHeader() {
   const [unread, setUnread] = useState(0);
   const current = (href: string) => pathname === href || pathname.startsWith(href + '/');
   const closeMenu = () => { if (menu.current) menu.current.open = false; setMenuOpen(false); };
+  const mobileLink = (href: string, label: string, options?: { ariaLabel?: string; title?: string }) => (
+    <Link
+      href={href}
+      className={`mobile-nav-link${current(href) ? ' is-current' : ''}`}
+      aria-current={current(href) ? 'page' : undefined}
+      aria-label={options?.ariaLabel}
+      title={options?.title}
+      onClick={closeMenu}
+    >
+      <span>{label}</span>
+      <SiteIcon name="right" size={16} />
+    </Link>
+  );
 
   useEffect(closeMenu, [pathname]);
   useEffect(() => {
@@ -219,45 +232,38 @@ export function SiteHeader() {
       </div>
       <details className="mobile-menu" ref={menu} onToggle={event => setMenuOpen((event.target as HTMLDetailsElement).open)}>
         <summary aria-controls="mobile-navigation" aria-expanded={menuOpen} aria-haspopup="dialog" aria-label={menuOpen ? 'Close site menu. Press Escape to close.' : 'Open site menu'}>{menuOpen ? 'Close' : 'Menu'}<SiteIcon name={menuOpen ? 'close' : 'menu'} size={18} /></summary>
+        {menuOpen && <button type="button" className="mobile-menu-backdrop" aria-label="Close site menu" onClick={closeMenu} />}
         <nav id="mobile-navigation" aria-label="Mobile navigation" role={menuOpen ? 'dialog' : undefined} aria-modal={menuOpen || undefined} aria-labelledby={menuOpen ? 'mobile-menu-title' : undefined} aria-hidden={menuOpen ? undefined : true} inert={menuOpen ? undefined : true}>
           {menuOpen && <p id="mobile-menu-title" className="sr-only">Site menu. Press Escape to close.</p>}
-          {links.map(([href, label]) => <Link href={href} key={href} aria-current={current(href) ? 'page' : undefined} onClick={closeMenu}>{label}</Link>)}
-          <span className="mobile-nav-label">{signedIn ? 'Your space' : 'Sign in'}</span>
+          <div className="mobile-nav-section mobile-nav-section-primary">
+            <span className="mobile-nav-label">Explore</span>
+            {links.map(([href, label]) => <Fragment key={href}>{mobileLink(href, label)}</Fragment>)}
+          </div>
           {signedIn
             ? <>
+              <div className="mobile-nav-section">
+                <span className="mobile-nav-label">Your space</span>
               {accountLinks.map(([href, label]) => {
                 const text = href === '/notifications' && unread > 0 ? `${label} (${unread})` : label;
-                return (
-                  <Link
-                    href={href}
-                    key={href}
-                    aria-current={current(href) ? 'page' : undefined}
-                    aria-label={href === '/notifications' && unread > 0 ? `Notifications, ${unread} unread` : undefined}
-                    onClick={closeMenu}
-                  >
-                    {text}
-                  </Link>
-                );
+                return <Fragment key={href}>{mobileLink(href, text, { ariaLabel: href === '/notifications' && unread > 0 ? `Notifications, ${unread} unread` : undefined })}</Fragment>;
               })}
-               <span className="mobile-nav-label">Continue exploring</span>
-              <Link href="/guidance/start" onClick={closeMenu}>Prepare a draft</Link>
-              <Link href="/tools" onClick={closeMenu}>Free tools</Link>
-              <Link href="/how-it-works#booking-availability-how" onClick={closeMenu}>How booking works</Link>
+              </div>
+              <div className="mobile-nav-section">
+                <span className="mobile-nav-label">Continue exploring</span>
+                {mobileLink('/guidance/start', 'Prepare a draft')}
+                {mobileLink('/how-it-works#booking-availability-how', 'How booking works')}
+              </div>
             </>
             : <>
-               <span className="mobile-nav-label">Start here</span>
-              <Link href="/how-it-works#booking-availability-how" onClick={closeMenu} title={availabilityCopy.publicStatus}>{availabilityCopy.headerLink}</Link>
-              <Link href="/guidance/start" onClick={closeMenu}>Prepare a draft</Link>
-              <Link href="/tools" onClick={closeMenu}>Free tools</Link>
-              <Link href="/login" onClick={closeMenu}>Sign in</Link>
-              <Link href="/help" onClick={closeMenu}>Help centre</Link>
-              <Link href="/how-it-works" onClick={closeMenu}>How it works</Link>
-              <Link href="/pricing" onClick={closeMenu}>Pricing</Link>
+              <div className="mobile-nav-section">
+                <span className="mobile-nav-label">Start here</span>
+                {mobileLink('/how-it-works#booking-availability-how', 'How booking works', { title: availabilityCopy.publicStatus })}
+                {mobileLink('/guidance/start', 'Prepare a draft')}
+                {mobileLink('/help', 'Help centre')}
+                {mobileLink('/pricing', 'Pricing')}
+              </div>
             </>}
-          <Link href={signedIn ? '/home' : '/login'} className="button" onClick={closeMenu}>
-            {signedIn ? 'My home' : 'Sign in'}
-            <SiteIcon name="right" size={16} />
-          </Link>
+          {!signedIn && <Link href="/login" className="button mobile-nav-cta" onClick={closeMenu}>Sign in<SiteIcon name="right" size={16} /></Link>}
         </nav>
       </details>
     </div>
