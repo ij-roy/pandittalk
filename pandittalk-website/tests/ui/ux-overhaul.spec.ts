@@ -319,8 +319,10 @@ test('homepage ambience fades cleanly at container edges on mobile and desktop',
       heroGlow: getComputedStyle(document.querySelector('.hero-aurora')!).maskImage,
     }));
 
-    expect(masks.pageGlow).toMatch(/to right/);
-    expect(masks.heroGlow).toMatch(/to right/);
+    // Browsers may serialize the same horizontal gradient as either the
+    // source direction (`to right`) or its canonical angle (`90deg`).
+    expect(masks.pageGlow).toMatch(/to right|90deg/);
+    expect(masks.heroGlow).toMatch(/to right|90deg/);
   }
 });
 
