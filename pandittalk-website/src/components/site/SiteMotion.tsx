@@ -70,9 +70,14 @@ export function SiteMotion() {
 
   useEffect(() => {
     let frame = 0;
+    const currentScrollY = () => Math.max(
+      window.scrollY,
+      document.documentElement.scrollTop,
+      document.body.scrollTop,
+    );
     const updateScrollState = () => {
       frame = 0;
-      document.documentElement.dataset.scrollState = window.scrollY > 16 ? 'scrolled' : 'top';
+      document.documentElement.dataset.scrollState = currentScrollY() > 16 ? 'scrolled' : 'top';
     };
     const onScroll = () => {
       if (frame) return;
@@ -80,8 +85,10 @@ export function SiteMotion() {
     };
     updateScrollState();
     window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('scroll', onScroll);
       if (frame) window.cancelAnimationFrame(frame);
       delete document.documentElement.dataset.scrollState;
     };
