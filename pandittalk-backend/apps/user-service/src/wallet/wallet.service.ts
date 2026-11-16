@@ -238,7 +238,27 @@ export class WalletService {
     }
 
     if (transaction.status === TransactionStatus.SUCCESS) {
-      throw new BadRequestException('Payment already processed');
+      if (
+        transaction.razorpayPaymentId &&
+        transaction.razorpayPaymentId !== dto.razorpayPaymentId
+      ) {
+        throw new BadRequestException('Payment already processed');
+      }
+
+      const user = await this.prisma.user.findFirst({
+        where: { id: userId, isActive: true },
+        select: { walletBalance: true },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return {
+        success: true,
+        coinsAdded: transaction.coinsAmount,
+        newBalance: Number(user.walletBalance),
+      };
     }
 
     const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
