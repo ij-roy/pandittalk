@@ -1,15 +1,15 @@
 # Production operations and verification
 
-Date: 10 September 2026
+Date: 16 November 2026
 
-## Verified after the customer website and backend merges
+## Current verification after the timed-booking parity changes
 
-- The backend deployment workflow completed successfully.
-- The Prisma migration ran as an ECS one-off task and exited with code 0.
-- ECS task definition 14 reached steady state with one running task.
-- `https://api.pandittalk.com/` returned the user-service health payload with HTTP 200.
-- The production API returned HTTP 401 for protected endpoints when no session was supplied.
-- The current timed-booking parity implementation is verified locally, but production availability is not claimed until the deployed backend exposes the catalogue and quote routes and an authenticated staging booking is verified.
+- `https://pandittalk-load-balancer.admininfo-6d6.workers.dev/booking-catalog` returned HTTP 200 with the `legacy_timed` catalogue.
+- `https://www.pandittalk.com/api/backend/booking-catalog` returned HTTP 200 through the website proxy.
+- Scheduled Audio and Chat Now quote routes returned HTTP 200 with backend-provided duration and total values.
+- `https://www.pandittalk.com/api/backend/wallet` and `/bookings` returned HTTP 401 without a session, so no account data was exposed.
+- An unauthenticated expert-directory request returned HTTP 200 with an empty array; no live expert was available for a real booking journey during this check.
+- The ECS deployment workflow still fails at AWS OIDC role assumption (`sts:AssumeRoleWithWebIdentity`), so a repeatable deployment path and authenticated staging verification remain release gates.
 
 ## Website hosting checklist
 
@@ -31,7 +31,7 @@ The unauthenticated directory request should return HTTP 200 and a JSON array. P
 
 ## Product release guard
 
-New website bookings must use the app's timed model through the backend catalogue, quote, availability, wallet and booking services. Do not enable the website entry points until `GET /booking-catalog`, `GET /booking-catalog/quote`, scheduled creation and Chat Now creation are deployed and verified. Existing bookings retain their stored duration, price and session terms. A missing catalogue/quote route is a deployment failure, not a reason to restore No Timer copy or duplicate prices in the website.
+New website bookings must use the app's timed model through the backend catalogue, quote, availability, wallet and booking services. The public catalogue and quote routes are now reachable, but do not claim full booking parity until an authenticated scheduled booking and Chat Now booking have been exercised in staging/test mode, including payment, timer, cancellation, refund and recovery behavior. Existing bookings retain their stored duration, price and session terms. A missing catalogue/quote route is a deployment failure, not a reason to restore retired copy or duplicate prices in the website.
 
 ## Rollback
 

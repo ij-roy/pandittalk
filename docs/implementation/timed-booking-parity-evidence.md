@@ -15,9 +15,9 @@ Date: 16 November 2026
 
 | Area | Evidence | Result |
 | --- | --- | --- |
-| Backend rules | `npm test -- --runInBand` in `pandittalk-backend` | 38 suites / 169 tests passed |
+| Backend rules | `npm test -- --runInBand` in `pandittalk-backend` | 39 suites / 167 tests passed |
 | Backend types | `npm run typecheck` in `pandittalk-backend` | Passed |
-| Website contracts | `npm test` in `pandittalk-website` | 19 tests passed |
+| Website contracts | `npm test` in `pandittalk-website` | 24 tests passed |
 | Website types/lint | `npx tsc --noEmit`; `npm run lint` | Typecheck passed; lint 0 errors, existing warnings only |
 | Website build | `npm run build` | 66 routes generated |
 | Responsive browser checks | production build at 320, 360, 375, 390, 414, 768, 1024, 1280, 1366, 1440 and 1920 widths | Representative layouts and focused hierarchy checks passed |
@@ -25,18 +25,18 @@ Date: 16 November 2026
 
 ## Live read-only evidence
 
-Before the new catalogue deployment, the existing public expert and slot routes were reachable and protected wallet/booking routes returned `401` without a session. On 16 November 2026, these required new routes returned `404`:
+On 16 November 2026, the public catalogue and quote routes returned HTTP 200:
 
 - `https://pandittalk-load-balancer.admininfo-6d6.workers.dev/booking-catalog`
-- `https://pandittalk-load-balancer.admininfo-6d6.workers.dev/booking-catalog/quote`
 - `https://www.pandittalk.com/api/backend/booking-catalog`
-- `https://www.pandittalk.com/api/backend/booking-catalog/quote`
+- `https://www.pandittalk.com/api/backend/booking-catalog/quote?depth=entry&format=audio`
+- `https://www.pandittalk.com/api/backend/booking-catalog/quote?mode=chat-now`
 
-No live booking mutation, wallet charge, refund, or destructive test was attempted.
+The protected wallet and bookings routes returned HTTP 401 without a session. The public expert list returned HTTP 200 with no available expert records, so no live booking mutation, wallet charge, refund, or destructive test was attempted.
 
 ## Release prerequisites
 
-1. Deploy the backend user-service containing the catalogue/quote controller and shared booking service.
+1. Repair the ECS deployment role's AWS OIDC trust/permission configuration and record a successful backend deployment.
 2. Verify the deployed routes return the app-aligned catalogue and quote values, then verify one authenticated scheduled booking and one authenticated Chat Now path in staging/test mode.
 3. Verify cancellation, timer, timeout/refund, disconnect/rejoin and recovery behavior against the app before production enablement.
 4. Preserve existing booking records under their persisted terms and confirm rollback keeps the same API compatibility.
