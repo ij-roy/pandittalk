@@ -34,9 +34,9 @@ export function AuthForm() {
   const secondsLeft = (target: Action) => Math.max(0, Math.ceil(((retryAt[target] || 0) - now) / 1000));
   const destinationLabel = (() => {
     if (destination.startsWith('/bookings/new')) return 'the booking page';
-    if (destination.startsWith('/wallet/recharge')) return 'recharge updates (top-ups stay paused)';
+    if (destination.startsWith('/wallet/recharge')) return 'wallet recharge';
     if (destination.startsWith('/bookings')) return 'your existing bookings list';
-    if (destination.startsWith('/wallet')) return 'your wallet (recharge stays paused)';
+    if (destination.startsWith('/wallet')) return 'your wallet';
     if (destination.startsWith('/guidance')) return 'your guidance draft';
     if (destination.startsWith('/tools')) return 'free tools';
     if (destination.startsWith('/reports')) return 'your saved reports';

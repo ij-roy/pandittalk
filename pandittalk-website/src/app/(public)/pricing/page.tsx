@@ -31,7 +31,7 @@ export default function Page() {
         <section className="panel info-card">
           <p className="info-label">Current availability</p>
           <h2>Payments and your wallet</h2>
-          <p>New wallet top-ups are separate from consultation booking. You can sign in to view existing wallet history and any booking refunds.</p>
+          <p>Wallet top-ups are separate from consultation booking. Add coins securely, then use the confirmed balance for eligible bookings. Your history and booking refunds stay in the same wallet.</p>
           <p className="sr-only" id="pricing-wallet-hint">Arrow keys move between wallet, recharge and pricing-policy links. Escape blurs. OfferNotice/NotifyOpenForm still require source.</p>
           <LinkKeyboardGroup className="actions" aria-label="Pricing wallet next steps" aria-describedby="pricing-wallet-hint">
             <Link className="button secondary" href="/login?returnTo=%2Fwallet&reason=auth">Sign in to view your wallet</Link>

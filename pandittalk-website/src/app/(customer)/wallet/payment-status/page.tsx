@@ -32,12 +32,12 @@ export default async function Page({
       <p className="lede">
         This page is guidance only — it does not confirm a payment, credit coins, or start a recharge by itself.
         {reference ? <> Reference on this visit: <strong>{reference}</strong>.</> : <> No payment reference was included in this link.</>}
-        {' '}Your wallet balance and transaction history are the source of truth. New recharges stay paused.
+        {' '}Your wallet balance and transaction history are the source of truth.
       </p>
       {reference && <PaymentReferenceActions reference={reference} />}
       {!reference && (
         <EscapeBlurNotice>
-          <p>If you have an order ID from your bank or payment email, open your wallet first, then email support with that reference. New recharges are not open yet, so this page is mainly for earlier attempts. Press Escape to leave this notice.</p>
+          <p>If you have an order ID from your bank or payment email, open your wallet first, then email support with that reference. Press Escape to leave this notice.</p>
           <p className="sr-only" id="payment-no-ref-hint">Arrow keys move between recovery links. Escape blurs. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="Payment status without reference" aria-describedby="payment-no-ref-hint">
             <Link className="button" href="/wallet">Open wallet</Link>
@@ -50,7 +50,7 @@ export default async function Page({
       )}
       {statusHint && ['success', 'paid', 'captured', 'credited', 'refunded'].includes(statusHint) && (
         <EscapeBlurNotice>
-          <p><strong>Provider hinted {statusHint}.</strong> That hint is not a wallet credit confirmation. Open your wallet next and confirm the balance and transaction history before assuming coins moved. New recharges stay paused — do not start another payment from this page. Press Escape to leave this notice.</p>
+          <p><strong>Provider hinted {statusHint}.</strong> That hint is not a wallet credit confirmation. Open your wallet next and confirm the balance and transaction history before assuming coins moved. Do not start another payment until you have checked the wallet. Press Escape to leave this notice.</p>
           <p className="sr-only" id="payment-success-hint">Arrow keys move between next steps. Escape blurs. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="After a success hint" aria-describedby="payment-success-hint">
             <Link className="button" href="/wallet">Open wallet and confirm coins</Link>
@@ -100,7 +100,7 @@ export default async function Page({
       )}
       {reference && !params.status && (
         <EscapeBlurNotice>
-          <p><strong>No provider status in this link.</strong> Pending payments can take a few minutes to settle. Check your wallet balance and history before retrying — this page does not confirm coins moved, and new recharges stay paused. Press Escape to leave this notice.</p>
+          <p><strong>No provider status in this link.</strong> Pending payments can take a few minutes to settle. Check your wallet balance and history before retrying — this page does not confirm coins moved. Press Escape to leave this notice.</p>
           <p className="sr-only" id="payment-no-provider-hint">Arrow keys move between wallet, payment help, free tools, draft and support. Escape blurs. Skip remains site-content.</p>
           <LinkKeyboardGroup className="actions" aria-label="Payment status without provider status" aria-describedby="payment-no-provider-hint">
             <Link className="button secondary" href="/wallet">Open wallet</Link>
@@ -115,7 +115,7 @@ export default async function Page({
       <LinkKeyboardGroup className="actions" aria-label="Payment status next steps" aria-describedby="payment-footer-hint">
         <Link className="button" href="/wallet">Open wallet</Link>
         <Link className="button secondary" href="/help/coins-and-payment-pending">Payment help</Link>
-        <Link className="button secondary" href="/wallet/recharge">Why recharge is paused</Link>
+        <Link className="button secondary" href="/wallet/recharge">Add coins</Link>
         <Link className="button secondary" href="/tools">Try free tools</Link>
         <Link className="button secondary" href="/guidance/start">Prepare a draft</Link>
         <Link className="text-link" href="/pricing">Pricing terms →</Link>

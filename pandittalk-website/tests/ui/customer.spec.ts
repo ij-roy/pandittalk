@@ -48,7 +48,7 @@ test('booking cancellation requires the explicit final action and reports the re
   await expect(page.getByRole('button', { name: 'Confirm cancellation', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Cancel booking', exact: true }).click();
   await page.getByRole('button', { name: 'Confirm cancellation', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Cancellation request submitted' })).toContainText('Cancellation request submitted');
+  await expect(page.getByRole('status').filter({ hasText: 'Cancellation confirmed' })).toContainText('Cancellation confirmed');
   expect(cancellations).toBe(1);
 });
 
@@ -98,6 +98,104 @@ test('wallet errors can recover to a clear empty transaction state', async ({ pa
   await page.getByRole('button', { name: 'Try again', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'No transactions yet' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Available wallet balance' })).toContainText('250');
+});
+
+test('wallet recharge opens a server-priced checkout and verifies before showing success', async ({ page }) => {
+  let verifyPayload: Record<string, unknown> | undefined;
+  await page.addInitScript(() => {
+    class FakeRazorpay {
+      private readonly options: { handler: (value: Record<string, string>) => void; modal?: { ondismiss?: () => void } };
+      constructor(options: { handler: (value: Record<string, string>) => void; modal?: { ondismiss?: () => void } }) {
+        this.options = options;
+      }
+      open() {
+        this.options.handler({
+          razorpay_order_id: 'order_test_123',
+          razorpay_payment_id: 'pay_test_123',
+          razorpay_signature: 'signature_test_123',
+        });
+      }
+      on() { /* The success path does not need a payment.failed event. */ }
+    }
+    (window as unknown as { Razorpay: typeof FakeRazorpay }).Razorpay = FakeRazorpay;
+  });
+  await page.route('**/api/backend/wallet', async route => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      coinBalance: 250,
+      transactions: [],
+      packages: [{ id: 'pack-starter', label: 'Starter', coins: 500, bonusCoins: 50, priceInr: 499, isActive: true }],
+    }) });
+  });
+  await page.route('**/api/backend/wallet/create-order', async route => {
+    expect(route.request().postDataJSON()).toEqual({ coinPackageId: 'pack-starter' });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      orderId: 'order_test_123', amount: 49900, currency: 'INR', keyId: 'rzp_test_key',
+      package: { label: 'Starter', coins: 500, bonusCoins: 50, priceInr: 499 },
+    }) });
+  });
+  await page.route('**/api/backend/wallet/verify-payment', async route => {
+    verifyPayload = route.request().postDataJSON();
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, coinsAdded: 550, newBalance: 800 }) });
+  });
+  await page.goto('/wallet/recharge');
+  await expect(page.getByRole('heading', { name: 'Add coins to your wallet' })).toBeVisible();
+  await expect(page.getByText('500 coins + 50 bonus')).toBeVisible();
+  await page.getByRole('button', { name: 'Pay ₹499 securely', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Coins added to your wallet' })).toBeVisible();
+  expect(verifyPayload).toEqual({
+    razorpayOrderId: 'order_test_123',
+    razorpayPaymentId: 'pay_test_123',
+    razorpaySignature: 'signature_test_123',
+  });
+});
+
+test('wallet recharge does not show success when server verification fails', async ({ page }) => {
+  await page.addInitScript(() => {
+    class FakeRazorpay {
+      private readonly options: { handler: (value: Record<string, string>) => void };
+      constructor(options: { handler: (value: Record<string, string>) => void }) { this.options = options; }
+      open() { this.options.handler({ razorpay_order_id: 'order_test_failed', razorpay_payment_id: 'pay_test_failed', razorpay_signature: 'bad_signature' }); }
+      on() { /* No provider failure event in this verification test. */ }
+    }
+    (window as unknown as { Razorpay: typeof FakeRazorpay }).Razorpay = FakeRazorpay;
+  });
+  await page.route('**/api/backend/wallet', async route => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      coinBalance: 250,
+      transactions: [],
+      packages: [{ id: 'pack-starter', label: 'Starter', coins: 500, bonusCoins: 0, priceInr: 499, isActive: true }],
+    }) });
+  });
+  await page.route('**/api/backend/wallet/create-order', async route => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ orderId: 'order_test_failed', amount: 49900, currency: 'INR', keyId: 'rzp_test_key' }) });
+  });
+  await page.route('**/api/backend/wallet/verify-payment', async route => {
+    await route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ message: 'Payment verification failed' }) });
+  });
+  await page.goto('/wallet/recharge');
+  await page.getByRole('button', { name: 'Pay ₹499 securely', exact: true }).click();
+  await expect(page.getByRole('alert').filter({ hasText: 'Payment verification failed' })).toContainText('Payment verification failed');
+  await expect(page.getByText('Coins added to your wallet.', { exact: true })).toHaveCount(0);
+});
+
+test('wallet recharge keeps the payment choice readable on mobile and desktop', async ({ page }) => {
+  await page.route('**/api/backend/wallet', async route => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      coinBalance: 250,
+      transactions: [],
+      packages: [
+        { id: 'pack-starter', label: 'Starter', coins: 500, bonusCoins: 50, priceInr: 499, isActive: true },
+        { id: 'pack-deep', label: 'Deep', coins: 1200, bonusCoins: 250, priceInr: 999, isActive: true },
+      ],
+    }) });
+  });
+  for (const width of [320, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/wallet/recharge');
+    await expect(page.getByRole('heading', { name: 'Add coins to your wallet' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Pay ₹499 securely', exact: true })).toBeVisible();
+    await expect.poll(async () => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), { message: `No horizontal overflow at ${width}px` }).toBe(true);
+  }
 });
 
 test('customer navigation stays usable without overflow at 320 pixels', async ({ page }) => {

@@ -28,8 +28,8 @@ export default function Page() {
         </Link>
         <Link className="panel" href="/wallet">
           <h2>Wallet</h2>
-          <p>Check your balance and transaction history. Website top-ups are not available yet.</p>
-          <span className="text-link">Open wallet</span>
+          <p>Check your balance, add coins securely, and review payment history.</p>
+          <span className="text-link">Manage wallet</span>
         </Link>
         <Link className="panel" href="/reports">
           <h2>Reports</h2>
@@ -69,10 +69,10 @@ export default function Page() {
       </LinkKeyboardGroup>
 
       <EscapeBlurNotice role="status">
-        <strong>Website top-ups are not available yet.</strong> Existing bookings and wallet records remain available. Press Escape to leave this notice.{' '}
-        <span className="sr-only" id="home-wallet-pause-hint">Arrow keys move between recharge, wallet, tools and optional notes. Escape blurs. Skip remains site-content.</span>
-        <LinkKeyboardGroup as="span" aria-label="Customer home wallet pause links" aria-describedby="home-wallet-pause-hint">
-          <Link href="/wallet/recharge">Recharge updates</Link>
+        <strong>Keep your balance ready for a booking.</strong> Add coins from your wallet when you need them. Press Escape to leave this notice.{' '}
+        <span className="sr-only" id="home-wallet-pause-hint">Arrow keys move between wallet, recharge, tools and optional notes. Escape blurs. Skip remains site-content.</span>
+        <LinkKeyboardGroup as="span" aria-label="Customer home wallet links" aria-describedby="home-wallet-pause-hint">
+          <Link href="/wallet/recharge">Add coins</Link>
           {' · '}
           <Link href="/wallet">Open wallet</Link>
           {' · '}

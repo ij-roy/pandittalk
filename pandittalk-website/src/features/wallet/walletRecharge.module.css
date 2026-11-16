@@ -1,0 +1,26 @@
+.balancePanel { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:24px 28px; border:1px solid #e6d4a7; border-radius:18px; background:linear-gradient(135deg, rgba(255,249,231,.94), rgba(255,255,255,.85)); }
+.balancePanel p { margin:0; }
+.balance { margin-top:5px !important; font-family:var(--font-display); font-size:clamp(2.6rem,7vw,4.2rem); line-height:1; letter-spacing:-.04em; color:var(--ink); }
+.balance span { font-family:var(--font-body); font-size:1rem; letter-spacing:0; color:var(--muted); }
+.packGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr)); gap:14px; }
+.pack { position:relative; display:flex; min-width:0; min-height:184px; flex-direction:column; align-items:flex-start; justify-content:flex-start; gap:8px; padding:24px 20px 20px; border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,.72); color:var(--ink); text-align:left; cursor:pointer; transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease; }
+.pack:hover:not(:disabled) { transform:translateY(-2px); border-color:#c89c42; box-shadow:0 12px 28px -18px rgba(106,85,44,.45); }
+.pack:focus-visible { outline:3px solid rgba(184,137,38,.42); outline-offset:3px; }
+.packSelected { border-color:#b88926; background:linear-gradient(145deg,#fff8e8,#fffdf8); box-shadow:0 0 0 2px rgba(184,137,38,.15), 0 12px 28px -20px rgba(106,85,44,.42); }
+.packLabel { color:var(--muted); font-size:.9rem; font-weight:600; }
+.pack strong { font-family:var(--font-display); font-size:clamp(1.8rem,3vw,2.35rem); font-weight:400; line-height:1.05; }
+.bonus { min-height:2.5em; color:var(--muted); font-size:.88rem; line-height:1.4; }
+.price { margin-top:auto; color:var(--brand-gold-deep); font-size:1.15rem; font-weight:700; }
+.badge { position:absolute; top:12px; right:12px; padding:4px 8px; border:1px solid #e5c98a; border-radius:999px; background:#fff4d4; color:#725018; font-size:.68rem; font-weight:700; }
+.checkoutPanel { display:flex; align-items:center; justify-content:space-between; gap:28px; }
+.checkoutPanel h2 { margin-bottom:8px; }
+.checkoutPanel p { margin-bottom:0; }
+@media (max-width:620px) {
+  .balancePanel, .checkoutPanel { align-items:stretch; flex-direction:column; gap:18px; }
+  .checkoutPanel .button { width:100%; }
+  .pack { min-height:166px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .pack { transition:none; }
+  .pack:hover:not(:disabled) { transform:none; }
+}

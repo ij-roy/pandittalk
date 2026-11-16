@@ -171,11 +171,10 @@ export function HomeOverview() {
         <li>
           {balance !== null ? (
             <>
-              <span className="sr-only" id="home-glance-wallet-hint">Arrow keys move between wallet, recharge pause, free tools and draft. Escape blurs. Skip remains site-content.</span>
+              <span className="sr-only" id="home-glance-wallet-hint">Arrow keys move between wallet, add coins, free tools and draft. Escape blurs. Skip remains site-content.</span>
               <LinkKeyboardGroup as="span" aria-label="Wallet overview links" aria-describedby="home-glance-wallet-hint">
                 Wallet balance: <strong>{balance.toLocaleString('en-IN')} coins</strong>
-                <span> (existing balance · not a recharge offer or new booking unlock)</span>
-                {' · '}<Link href="/wallet/recharge">{balance === 0 ? 'Recharge updates' : 'Why recharge is paused'}</Link>
+                {' · '}<Link href="/wallet/recharge">Add coins</Link>
                 {' · '}<Link href="/wallet">Open wallet</Link>
                 {' · '}<Link href="/tools">Free tools</Link>
                 {' · '}<Link href="/guidance/start">Prepare a draft</Link>

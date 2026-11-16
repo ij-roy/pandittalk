@@ -8,6 +8,7 @@ import { formatIstDateTime } from '@/lib/time/ist';
 import styles from '../account/customer.module.css';
 
 type Transaction = { id: string; type: string; coinsAmount: number; amountInr?: number | null; status?: string; createdAt: string };
+type CoinPackage = { id: string; coins: number; bonusCoins: number; priceInr: number | string; isActive?: boolean };
 
 function transactionStatusTone(status?: string) {
   const value = (status || '').toLowerCase();
@@ -26,7 +27,7 @@ const statusBadgeClass = {
 } as const;
 
 export function Wallet() {
-  const q = useApi<{ coinBalance: number; transactions: Transaction[] }>('/wallet');
+  const q = useApi<{ coinBalance: number; transactions: Transaction[]; packages?: CoinPackage[] }>('/wallet');
   const errorRef = useRef<HTMLDivElement>(null);
   const zeroRef = useRef<HTMLElement>(null);
   const emptyTxRef = useRef<HTMLElement>(null);
@@ -89,17 +90,17 @@ export function Wallet() {
     }}><p>{q.error.message} Press Escape to leave this alert.</p><p className="sr-only" id="wallet-load-hint">Arrow keys move between wallet load recovery links. Escape blurs. Skip remains site-content.</p><LinkKeyboardGroup className="actions" aria-label="Wallet load recovery" aria-describedby="wallet-load-hint"><button type="button" className="button secondary" onClick={q.reload} disabled={q.loading} aria-busy={q.loading || undefined}>{q.loading ? 'Trying again…' : 'Try again'}</button><Link className="button secondary" href="/help/coins-and-payment-pending">Payment help</Link><Link className="button secondary" href="/tools">Try free tools</Link><Link className="button secondary" href="/guidance/start">Prepare a draft</Link><Link className="text-link" href="/contact">Contact support →</Link></LinkKeyboardGroup></div>}
     {q.data && <>
       <section className="panel" aria-label="Available wallet balance"><p className="eyebrow">Available balance</p><p className={styles.balance} aria-live="polite">{q.data.coinBalance.toLocaleString('en-IN')} <span>coins</span></p><p>Your balance is shared with your Pandit Talk app account. Pending payments are not included until they settle. Confirmed booking charges and refunds are recorded here.</p></section>
-      <div className="notice" role="status"><strong>Recharge is currently unavailable</strong><p>Your existing balance and transaction history are still available. <span className="sr-only" id="wallet-recharge-pause-hint">Arrow keys move between recharge pause, support, help, tools and draft. Escape blurs. Skip remains site-content.</span> <LinkKeyboardGroup as="span" aria-label="Wallet recharge pause links" aria-describedby="wallet-recharge-pause-hint"><Link href="/wallet/recharge">Why recharge is paused</Link> · <Link href="/contact">Contact support</Link> for payment or refund help · <Link href="/help">Help centre</Link> · <Link href="/tools">Try free tools</Link> · <Link href="/guidance/start">Prepare a draft</Link></LinkKeyboardGroup>.</p></div>
+      <div className="notice" role="status"><strong>{q.data.packages?.length ? 'Add coins when you need them' : 'No coin packs are available right now'}</strong><p>{q.data.packages?.length ? <>Choose a server-priced pack and pay securely. Your balance changes only after payment verification. <Link href="/wallet/recharge">Add coins to your wallet →</Link></> : <>Your existing balance and transaction history are still available. Check back later or <Link href="/contact">contact support</Link> for payment or refund help.</>}</p></div>
       {q.data.coinBalance === 0 && (
         <aside className="notice" role="status" tabIndex={-1} ref={zeroRef} onKeyDown={event => {
           if (event.key !== 'Escape') return;
           event.preventDefault();
           (event.currentTarget as HTMLElement).blur();
         }}>
-          <p><strong>Your balance is zero.</strong> New top-ups are paused. You can still explore Pandits, prepare a draft, or leave your email for recharge updates. Press Escape to leave this notice.</p>
+          <p><strong>Your balance is zero.</strong> {q.data.packages?.length ? 'Add coins before starting an eligible booking.' : 'No coin packs are available right now.'} Press Escape to leave this notice.</p>
           <p className="sr-only" id="wallet-zero-hint">Arrow keys move between zero-balance next steps. Escape blurs the focused link.</p>
           <LinkKeyboardGroup className="actions" aria-label="Zero balance next steps" aria-describedby="wallet-zero-hint">
-            <Link className="button secondary" href="/wallet/recharge">Get recharge updates</Link>
+            <Link className="button secondary" href="/wallet/recharge">Add coins</Link>
             <Link className="button secondary" href="/pandits">Explore Pandits</Link>
             <Link className="button secondary" href="/tools">Try free tools</Link>
             <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
@@ -145,7 +146,7 @@ export function Wallet() {
             <p className={styles.transactionValue}>{t.coinsAmount.toLocaleString('en-IN')} coins{typeof t.amountInr === 'number' && t.amountInr > 0 ? ` · ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(t.amountInr)}` : ''}</p>
             {t.status && <span className={`${styles.badge}${tone ? ` ${statusBadgeClass[tone]}` : ''}`}>{t.status.replaceAll('_', ' ')}</span>}
             {tone === 'ready' && (
-              <p className="expert-meta">Settled in wallet history — not a new recharge. Recharge stays paused.</p>
+              <p className="expert-meta">Settled in wallet history. This record is not a new recharge action.</p>
             )}
             {needsFollowUp ? (
               <>
@@ -177,8 +178,8 @@ export function Wallet() {
         <h2>No transactions yet</h2>
         <p>
           {q.data.coinBalance === 0
-            ? 'No payment or refund history yet. A zero balance does not open recharge; use this page to review wallet status and previous payments. Press Escape to leave this notice.'
-            : 'Coin payments and refunds will appear here when you use your wallet. Recharge is handled separately; an existing balance is not a top-up offer. Press Escape to leave this notice.'}
+            ? 'No payment or refund history yet. Choose a coin pack to add coins, or use this page to review wallet status and previous payments. Press Escape to leave this notice.'
+            : 'Coin payments and refunds will appear here when you use your wallet. Press Escape to leave this notice.'}
         </p>
         <p className="sr-only" id="wallet-empty-hint">Arrow keys move between recharge, pricing, Pandits, free tools, draft and booking links. Escape blurs the focused link. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="Empty wallet next steps" aria-describedby="wallet-empty-hint">

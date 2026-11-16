@@ -84,11 +84,11 @@ export const helpArticles: Record<string, HelpArticle> = {
 
     title: 'Coins and payment pending',
 
-    summary: 'Use this for an existing payment reference. Website recharge cannot be started from help while top-ups stay paused.',
+    summary: 'Use this for an existing payment reference, including a payment that is still being verified.',
 
     steps: [
 
-      'Open payment status and refresh for the reference you already have — do not start a new top-up from the website.',
+      'Open payment status and refresh for the reference you already have — do not start another payment until you know the first result.',
 
       'Check your wallet history for the same reference.',
 
@@ -98,7 +98,7 @@ export const helpArticles: Record<string, HelpArticle> = {
 
     ],
 
-    tip: 'New top-ups are paused on the website. This help covers existing pending payments only — leave your email on the recharge page if you want a note when top-ups reopen.',
+    tip: 'A payment can remain pending for a short time. Your wallet balance and transaction history are the final record.',
 
   },
 

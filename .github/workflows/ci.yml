@@ -115,6 +115,9 @@ jobs:
         run: |
           docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --scale api=2 --no-recreate api proxy
           curl --fail http://localhost:3001/
+      - name: Show API logs when the stack fails
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.local.yml logs --no-color --tail=200 api
       - name: Show service state
         if: always()
         run: docker compose -f docker-compose.yml -f docker-compose.local.yml ps

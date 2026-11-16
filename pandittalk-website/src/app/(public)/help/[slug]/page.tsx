@@ -78,7 +78,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           {slug === 'coins-and-payment-pending' && <>
             <Link className="button secondary" href="/login?returnTo=%2Fwallet&reason=auth">Sign in to open wallet</Link>
             <Link className="text-link" href="/login?returnTo=%2Fwallet%2Fpayment-status&reason=auth">Sign in for payment status →</Link>
-            <Link className="text-link" href="/wallet/recharge">Why recharge is paused →</Link>
+            <Link className="text-link" href="/wallet/recharge">Add coins securely →</Link>
           </>}
           {slug === 'booking-cancellation' && <Link className="text-link" href="/login?returnTo=%2Fbookings&reason=auth">Sign in to view bookings →</Link>}
           {slug === 'joining-audio-video' && <Link className="text-link" href="/login?returnTo=%2Fbookings&reason=auth">Sign in to open bookings →</Link>}

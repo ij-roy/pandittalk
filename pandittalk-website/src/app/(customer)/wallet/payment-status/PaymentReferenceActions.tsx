@@ -37,7 +37,7 @@ export function PaymentReferenceActions({ reference }: { reference: string }) {
     }
   }
 
-  const mailto = `mailto:${supportEmail}?subject=${encodeURIComponent(`Payment reference ${reference}`)}&body=${encodeURIComponent(`Payment reference: ${reference}\n\nWhat I expected:\nWhat I see in my wallet:\n\nNote: New website recharges are paused — this is about an existing payment attempt.\n`)}`;
+  const mailto = `mailto:${supportEmail}?subject=${encodeURIComponent(`Payment reference ${reference}`)}&body=${encodeURIComponent(`Payment reference: ${reference}\n\nWhat I expected:\nWhat I see in my wallet:\n\nNote: This is about an existing payment attempt.\n`)}`;
 
   return (
     <div className="stack">
@@ -106,7 +106,7 @@ export function PaymentReferenceActions({ reference }: { reference: string }) {
             ? 'Reference copied to your clipboard. Press Escape to dismiss and return to Copy. Copying does not credit coins — check your wallet next.'
             : failed
               ? 'Clipboard access was blocked. Select the reference above and copy it manually, email support with it, or open payment help. Press Escape to dismiss this message.'
-              : 'This reference identifies a payment attempt. Copying it does not confirm coins were credited — check your wallet balance next. New website recharges stay paused.'}
+              : 'This reference identifies a payment attempt. Copying it does not confirm coins were credited — check your wallet balance next.'}
       </p>
     </div>
   );

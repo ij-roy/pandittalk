@@ -218,7 +218,7 @@ export function BookingFlow({ expertId, mode = 'scheduled' }: { expertId?: strin
         {balance !== undefined && <p className={styles.balance} aria-label={`Wallet balance ${balance} coins`}><strong>{balance}</strong> coins available</p>}
       </div>
 
-      {formError && <div id="booking-form-error" className="error" role="alert" tabIndex={-1}><strong>We could not continue.</strong> {formError}</div>}
+      {formError && <div id="booking-form-error" className="error" role="alert" tabIndex={-1}><strong>We could not continue.</strong> {formError}{/wallet|coin|balance|insufficient/i.test(formError) && <> <Link className="text-link" href="/wallet/recharge">Add coins to your wallet →</Link></>}</div>}
 
       {step === 'choose' ? isChatNow ? (
         <form className={`panel stack ${styles.form}`} onSubmit={reviewBooking}>
