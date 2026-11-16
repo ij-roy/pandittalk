@@ -37,8 +37,10 @@ export interface QueuePositionResult {
 @Injectable()
 export class PanditQueueService {
   static readonly MAX_QUEUE_DEPTH = BOOKING_CATALOG.chatNow.maxQueueDepth;
-  static readonly MAX_QUEUE_WAIT_MS = BOOKING_CATALOG.chatNow.maxQueueWaitMinutes * 60 * 1000;
-  static readonly QUEUE_TURN_TIMEOUT_MS = BOOKING_CATALOG.chatNow.queueTurnTimeoutSeconds * 1000;
+  static readonly MAX_QUEUE_WAIT_MS =
+    BOOKING_CATALOG.chatNow.maxQueueWaitMinutes * 60 * 1000;
+  static readonly QUEUE_TURN_TIMEOUT_MS =
+    BOOKING_CATALOG.chatNow.queueTurnTimeoutSeconds * 1000;
 
   private readonly turnTimeouts = new Map<string, NodeJS.Timeout>();
 
@@ -149,7 +151,8 @@ export class PanditQueueService {
     return {
       position: index === -1 ? null : index + 1,
       queueLength: queue.length,
-      estimatedWaitMinutes: index === -1 ? 0 : this.estimatedWaitMinutes(index + 1),
+      estimatedWaitMinutes:
+        index === -1 ? 0 : this.estimatedWaitMinutes(index + 1),
     };
   }
 
