@@ -5,6 +5,7 @@ import { useApi } from '@/lib/api/client';
 import { LoadingState } from '@/components/site/Skeleton';
 import { canResume, parseBooking, type Booking } from '@/features/bookings/types';
 import { formatIstDateTime } from '@/lib/time/ist';
+import { SiteIcon } from '@/components/site/SiteIcon';
 
 type Wallet = { coinBalance: number };
 type Unread = { count: number };
@@ -26,7 +27,9 @@ function SummaryCard({ label, value, description, href }: { label: string; value
       <span className="eyebrow home-summary-label">{label}</span>
       <strong className="home-summary-value">{value}</strong>
       <span className="home-summary-description">{description}</span>
-      <span className="text-link">Open {label.toLowerCase()}</span>
+      <span className="home-summary-link">
+        Open {label.toLowerCase()} <span data-summary-arrow aria-hidden="true">→</span>
+      </span>
     </Link>
   );
 }
@@ -119,9 +122,9 @@ export function HomeOverview() {
           <span className="eyebrow">At a glance</span>
           <p>What needs your attention now.</p>
         </div>
-        <button className="home-refresh-button" type="button" onClick={retryAll} disabled={loading} aria-label="Refresh home overview" aria-busy={loading || undefined}>
+        <button className="home-refresh-button" type="button" onClick={retryAll} disabled={loading} aria-label="Refresh overview" aria-busy={loading || undefined}>
           <RefreshIcon />
-          <span className="sr-only">{loading ? 'Refreshing home overview' : 'Refresh home overview'}</span>
+          <span>{loading ? 'Refreshing' : 'Refresh'}</span>
         </button>
       </div>
 
@@ -145,19 +148,11 @@ export function HomeOverview() {
           ) : (
             <EmptyPrimary />
           )}
-          <aside className="home-primary-aside" aria-label="Booking formats">
-            <span className="eyebrow">Choose what fits today</span>
-            <div className="home-primary-options">
-              <div className="home-primary-option">
-                <strong>Chat Now</strong>
-                <span>Talk when a Pandit is available.</span>
-              </div>
-              <div className="home-primary-option">
-                <strong>Schedule a session</strong>
-                <span>Pick a time that works for you.</span>
-              </div>
-            </div>
-          </aside>
+          <div className="home-format-note">
+            <span className="eyebrow">Two ways to talk</span>
+            <p><strong>Chat Now</strong><span>When a Pandit is available.</span></p>
+            <p><strong>Scheduled</strong><span>Choose a time in advance.</span></p>
+          </div>
         </div>
       )}
 
@@ -179,9 +174,9 @@ export function HomeOverview() {
           <h2 id="home-secondary-heading">A few useful places to continue</h2>
         </div>
         <div className="home-secondary-links">
-          <Link href="/tools"><strong>Free tools</strong><span>Explore readings on your own.</span><span className="text-link">Open free tools →</span></Link>
-          <Link href="/account/story"><strong>Your story</strong><span>Keep private context for future conversations.</span><span className="text-link">Manage your story →</span></Link>
-          <Link href="/guidance/start"><strong>Optional note</strong><span>Write a browser-only note; it does not book or charge.</span><span className="text-link">Prepare a note →</span></Link>
+          <Link data-home-secondary-link href="/tools"><span><strong>Free tools</strong><small>Explore readings on your own.</small></span><SiteIcon name="right" size={18} /></Link>
+          <Link data-home-secondary-link href="/account/story"><span><strong>Your story</strong><small>Keep private context for future conversations.</small></span><SiteIcon name="right" size={18} /></Link>
+          <Link data-home-secondary-link href="/guidance/start"><span><strong>Optional note</strong><small>Saved in this browser; it does not book or charge.</small></span><SiteIcon name="right" size={18} /></Link>
         </div>
       </section>
     </section>

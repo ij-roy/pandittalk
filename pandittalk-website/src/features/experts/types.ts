@@ -92,8 +92,8 @@ export function isPublicReview(review: { user_first_name?: string | null; rating
 
 /** Presence copy for profile discovery; Chat Now still checks the live booking service. */
 export function presenceLabel(isOnline: boolean, compact = false) {
-  if (compact) return isOnline ? 'Usually online · check Chat Now' : 'Not usually online right now';
-  return isOnline ? 'Online presence reported · check Chat Now' : 'Offline right now · scheduled times may still be available';
+  if (compact) return isOnline ? 'Check Chat Now' : 'Check scheduled times';
+  return isOnline ? 'Chat Now may be available' : 'View scheduled times';
 }
 
 export function filterExperts(rows: Expert[], language: string, sort: string) {

@@ -11,9 +11,11 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <main id="main-content" className={`page stack ${styles.homePage}`}>
-      <p className="eyebrow">Your Pandit Talk space</p>
-      <h1>Welcome back.</h1>
-      <p className="lede">Choose what you need today: continue a booking, find a Pandit, or look back at something you have saved.</p>
+      <header className={styles.homeIntro}>
+        <p className="eyebrow">Your home</p>
+        <h1>Welcome back.</h1>
+        <p className="lede">Continue a booking or choose the next conversation that feels useful today.</p>
+      </header>
       <HomeOverview />
     </main>
   );

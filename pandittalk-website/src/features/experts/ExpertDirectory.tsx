@@ -3,8 +3,10 @@ import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
+import { SiteIcon } from '@/components/site/SiteIcon';
 import { Skeleton, SkeletonText } from '@/components/site/Skeleton';
-import { categories, expertFirstName, filterExperts, presenceLabel, trustworthyReviewStats, type Expert } from './types';
+import type { BookingCatalog } from '@/features/bookings/bookingApi';
+import { categories, filterExperts, presenceLabel, trustworthyReviewStats, type Expert } from './types';
 
 export function ExpertPortrait({ expert }: { expert: Expert }) {
   const [failedUrl, setFailedUrl] = useState<string>();
@@ -67,6 +69,7 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
   if (debouncedSearch) params.set('search', debouncedSearch);
   if (area) params.set('area', area);
   const { data, error, loading, reload } = useApi<Expert[]>('/experts?' + params.toString());
+  const catalogQuery = useApi<BookingCatalog>('/booking-catalog');
   const rows = Array.isArray(data) ? data : [];
   const lastRows = useRef<Expert[]>([]);
   if (rows.length || (!loading && !error)) lastRows.current = rows;
@@ -79,6 +82,8 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
   const hasFilters = !!search || !!area || !!language || sort !== 'rating';
   const activeFilterCount = [search, area, language, sort !== 'rating' ? sort : ''].filter(Boolean).length;
   const showLoadError = Boolean(error && displayRows.length === 0);
+  const catalog = catalogQuery.data;
+  const lowestScheduled = catalog?.scheduled?.depths?.slice().sort((a, b) => a.basePrice - b.basePrice || a.durationMinutes - b.durationMinutes)[0];
 
   useEffect(() => {
     if (!searching) {
@@ -138,7 +143,7 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
   return <div>
     {!compact && <>
       <div className="filters-toolbar">
-        <p className="sr-only" id="directory-filters-toolbar-hint">Arrow keys move between Filter, Clear, free tools and draft. Escape blurs. Skip remains site-content.</p>
+        <p className="sr-only" id="directory-filters-toolbar-hint">Arrow keys move between filter controls. Escape blurs. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" style={{ margin: 0 }} aria-label="Directory filter controls" aria-describedby="directory-filters-toolbar-hint">
           <button
             ref={filterToggleRef}
@@ -153,8 +158,6 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
             {activeFilterCount > 0 && <span className="filters-count" aria-hidden="true">{activeFilterCount}</span>}
           </button>
           {hasFilters && <button type="button" className="button secondary" onClick={clearFilters}>Clear filters</button>}
-          <Link className="text-link" href="/tools">Try free tools →</Link>
-          <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
         </LinkKeyboardGroup>
         {hasFilters && !filtersOpen && (
           <p className="expert-meta" id={`${filtersId}-active`} role="status">
@@ -173,31 +176,31 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
       </div>
       <div className={`filters${filtersOpen ? ' is-open' : ''}`} id={filtersId} aria-describedby={!filtersOpen ? `${filtersId}-hint ${filtersId}-hint-keyboard` : undefined}>
         {filterControls}
-        <p className="sr-only" id="directory-filters-panel-hint">Arrow keys move between Clear filters, free tools and draft. Escape blurs. Skip remains site-content.</p>
-        <LinkKeyboardGroup className="filters-actions actions" aria-label="Directory filter panel actions" aria-describedby="directory-filters-panel-hint">
-          <button type="button" className="button secondary" disabled={!hasFilters} onClick={clearFilters}>Clear filters</button>
-          <Link className="text-link" href="/tools">Try free tools</Link>
-          <Link className="text-link" href="/guidance/start">Prepare a draft</Link>
-        </LinkKeyboardGroup>
+        <p className="sr-only" id="directory-filters-panel-hint">Escape resets an active control or closes this panel. Skip remains site-content.</p>
+        {hasFilters && <LinkKeyboardGroup className="filters-actions actions" aria-label="Directory filter panel actions" aria-describedby="directory-filters-panel-hint">
+          <button type="button" className="button secondary" onClick={clearFilters}>Clear filters</button>
+        </LinkKeyboardGroup>}
       </div>
+      {(catalog?.chatNow?.enabled || lowestScheduled) && (
+        <section className="directory-booking-summary" data-booking-summary aria-label="Booking options and prices">
+          <div>
+            <span className="eyebrow">Booking options</span>
+            <p>Terms come from the same booking service used at confirmation.</p>
+          </div>
+          <div className="directory-booking-terms">
+            {catalog?.chatNow?.enabled && <strong>Chat Now · {catalog.chatNow.durationMinutes} min · {catalog.chatNow.totalPrice.toLocaleString('en-IN')} coins</strong>}
+            {lowestScheduled && <strong>Scheduled · from {lowestScheduled.durationMinutes} min · {lowestScheduled.basePrice.toLocaleString('en-IN')} coins</strong>}
+          </div>
+          <Link className="text-link" href="/how-it-works#booking-availability-how">How booking works <SiteIcon name="right" size={16} /></Link>
+        </section>
+      )}
       <p className="expert-meta expert-directory-note">Online presence is only a signal. The booking service checks Chat Now availability again before anything is confirmed. Health, financial and legal topics offer spiritual guidance, not professional advice.</p>
     </>}
     <div data-expert-results aria-busy={searching || updating}>
       {updating && <p role="status" className="expert-meta">Updating results…</p>}
       {searching ? <>
         <p id={resultsId} role="status" className="expert-meta">Finding Pandits…</p>
-        {loadingSlow && <div className="expert-loading-help" role="status">
-          <p>Still loading? You can use free tools or prepare a draft while profiles load.</p>
-          <div className="actions" style={{ marginTop: 10 }}>
-            <Link className="button secondary" href="/tools">Try free tools</Link>
-            <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
-          </div>
-        </div>}
-        <p className="sr-only" id="directory-searching-hint">Skip to content still targets site-content. Arrow keys move between free tools and draft while results load. NotifyOpenForm still requires source.</p>
-        <LinkKeyboardGroup className="actions" aria-label="While Pandit results load" aria-describedby="directory-searching-hint">
-          <Link className="button secondary" href="/tools">Try free tools</Link>
-          <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
-        </LinkKeyboardGroup>
+        {loadingSlow && <p className="expert-loading-help" role="status">Profiles are taking a little longer to load. You can stay here while we finish checking.</p>}
         <LoadingRows count={compact ? 3 : 4} />
       </> : showLoadError ? <div className="error" role="alert" tabIndex={-1} ref={errorRef} onKeyDown={event => {
         if (event.key !== 'Escape') return;
@@ -205,11 +208,9 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
         (event.currentTarget as HTMLElement).blur();
       }}>
         <p id={resultsId}>We couldn&apos;t load the Pandit directory. Please try again. Press Escape to leave this alert.</p>
-        <p className="sr-only" id="directory-load-hint">Arrow keys move between directory load recovery links. Escape blurs the focused control. Skip remains site-content.</p>
+        <p className="sr-only" id="directory-load-hint">Arrow keys move between retry and support. Escape blurs the focused control. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="Directory load recovery" style={{ marginTop: 12 }} aria-describedby="directory-load-hint">
           <button type="button" className="button secondary" onClick={reload} disabled={loading} aria-busy={loading || undefined}>{loading ? 'Trying again…' : 'Try again'}</button>
-          <Link className="button secondary" href="/tools">Try free tools</Link>
-          <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
           <Link className="text-link" href="/contact">Contact support →</Link>
         </LinkKeyboardGroup>
       </div> : <>
@@ -220,7 +221,7 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
               : `Showing ${Math.min(3, filtered.length)} of ${filtered.length} ${filtered.length === 1 ? 'Pandit' : 'Pandits'} · Choose a session from a profile`}
           </p>
         ) : (
-          <p id={resultsId} role="status" className="expert-meta" tabIndex={-1}>{filtered.length} {filtered.length === 1 ? 'Pandit' : 'Pandits'} · Sorted by {sort === 'name' ? 'name A–Z' : sort === 'reviews' ? 'review count, highest first' : sort === 'experience' ? 'experience, highest first' : 'rating, highest first'} · Availability is shown on each profile</p>
+          <p id={resultsId} role="status" className="expert-meta expert-results-count" tabIndex={-1}>{filtered.length} {filtered.length === 1 ? 'Pandit' : 'Pandits'} · Sorted by {sort === 'name' ? 'name A–Z' : sort === 'reviews' ? 'review count, highest first' : sort === 'experience' ? 'experience, highest first' : 'rating, highest first'} · Open a profile for live availability</p>
         )}
         {filtered.length === 0 ? <div className="panel stack" id="directory-empty" tabIndex={-1} role="status" onKeyDown={event => {
           if (event.key !== 'Escape') return;
@@ -233,55 +234,46 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
           (event.currentTarget as HTMLElement).blur();
         }}>
           <h3>{hasFilters ? 'No matching Pandits right now.' : 'No Pandit profiles to show right now.'}</h3>
-          <p>{hasFilters ? 'Try a different name, topic or language to find a profile to book. Press Escape to clear filters.' : 'The directory has no public profiles to show right now. Try the free tools or contact support if you expected to see a profile. Press Escape to leave this notice.'}</p>
+          <p>{hasFilters ? 'Try a different name, topic or language to find a profile to book. Press Escape to clear filters.' : 'The directory has no public profiles to show right now. Contact support if you expected to see a profile. Press Escape to leave this notice.'}</p>
           {hasFilters ? <>
-            <p className="sr-only" id="directory-filtered-empty-hint">Arrow keys move between Clear filters, free tools and draft. Escape blurs. Skip remains site-content. NotifyOpenForm still requires source.</p>
+            <p className="sr-only" id="directory-filtered-empty-hint">Clear filters returns to the full directory. Escape also clears the current filters.</p>
             <LinkKeyboardGroup className="actions" aria-label="Directory filtered empty recovery" aria-describedby="directory-filtered-empty-hint">
               <button type="button" className="button secondary" onClick={clearFilters}>Clear all filters</button>
-              <Link href="/tools" className="button secondary">Try free tools</Link>
-              <Link href="/guidance/start" className="text-link">Prepare a draft →</Link>
             </LinkKeyboardGroup>
           </> : <>
-            <p className="sr-only" id="directory-empty-hint">Arrow keys move between empty-directory next steps including free tools and support. Escape blurs.</p>
+            <p className="sr-only" id="directory-empty-hint">Contact support if profiles are unexpectedly unavailable. Escape blurs.</p>
             <LinkKeyboardGroup className="actions" aria-label="Directory empty next steps" aria-describedby="directory-empty-hint">
-              <Link href="/tools" className="button secondary">Try free tools</Link>
               <Link href="/contact" className="text-link">Contact support →</Link>
             </LinkKeyboardGroup>
           </>}
-        </div> : (compact ? filtered.slice(0, 3) : filtered).map(expert => <article className="expert-row" key={expert.id}>
+        </div> : (compact ? filtered.slice(0, 3) : filtered).map(expert => <article className="expert-row" data-expert-card key={expert.id}>
           <ExpertPortrait expert={expert} />
-          <div>
+          <div className="expert-card-copy">
             <h3><Link href={'/pandits/' + encodeURIComponent(expert.id)}>{expert.name}</Link></h3>
-            <p>{expert.specialty}</p>
-            <p className="expert-meta">{expert.languages.length ? expert.languages.join(' · ') : 'Languages not listed'}{expert.experience > 0 ? ` · ${expert.experience} ${expert.experience === 1 ? 'year' : 'years'} of practice` : ''}</p>
-            <p className="expert-meta">{(() => {
-              const { rating, total } = trustworthyReviewStats(expert);
-              return total > 0
-                ? `${rating}/5 · ${total} published ${total === 1 ? 'review' : 'reviews'}`
-                : 'No published reviews yet';
-            })()} · <span className={`presence${expert.isOnline ? ' is-online' : ''}`}>{presenceLabel(expert.isOnline, compact)}</span></p>
+            <p className="expert-specialty">{expert.specialty}</p>
+            <div className="expert-facts" aria-label={`Details for ${expert.name}`}>
+              <span>{expert.languages.length ? expert.languages.join(' · ') : 'Languages not listed'}</span>
+              {expert.experience > 0 && <span>{expert.experience} {expert.experience === 1 ? 'year' : 'years'} of practice</span>}
+              {(() => {
+                const { rating, total } = trustworthyReviewStats(expert);
+                return total > 0 ? <span>{rating}/5 · {total} {total === 1 ? 'review' : 'reviews'}</span> : null;
+              })()}
+            </div>
+            <p className={`presence${expert.isOnline ? ' is-online' : ''}`}>{presenceLabel(expert.isOnline, compact)}</p>
           </div>
-          <p className="sr-only" id={`directory-card-${expert.id}-hint`}>Arrow keys move between View profile, Prepare a draft and free tools. Escape blurs. Skip remains site-content.</p>
-          <LinkKeyboardGroup className="actions" aria-label={`Open ${expertFirstName(expert.name)} profile`} aria-describedby={`directory-card-${expert.id}-hint`}>
-            <Link className="button secondary" href={'/pandits/' + encodeURIComponent(expert.id)}>View {expertFirstName(expert.name)}&apos;s profile</Link>
-            <Link className="text-link" href={'/guidance/start?expertId=' + encodeURIComponent(expert.id)}>Prepare a draft →</Link>
-            <Link className="text-link" href="/tools">Try free tools →</Link>
-          </LinkKeyboardGroup>
+          <div className="expert-card-action">
+            <Link className="button" aria-label={`View availability for ${expert.name}`} href={'/pandits/' + encodeURIComponent(expert.id)}>View availability <SiteIcon name="right" size={18} /></Link>
+            <small>See live options and times</small>
+          </div>
         </article>)}
       </>}
     </div>
     {compact && filtered.length > 0 && (
-      <>
-        <p className="sr-only" id="directory-preview-hint">Arrow keys move between Pandit preview next steps. Escape blurs the focused link. Skip remains site-content.</p>
-        <LinkKeyboardGroup className="actions" style={{ marginTop: 16 }} aria-label="Home Pandit preview next steps" aria-describedby="directory-preview-hint">
-          <Link className="button secondary" href="/pandits">
-            {filtered.length > 3 ? `Explore all ${filtered.length} Pandits` : 'Explore all Pandits'} →
-          </Link>
-          <Link className="button secondary" href="/tools">Try free tools</Link>
-          <Link className="text-link" href="/guidance/start">Prepare a draft →</Link>
-          <Link className="text-link" href="/how-it-works#booking-availability-how">Get booking updates →</Link>
-        </LinkKeyboardGroup>
-      </>
+      <div className="actions" style={{ marginTop: 16 }}>
+        <Link className="button secondary" href="/pandits">
+          {filtered.length > 3 ? `Explore all ${filtered.length} Pandits` : 'Explore all Pandits'} <SiteIcon name="right" size={18} />
+        </Link>
+      </div>
     )}
   </div>;
 }

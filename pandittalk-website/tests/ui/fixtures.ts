@@ -2,7 +2,7 @@ import { createCipheriv, randomBytes } from 'node:crypto';
 import type { BrowserContext } from '@playwright/test';
 
 // Synthetic local UI-test sessions only. Never configure a deployed app with this key.
-export const UI_SESSION_SECRET = 'f'.repeat(64);
+export const UI_SESSION_SECRET = process.env.UI_SESSION_SECRET || 'f'.repeat(64);
 
 export async function authenticateCustomer(context: BrowserContext) {
   const iv = randomBytes(12);

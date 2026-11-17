@@ -7,6 +7,17 @@ test.beforeEach(async ({ page }) => {
   await page.route('**/api/backend/experts**', async route => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
   });
+  await page.route('**/api/backend/booking-catalog', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        sessionModel: 'legacy_timed',
+        scheduled: { depths: [{ key: 'entry', label: 'Entry', durationMinutes: 15, basePrice: 151 }], formats: [], bufferMinutes: 5, preStartJoinWindowMinutes: 15 },
+        chatNow: { enabled: true, durationMinutes: 15, totalPrice: 101, maxQueueDepth: 5, maxQueueWaitMinutes: 15, queueTurnTimeoutSeconds: 60 },
+      }),
+    });
+  });
 });
 
 test('shared interactions acknowledge a held tap and expose a scroll state', async ({ page }) => {
@@ -66,7 +77,7 @@ test('slow Pandit results show semantic skeleton rows before data arrives', asyn
   release();
   await expect(results).toHaveAttribute('aria-busy', 'false');
   await expect(skeletons).toHaveCount(0);
-  await expect(page.getByRole('link', { name: /View UI.*profile/i })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'View availability for UI Pandit', exact: true })).toBeVisible();
 });
 
 async function mockConfiguredSocialProviders(page: import('@playwright/test').Page, realisticGoogleWidget = false) {
@@ -269,7 +280,7 @@ test('header keeps a useful guest path while session checking is slow', async ({
   await expect(page.getByText('Checking session…', { exact: true })).toHaveCount(0);
 });
 
-test('slow Pandit loading offers a next step instead of a silent skeleton', async ({ page }) => {
+test('slow Pandit loading explains the delay without distracting from the directory', async ({ page }) => {
   await page.route('**/api/backend/experts**', async route => {
     await new Promise(resolve => setTimeout(resolve, 1800));
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
@@ -277,8 +288,8 @@ test('slow Pandit loading offers a next step instead of a silent skeleton', asyn
 
   await page.goto('/pandits');
   await expect(page.getByText('Finding Pandits…', { exact: true })).toBeVisible();
-  await expect(page.getByText('Still loading? You can use free tools or prepare a draft while profiles load.', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('While Pandit results load').getByRole('link', { name: 'Try free tools', exact: true })).toBeVisible();
+  await expect(page.getByText('Profiles are taking a little longer to load. You can stay here while we finish checking.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('main').getByRole('link', { name: /Prepare a draft|Try free tools/i })).toHaveCount(0);
 });
 
 test('guidance uses plain-language steps and stores the draft in the browser', async ({ page }) => {

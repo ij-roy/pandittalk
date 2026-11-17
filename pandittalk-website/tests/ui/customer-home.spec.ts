@@ -28,6 +28,17 @@ test('customer home makes finding a Pandit the primary empty-state action', asyn
   await expect(page.locator('[data-home-primary] .button', { hasText: 'Explore Pandits' })).toBeVisible();
   await expect(page.locator('[data-home-primary] .actions a')).toHaveCount(2);
   await expect(page.locator('[data-home-summary]')).toHaveCount(3);
+  await expect(page.locator('[data-summary-arrow]')).toHaveCount(3);
+  await expect(page.getByText('Open wallet →', { exact: true })).toBeVisible();
+  await expect(page.getByText('Open updates →', { exact: true })).toBeVisible();
+  await expect(page.getByText('Open reports →', { exact: true })).toBeVisible();
+  const refresh = page.getByRole('button', { name: 'Refresh overview', exact: true });
+  await expect(refresh).toBeVisible();
+  await expect(refresh.getByText('Refresh', { exact: true })).toBeVisible();
+  await expect(page.getByRole('complementary', { name: 'Booking formats' })).toHaveCount(0);
+  await expect(page.locator('[data-home-secondary-link]')).toHaveCount(3);
+  const secondaryHeights = await page.locator('[data-home-secondary-link]').evaluateAll(items => items.map(item => item.getBoundingClientRect().height));
+  expect(Math.max(...secondaryHeights)).toBeLessThan(120);
   await expect(page.locator('[data-home-shortcuts]')).toHaveCount(0);
   await expect(page.locator('main').getByRole('link', { name: 'Prepare a draft', exact: true })).toHaveCount(0);
   await expect(page.getByText('Press Escape to leave this notice.', { exact: true })).toHaveCount(0);

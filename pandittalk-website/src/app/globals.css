@@ -36,7 +36,7 @@ button:disabled, button[aria-disabled="true"] { cursor:not-allowed; opacity:.62 
 button:not(:disabled),a[href],summary { transition-property:transform,background-color,border-color,box-shadow,color,opacity; transition-duration:.2s; transition-timing-function:cubic-bezier(.2,.75,.25,1) }
 button:not(:disabled):active,a[href]:active,summary:active { transform:translateY(1px) scale(.99); transition-duration:.08s }
 @media (hover:hover) and (pointer:fine) {
-  .button:not(:disabled):hover, .topic-links a:hover, a.panel:hover, .learning-card:hover, .trust-card:hover, .expert-row:hover { transform:translateY(-2px) }
+  .button:not(:disabled):hover, .topic-links a:hover, a.panel:hover, .learning-card:hover, .trust-card:hover { transform:translateY(-2px) }
 }
 img,video,canvas,svg { max-width:100% }
 img { height:auto }
@@ -274,8 +274,16 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
   .pandit-profile .actions a,
   .pandit-profile .actions button { scroll-margin-bottom: max(300px, calc(240px + env(safe-area-inset-bottom, 0px))) }
 }
-.expert-directory-note { margin: 12px 0 8px }
-.pandits-page .pandits-lede { margin-bottom: 8px }
+.pandits-page { max-width: 1160px; padding-top: 50px }
+.pandits-page > h1 { max-width: 820px; margin-bottom: 18px; font-size: clamp(2.55rem, 5.1vw, 4.4rem); line-height: 1.03 }
+.pandits-page .pandits-lede { max-width: 700px; margin-bottom: 16px; font-size: 1.06rem; line-height: 1.65 }
+.expert-directory-note { max-width: 900px; margin: 10px 0 8px; font-size: .8rem; line-height: 1.55 }
+.directory-booking-summary { display:grid; grid-template-columns:minmax(180px,.72fr) minmax(0,1.25fr) auto; gap:20px; align-items:center; margin:18px 0 10px; padding:17px 20px; border:1px solid #ead7ab; border-radius:16px; background:linear-gradient(125deg,#fff5d8 0%,rgba(255,255,252,.94) 68%); box-shadow:0 12px 30px -24px rgba(120,83,18,.32) }
+.directory-booking-summary .eyebrow { margin:0 0 3px; font-size:.64rem }
+.directory-booking-summary p { margin:0; color:var(--muted); font-size:.78rem; line-height:1.45 }
+.directory-booking-terms { display:flex; flex-wrap:wrap; gap:8px 18px; color:var(--ink) }
+.directory-booking-terms strong { font-size:.84rem; line-height:1.45 }
+.directory-booking-summary .text-link { justify-self:end; white-space:nowrap; color:var(--brand-gold-deep); font-size:.82rem; font-weight:650 }
 .topic-question-list { margin: 0; padding-left: 1.2em }
 .topic-question-list li { margin: 12px 0; line-height: 1.6 }
 .home-tiles { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); min-width: 0 }
@@ -287,8 +295,8 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
 .tool-card-paused .info-label { color: #7a6a52 }
 @media (max-width: 620px) {
   .expert-directory-note { font-size: .78rem; line-height: 1.55; margin-top: 8px }
-  .pandits-page h1 { font-size: clamp(1.85rem, 7.5vw, 2.4rem); margin-bottom: 12px }
-  .pandits-page .pandits-lede { font-size: .95rem; margin-bottom: 4px }
+  .pandits-page h1 { font-size: clamp(2.05rem, 10vw, 2.65rem); margin-bottom: 12px }
+  .pandits-page .pandits-lede { font-size: .94rem; margin-bottom: 8px }
   .pandits-page .filters-toolbar { margin-top: 16px }
   .pandits-page .expert-meta { font-size: .8rem }
 }
@@ -310,31 +318,41 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
 .campaign-more[open] summary { border-bottom:1px solid var(--line) }
 .campaign-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; padding:20px }
 .campaign-pair img { display:block; width:100%; height:auto; border-radius:14px }
-.expert-row { display:grid; grid-template-columns:80px minmax(0,1fr) auto; gap:24px; padding:25px; margin-top:16px; border:1px solid var(--glass-border); border-radius:19px; background:var(--surface); box-shadow:var(--shadow),0 0 0 1px #dfd9ca66; align-items:center; min-width:0; max-width:100%; overflow-wrap:anywhere }
+.expert-row { display:grid; grid-template-columns:72px minmax(0,1fr) minmax(180px,auto); gap:20px; padding:20px 22px; margin-top:12px; border:1px solid #e6dcc8; border-radius:18px; background:var(--surface); box-shadow:0 12px 34px -26px rgba(75,53,25,.28),inset 0 1px 0 rgba(255,255,255,.94); align-items:center; min-width:0; max-width:100%; overflow-wrap:anywhere; transition:border-color .18s ease,box-shadow .18s ease,background .18s ease }
+.expert-row:focus-within { border-color:#cda54d; box-shadow:0 14px 34px -24px rgba(120,83,18,.38),0 0 0 1px rgba(205,165,77,.15) }
 .expert-row > .actions { min-width:0; max-width:100%; justify-self:stretch }
 
-.expert-avatar { display:block; width:80px; height:96px; border-radius:14px; object-fit:cover; background:#f6efde }
+.expert-avatar { display:block; width:72px; height:84px; border-radius:13px; object-fit:cover; background:#f6efde }
 .portrait-fallback { display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:2rem; color:var(--brand-olive-dark); background:linear-gradient(140deg,#fff1d2,#eef1e7); border:1px solid #e2d4b4 }
-.expert-row h3 { font-size:1.45rem }
-.expert-row h3 a { display:inline-flex; align-items:center; min-height:44px; text-decoration:none; padding-block:6px }
-.expert-row p { margin:5px 0 }
+.expert-card-copy { min-width:0 }
+.expert-row h3 { margin:0; font-size:1.36rem }
+.expert-row h3 a { display:inline-flex; align-items:center; min-height:38px; color:var(--ink); text-decoration-thickness:1px; text-decoration-color:transparent; text-underline-offset:5px }
+.expert-row h3 a:hover { color:var(--brand-gold-deep); text-decoration-line:underline; text-decoration-color:currentColor }
+.expert-row p { margin:4px 0 }
+.expert-specialty { color:var(--muted); font-size:.88rem; line-height:1.45 }
+.expert-facts { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px }
+.expert-facts span { display:inline-flex; align-items:center; min-height:26px; padding:3px 8px; border:1px solid #eadfc8; border-radius:999px; background:#fffaf0; color:var(--muted); font-size:.72rem; line-height:1.25 }
+.expert-card-copy .presence { margin-top:9px; color:var(--muted); font-size:.78rem; line-height:1.4 }
+.expert-card-action { display:grid; gap:5px; justify-items:stretch; min-width:180px }
+.expert-card-action .button { min-height:46px; padding:10px 17px; white-space:nowrap }
+.expert-card-action small { color:var(--muted); font-size:.72rem; line-height:1.35; text-align:center }
+.expert-results-count { margin:14px 0 3px; font-weight:600 }
 .expert-meta { font-size:.86rem; color:var(--muted) }
 .profile-top { display:flex; gap:30px; align-items:center }
 .profile-top .expert-avatar { width:150px; height:175px; flex-shrink:0 }
-.filters { display:none; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; padding:24px; margin:16px 0 20px; border:1px solid var(--glass-border); border-radius:20px; background:var(--surface); box-shadow:var(--shadow); align-items:end }
+.filters { display:none; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; padding:18px; margin:14px 0 16px; border:1px solid #e6dcc8; border-radius:16px; background:var(--surface); box-shadow:0 12px 34px -26px rgba(75,53,25,.28); align-items:end }
 .filters.is-open { display:grid }
-.filters-toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:24px 0 0 }
+.filters-toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:18px 0 0 }
 .filters-toggle { gap:8px }
 .filters-count { display:inline-grid; place-items:center; min-width:1.4rem; height:1.4rem; padding:0 6px; border-radius:999px; background:var(--brand-olive); color:#fff; font-size:.72rem; font-weight:700 }
 .filters-actions { grid-column:1/-1; display:flex; justify-content:flex-end }
 .filters-actions .actions { margin:0 }
 .presence { display:inline-flex; align-items:center; gap:7px }
-.presence::before { content:''; width:8px; height:8px; border-radius:50%; background:#a79caf; flex-shrink:0 }
+.presence::before { content:''; width:7px; height:7px; border-radius:50%; background:#b6aa92; flex-shrink:0 }
 /* Keep presence indicators restrained; availability is confirmed by the booking service. */
-.presence.is-online::before { background:#898a7c; box-shadow:0 0 0 3px rgba(134,87,19,.12) }
+.presence.is-online::before { background:var(--brand-olive); box-shadow:0 0 0 3px rgba(67,84,61,.1) }
 .expert-loading { display:flex; flex-direction:column; gap:0 }
-.expert-loading-help { margin:16px 0; padding:14px 16px; border:1px solid var(--glass-border); border-radius:14px; background:var(--surface); }
-.expert-loading-help p { margin:0; color:var(--ink-soft); }
+.expert-loading-help { margin:10px 0 2px; color:var(--muted); font-size:.84rem }
 .expert-row-skeleton { pointer-events:none }
 .skeleton-block,.skeleton-line { display:block; background:linear-gradient(90deg,#eee9dc 0%,#fffaf1 50%,#eee9dc 100%); background-size:200% 100%; animation:skeleton-shimmer 1.4s ease-in-out infinite; border-radius:10px }
 .skeleton-copy { display:flex; flex-direction:column; gap:10px }
@@ -541,14 +559,18 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
   .home-faq-item summary { overflow-wrap:anywhere; word-break:break-word }
   .learning-section { grid-template-columns:1fr; gap:20px }
   .filters { grid-template-columns:repeat(2,minmax(0,1fr)) }
+  .directory-booking-summary { grid-template-columns:minmax(0,1fr); gap:10px; padding:16px 18px }
+  .directory-booking-summary .text-link { justify-self:start }
   /* Keep the footer readable before the mobile accordion breakpoint. */
   .footer-brand-row { align-items:flex-start }
   .poster-grid { grid-template-columns:repeat(2,minmax(0,1fr)) }
   .section-heading { flex-direction:column; align-items:flex-start; gap:10px }
   .story-note { overflow-wrap:anywhere; word-break:break-word; max-width:100% }
   /* Stack directory CTA earlier — large text at tablet widths overflows the 3-col row */
-  .expert-row { grid-template-columns: 72px minmax(0, 1fr); gap: 18px; align-items: start }
-  .expert-row > .button, .expert-row > .actions { grid-column: 1 / -1; max-width: 100% }
+  .expert-row { grid-template-columns:72px minmax(0,1fr); gap:16px 18px; align-items:start }
+  .expert-row > .button, .expert-row > .actions, .expert-card-action { grid-column:1 / -1; max-width:100% }
+  .expert-card-action { grid-template-columns:minmax(210px,260px) minmax(0,1fr); align-items:center; justify-content:start; gap:12px }
+  .expert-card-action small { text-align:left }
   .notify-open-row { flex-direction: column; align-items: stretch }
   .notify-open-row .button { width: 100% }
   .hero-availability, .notify-open-form, .notify-open-row { max-width:100%; min-width:0 }
@@ -710,10 +732,21 @@ input.sr-only,select.sr-only,textarea.sr-only { width:1px !important; min-width:
   .guidance-steps { grid-template-columns:1fr }
   .guidance-steps .button { font-size:.8rem; padding:10px 12px; width:100% }
   .panel { padding:23px; border-radius:18px } .panel .panel { padding:18px }
-  .filters { grid-template-columns:1fr; padding:20px }
-  .expert-row { grid-template-columns:60px minmax(0,1fr); gap:14px; padding:20px; align-items:start }
-  .expert-row>.button, .expert-row>.actions { grid-column:1/-1; max-width:100% } .expert-row h3 { font-size:1.3rem }
-  .expert-avatar { width:60px; height:76px; border-radius:10px }
+  .filters { grid-template-columns:1fr; padding:16px }
+  .directory-booking-summary { margin-top:14px; padding:15px 16px; border-radius:14px }
+  .directory-booking-terms { display:grid; gap:6px }
+  .directory-booking-summary .text-link { min-height:40px; padding-block:6px }
+  .expert-row { grid-template-columns:58px minmax(0,1fr); gap:12px 14px; padding:16px; border-radius:16px; align-items:start }
+  .expert-row>.button, .expert-row>.actions, .expert-card-action { grid-column:1/-1; max-width:100% }
+  .expert-row h3 { font-size:1.22rem }
+  .expert-row h3 a { min-height:34px; padding:0 }
+  .expert-avatar { width:58px; height:68px; border-radius:10px }
+  .expert-specialty { font-size:.82rem }
+  .expert-facts { gap:5px; margin-top:7px }
+  .expert-facts span { min-height:24px; padding:3px 7px; font-size:.68rem }
+  .expert-card-action { grid-template-columns:minmax(0,1fr); gap:5px }
+  .expert-card-action .button { width:100% }
+  .expert-card-action small { text-align:center }
   .profile-top { align-items:flex-start; flex-direction:column; gap:20px } .profile-top .expert-avatar { width:110px; height:130px }
   .site-footer { padding:32px 22px 20px }
   .footer-brand-row { align-items:flex-start; flex-direction:column; gap:16px; padding-bottom:22px }

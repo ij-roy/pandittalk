@@ -6,11 +6,41 @@ const expert = {
   bio: 'Guidance for a thoughtful next step.', languages: ['Hindi', 'English'], image_url: null, isOnline: true,
 };
 
+const bookingCatalog = {
+  version: 1,
+  sessionModel: 'legacy_timed',
+  scheduled: {
+    depths: [{ key: 'entry', label: 'Entry', durationMinutes: 15, basePrice: 151 }],
+    formats: [{ key: 'audio', label: 'Audio', surcharge: 0 }],
+    bufferMinutes: 5,
+    preStartJoinWindowMinutes: 15,
+  },
+  chatNow: {
+    enabled: true,
+    durationMinutes: 15,
+    totalPrice: 101,
+    noShowRefundMinutes: 10,
+    maxQueueDepth: 5,
+    maxQueueWaitMinutes: 15,
+    queueTurnTimeoutSeconds: 60,
+  },
+  session: { gracePeriodSeconds: 90, warningSeconds: 300, panditReconnectSeconds: 60 },
+  cancellation: {
+    confirmedBeforeStart: 'full_wallet_refund',
+    noShowRefundMinutes: 10,
+    panditNoShow: 'full_wallet_refund',
+    panditDisconnect: 'partial_unused_time_wallet_refund',
+    refundDestination: 'wallet',
+  },
+  areas: [{ key: 'career', label: 'Career' }],
+};
+
 test.beforeEach(async ({ page }) => {
   // Every browser API call stays in the test; no OTP, application or tool request reaches a service.
   await page.route('**/api/**', async route => {
     const url = new URL(route.request().url());
     const body = url.pathname === '/api/backend/experts' ? [expert]
+      : url.pathname === '/api/backend/booking-catalog' ? bookingCatalog
       : url.pathname === '/api/backend/wallet' ? { coinBalance: 25 } : {};
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
   });
@@ -91,6 +121,32 @@ test('directory empty results can clear the active search', async ({ page }) => 
   await page.getByRole('button', { name: 'Clear all filters', exact: true }).click();
   await expect(page.getByLabel('Name or practice')).toHaveValue('');
   await expect(page.getByRole('link', { name: expert.name, exact: true })).toBeVisible();
+});
+
+test('directory keeps the booking decision focused and uses backend booking terms', async ({ page }) => {
+  await page.goto('/pandits');
+
+  const main = page.getByRole('main');
+  const card = page.locator('[data-expert-card]');
+  await expect(page.locator('[data-booking-summary]')).toContainText('Chat Now · 15 min · 101 coins');
+  await expect(page.locator('[data-booking-summary]')).toContainText('Scheduled · from 15 min · 151 coins');
+  await expect(card).toHaveCount(1);
+  await expect(card.getByRole('link', { name: 'View availability for Pandita Meera Sharma', exact: true })).toBeVisible();
+  await expect(card.getByRole('link')).toHaveCount(2);
+  await expect(card.getByText('No published reviews yet', { exact: false })).toHaveCount(0);
+  await expect(main.getByRole('link', { name: /Prepare a draft/i })).toHaveCount(0);
+  await expect(main.getByRole('link', { name: /Try free tools/i })).toHaveCount(0);
+});
+
+test('directory stays scannable without horizontal overflow at supported widths', async ({ page }) => {
+  for (const width of [375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/pandits');
+    await expect(page.locator('[data-expert-card]')).toHaveCount(1);
+    await expect.poll(async () => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), {
+      message: `No horizontal overflow at ${width}px`,
+    }).toBe(true);
+  }
 });
 
 test('invalid palm replacement clears the previous photo and prevents submission', async ({ page }) => {
