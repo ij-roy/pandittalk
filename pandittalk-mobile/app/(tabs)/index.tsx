@@ -273,9 +273,9 @@ export default function HomeScreen() {
           <HeroBanner
             edgeToEdge
             eyebrow="Live pandit consultations"
-            title="Talk to a verified pandit"
+            title="Talk to a verified Pandit"
             subtitle="Start a live chat or book an audio or video consultation with an expert you trust."
-            ctaLabel="Browse pandits"
+            ctaLabel="Browse Pandits"
             onPress={() => router.push('/experts')}
           />
         </View>
@@ -315,7 +315,7 @@ export default function HomeScreen() {
             <SearchBar
               value={searchQuery}
               onChangeText={setSearchQuery}
-              placeholder="Search consultation topics and experts…"
+              placeholder="Search journal articles…"
             />
           </View>
         </PremiumCard>

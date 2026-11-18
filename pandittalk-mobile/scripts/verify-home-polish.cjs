@@ -11,7 +11,9 @@ if (!progressCard.includes('<ScrollView') || !progressCard.includes('horizontal'
 if (progressCard.includes("flexWrap: 'wrap'")) {
   throw new Error('Profile milestones still wrap onto multiple rows.');
 }
-if (!progressCard.includes('ReduceMotion.System') || !progressCard.includes('withTiming')) {
+const usesReducedMotion = progressCard.includes('ReduceMotion.System')
+  || (progressCard.includes('AccessibilityInfo.isReduceMotionEnabled') && progressCard.includes('reduceMotionChanged'));
+if (!usesReducedMotion || !progressCard.includes('withTiming')) {
   throw new Error('Profile progress animation must respect the system reduced-motion setting.');
 }
 
