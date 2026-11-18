@@ -19,14 +19,14 @@ test.beforeEach(async ({ page, context }) => {
   });
 });
 
-test('customer home makes consultation discovery the primary empty-state action', async ({ page }) => {
+test('customer home makes finding a Pandit the primary empty-state action', async ({ page }) => {
   await page.route('**/api/backend/bookings', route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await page.goto('/home');
 
   await expect(page.locator('[data-home-primary]')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Talk to a verified Pandit', exact: true })).toBeVisible();
-  await expect(page.locator('[data-home-primary] .button', { hasText: 'Browse Pandits' })).toBeVisible();
-  await expect(page.locator('[data-home-primary] .actions a')).toHaveCount(4);
+  await expect(page.getByRole('heading', { name: 'Find your next conversation', exact: true })).toBeVisible();
+  await expect(page.locator('[data-home-primary] .button', { hasText: 'Explore Pandits' })).toBeVisible();
+  await expect(page.locator('[data-home-primary] .actions a')).toHaveCount(2);
   await expect(page.locator('[data-home-summary]')).toHaveCount(3);
   await expect(page.locator('[data-summary-arrow]')).toHaveCount(3);
   await expect(page.getByText('Open wallet →', { exact: true })).toBeVisible();
@@ -43,22 +43,6 @@ test('customer home makes consultation discovery the primary empty-state action'
   await expect(page.locator('main').getByRole('link', { name: 'Prepare a draft', exact: true })).toHaveCount(0);
   await expect(page.getByText('Press Escape to leave this notice.', { exact: true })).toHaveCount(0);
   await expect(page.locator('main').getByText(/Arrow keys|Escape returns|Skip remains/)).toHaveCount(0);
-});
-
-test('authenticated home keeps the mobile consultation flow visible on web', async ({ page }) => {
-  await page.route('**/api/backend/bookings', route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
-  await page.goto('/home');
-
-  await expect(page.getByRole('heading', { name: 'Talk to a verified Pandit', exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: /Browse Pandits/i })).toBeVisible();
-  await expect(page.getByRole('link', { name: /Chat Now/i })).toBeVisible();
-  await expect(page.getByRole('link', { name: /Book chat, audio or video/i })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'What would you like to discuss?', exact: true })).toBeVisible();
-  await expect(page.getByRole('searchbox', { name: 'Search journal articles', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Search Journal', exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Career', exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Helpful reading', exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Optional self-service tools', exact: true })).toBeVisible();
 });
 
 test('customer home prioritizes the next booking when one exists', async ({ page }) => {

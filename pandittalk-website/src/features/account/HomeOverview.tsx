@@ -5,21 +5,10 @@ import { useApi } from '@/lib/api/client';
 import { LoadingState } from '@/components/site/Skeleton';
 import { canResume, parseBooking, type Booking } from '@/features/bookings/types';
 import { formatIstDateTime } from '@/lib/time/ist';
-import { SiteIcon, type SiteIconName } from '@/components/site/SiteIcon';
+import { SiteIcon } from '@/components/site/SiteIcon';
 
 type Wallet = { coinBalance: number };
 type Unread = { count: number };
-
-const homeTopics: Array<{ slug: string; label: string; icon: SiteIconName }> = [
-  { slug: 'career', label: 'Career', icon: 'career' },
-  { slug: 'love', label: 'Love', icon: 'heart' },
-  { slug: 'finance', label: 'Finances', icon: 'coins' },
-  { slug: 'marriage', label: 'Marriage', icon: 'rings' },
-  { slug: 'family', label: 'Family', icon: 'family' },
-  { slug: 'education', label: 'Education', icon: 'book' },
-  { slug: 'health', label: 'Wellbeing', icon: 'health' },
-  { slug: 'business', label: 'Business', icon: 'business' },
-];
 
 function RefreshIcon() {
   return (
@@ -48,13 +37,11 @@ function SummaryCard({ label, value, description, href }: { label: string; value
 function EmptyPrimary() {
   return (
     <div className="home-primary-copy">
-      <span className="eyebrow">Live Pandit consultations</span>
-      <h2>Talk to a verified Pandit</h2>
-      <p>Start a live chat or book an audio or video consultation with an expert you trust.</p>
+      <span className="eyebrow">Your next step</span>
+      <h2>Find your next conversation</h2>
+      <p>Choose a Pandit and see the available options, including Chat Now and scheduled sessions, before you decide.</p>
       <div className="actions home-primary-actions">
-        <Link className="button" href="/pandits">Browse Pandits <span aria-hidden="true">→</span></Link>
-        <Link className="button secondary" href="/pandits">Chat Now <span aria-hidden="true">→</span></Link>
-        <Link className="text-link" href="/pandits">Book chat, audio or video <span aria-hidden="true">→</span></Link>
+        <Link className="button" href="/pandits">Explore Pandits <span aria-hidden="true">→</span></Link>
         <Link className="text-link" href="/how-it-works">See how booking works <span aria-hidden="true">→</span></Link>
       </div>
     </div>
@@ -93,27 +80,6 @@ function PastBookingsPrimary({ count }: { count: number }) {
         <Link className="text-link" href="/bookings">View bookings <span aria-hidden="true">→</span></Link>
       </div>
     </div>
-  );
-}
-
-function HomeTopicGrid() {
-  return (
-    <section className="home-topic-section" aria-labelledby="home-topic-heading">
-      <div className="home-topic-intro">
-        <span className="eyebrow">Start with a topic</span>
-        <h2 id="home-topic-heading">What would you like to discuss?</h2>
-        <p>Choose a topic to browse Pandits who can help. You can change your mind later.</p>
-      </div>
-      <div className="home-topic-grid">
-        {homeTopics.map(topic => (
-          <Link key={topic.slug} href={`/guidance/${topic.slug}`} className="home-topic-link">
-            <SiteIcon name={topic.icon} size={19} />
-            <span>{topic.label}</span>
-            <SiteIcon name="right" size={15} />
-          </Link>
-        ))}
-      </div>
-    </section>
   );
 }
 
@@ -185,7 +151,7 @@ export function HomeOverview() {
           <div className="home-format-note">
             <span className="eyebrow">Two ways to talk</span>
             <p><strong>Chat Now</strong><span>When a Pandit is available.</span></p>
-            <p><strong>Book chat, audio or video</strong><span>Choose a time in advance.</span></p>
+            <p><strong>Scheduled</strong><span>Choose a time in advance.</span></p>
           </div>
         </div>
       )}
@@ -202,32 +168,15 @@ export function HomeOverview() {
         </div>
       )}
 
-      <section className="home-journal-search panel" aria-labelledby="home-journal-search-heading">
-        <div>
-          <span className="eyebrow">Read before you talk</span>
-          <h2 id="home-journal-search-heading">Search the Pandit Talk Journal</h2>
-          <p>Look up a topic at your own pace, then choose a live conversation when you are ready.</p>
-        </div>
-        <form action="/articles" method="get" className="home-journal-search-form">
-          <label className="field" htmlFor="home-journal-search-input">
-            Search journal articles
-            <input id="home-journal-search-input" name="search" type="search" placeholder="Search journal articles…" autoComplete="off" />
-          </label>
-          <button className="button secondary" type="submit">Search Journal</button>
-        </form>
-      </section>
-
-      <HomeTopicGrid />
-
       <section className="home-secondary" aria-labelledby="home-secondary-heading">
         <div>
           <span className="eyebrow">When you are ready</span>
-          <h2 id="home-secondary-heading">Helpful places to continue</h2>
+          <h2 id="home-secondary-heading">A few useful places to continue</h2>
         </div>
         <div className="home-secondary-links">
-          <Link data-home-secondary-link href="/articles" aria-label="Helpful reading"><span><strong>Helpful reading</strong><small>Read articles at your own pace.</small></span><SiteIcon name="right" size={18} /></Link>
-          <Link data-home-secondary-link href="/tools" aria-label="Optional self-service tools"><span><strong>Optional self-service tools</strong><small>Explore readings on your own.</small></span><SiteIcon name="right" size={18} /></Link>
-          <Link data-home-secondary-link href="/guidance/start"><span><strong>Prepare a private note</strong><small>Keep context ready before a conversation.</small></span><SiteIcon name="right" size={18} /></Link>
+          <Link data-home-secondary-link href="/tools"><span><strong>Free tools</strong><small>Explore readings on your own.</small></span><SiteIcon name="right" size={18} /></Link>
+          <Link data-home-secondary-link href="/account/story"><span><strong>Your story</strong><small>Keep private context for future conversations.</small></span><SiteIcon name="right" size={18} /></Link>
+          <Link data-home-secondary-link href="/guidance/start"><span><strong>Optional note</strong><small>Saved in this browser; it does not book or charge.</small></span><SiteIcon name="right" size={18} /></Link>
         </div>
       </section>
     </section>

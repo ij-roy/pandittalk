@@ -71,15 +71,11 @@ async function getJson<T>(path: string, revalidate = 60): Promise<T | null> {
 export async function fetchArticles(options?: {
   limit?: number;
   category?: string;
-  search?: string;
 }): Promise<ArticleListItem[]> {
   const params = new URLSearchParams();
   params.set('limit', String(options?.limit ?? 24));
   if (options?.category && isCategory(options.category)) {
     params.set('category', options.category);
-  }
-  if (options?.search?.trim()) {
-    params.set('search', options.search.trim());
   }
   const body = await getJson<{ articles?: ArticleListItem[] }>(
     `/articles?${params.toString()}`,
