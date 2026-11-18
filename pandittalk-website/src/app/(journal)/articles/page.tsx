@@ -18,7 +18,7 @@ export const revalidate = 60;
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; search?: string }>;
 }): Promise<Metadata> {
   const { category } = await searchParams;
   if (!category) {
@@ -53,9 +53,9 @@ export async function generateMetadata({
 export default async function ArticlesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; search?: string }>;
 }) {
-  const { category } = await searchParams;
+  const { category, search } = await searchParams;
   if (category && !isCategory(category)) {
     return (
       <SoftResourceNotFound
@@ -75,7 +75,7 @@ export default async function ArticlesPage({
     );
   }
   const selected: ArticleCategory | undefined = isCategory(category) ? category : undefined;
-  const articles = await fetchArticles({ limit: 50, category: selected });
+  const articles = await fetchArticles({ limit: 50, category: selected, search });
 
   return (
     <main id="main-content" className="page journal-page">
@@ -83,12 +83,16 @@ export default async function ArticlesPage({
       <header className="journal-hero">
         <p className="eyebrow">The Pandit Talk Journal</p>
         <h1 id="journal-page-title">
-          {selected
+          {search
+            ? <>Search results.<br />A thoughtful next step.</>
+            : selected
             ? <>{CATEGORY_LABELS[selected]}.<br />A thoughtful next step.</>
             : <>A little perspective.<br />A thoughtful next step.</>}
         </h1>
         <p className="lede">
-          {selected
+          {search
+            ? `Results for “${search}” from Pandit Talk writers.`
+            : selected
             ? `Published ${CATEGORY_LABELS[selected].toLowerCase()} reading from Pandit Talk writers.`
             : 'Guidance for festivals, home, work, and the questions people bring to a pandit.'}
         </p>
