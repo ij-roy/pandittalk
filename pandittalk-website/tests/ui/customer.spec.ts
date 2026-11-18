@@ -235,8 +235,8 @@ test('customer navigation stays usable without overflow at 320 pixels', async ({
   await page.setViewportSize({ width: 320, height: 800 });
   for (const path of ['/account', '/account/profile', '/account/story', '/bookings', '/wallet', '/reports', '/notifications']) {
     await page.goto(path);
-    await expect(page.getByRole('navigation', { name: 'Your account', exact: true })).toBeVisible();
-    await expect(page.getByRole('navigation', { name: 'Your account', exact: true }).locator('[aria-current="page"]')).toHaveCount(1);
+    await expect(page.getByRole('navigation', { name: 'Primary navigation', exact: true })).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Primary navigation', exact: true }).locator('[aria-current="page"]')).toHaveCount(1);
     await expect.poll(async () => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), { message: `No horizontal overflow on ${path}` }).toBe(true);
   }
 });

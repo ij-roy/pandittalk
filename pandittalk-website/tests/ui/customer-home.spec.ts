@@ -17,6 +17,7 @@ test.beforeEach(async ({ page, context }) => {
       : path === '/api/backend/reports' ? []
       : path === '/api/backend/users/profile' ? { phoneNumber: '+919876543210', firstName: 'IJ' }
       : path === '/api/backend/experts' ? []
+      : path === '/api/auth/session' ? { signedIn: true }
       : {};
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
   });
@@ -67,5 +68,31 @@ test('customer home stays within the viewport at key responsive widths', async (
     await expect(page.locator('.homeConsultHero')).toBeVisible();
     const dimensions = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth }));
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.innerWidth);
+  }
+});
+
+test('signed-in website uses the shared five-item app navigation at desktop and mobile widths', async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/home');
+
+    if (width <= 768) {
+      const nav = page.getByRole('navigation', { name: 'Primary navigation' });
+      await expect(nav).toBeVisible();
+      await expect(nav.locator('a')).toHaveText(['Consult', 'Experts', 'Guidance', 'Tools', 'Profile']);
+      const layout = await nav.evaluate(element => {
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        return { position: style.position, bottom: rect.bottom, innerHeight: window.innerHeight };
+      });
+      expect(layout.position).toBe('fixed');
+      expect(layout.bottom).toBeLessThanOrEqual(layout.innerHeight);
+    } else {
+      await expect(page.locator('nav.desktop-nav')).toContainText('Consult');
+      await expect(page.locator('nav.desktop-nav')).toContainText('Experts');
+      await expect(page.locator('nav.desktop-nav')).toContainText('Articles');
+      await expect(page.getByRole('link', { name: 'My home', exact: true })).toHaveCount(0);
+      await expect(page.locator('.navWrap')).toHaveCount(0);
+    }
   }
 });

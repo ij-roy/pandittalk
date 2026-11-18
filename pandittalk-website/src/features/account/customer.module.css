@@ -1,12 +1,8 @@
 .shell { min-width: 0; }
-.navWrap { max-width: 1104px; margin: 20px auto 0; }
+.customerMobileNav { display: none; }
 .pauseNote { margin: 0 0 10px; font-size: .82rem; color: var(--muted); line-height: 1.45; }
 .pauseNote a { color: inherit; text-underline-offset: 2px; }
 .navHint { display: block; margin: 0 0 8px; font-size: .78rem; color: var(--muted); }
-.navigation { display: flex; flex-wrap: nowrap; gap: 4px; padding: 6px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 8px 30px rgba(75, 53, 25, .08); backdrop-filter: blur(18px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
-.navigation a { display: flex; align-items: center; justify-content: center; flex: 1 0 auto; min-width: 5.5rem; max-width: 100%; min-height: 42px; padding: 8px 10px; border-radius: 12px; text-decoration: none; font-size: .85rem; font-weight: 600; color: var(--muted); white-space: normal; text-align: center; overflow-wrap: anywhere; }
-.navigation a:hover { background: var(--brand-gold-soft); color: var(--brand-gold-deep); }
-.navigation a[aria-current] { background: var(--brand-gold); color: var(--ink); box-shadow: 0 3px 12px rgba(120, 83, 18, .2); }
 .shell :global(.page) { padding-top: 36px; }
 .shell :global(.page) > h1 { font-size: clamp(2.2rem, 4.5vw, 3.8rem); max-width: 900px; }
 .shell :global(.panel) { min-width: 0; overflow-wrap: anywhere; }
@@ -75,22 +71,15 @@
   .toolbar :global(.actions) > :global(.button),
   .toolbar :global(.actions) > :global(.text-link) { max-width: 100% }
   .formGrid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  .navigation a { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
   .transaction { flex-direction: column; align-items: flex-start }
   .cardHeader { flex-direction: column; align-items: flex-start }
   .pauseNote { overflow-wrap: anywhere; max-width: 100%; min-width: 0 }
 }
 @media (max-width: 1160px) {
-  .navigation { margin-inline: 28px; }
   .pauseNote { margin-inline: 28px; }
 }
 @media (max-width: 620px) {
-  .navigation { margin: 18px 20px 0; border-radius: 18px; gap: 4px; }
-  .navWrap { margin: 18px 20px 0; }
   .pauseNote { margin-inline: 0; }
-  .navHint { display: block; margin: 0 0 6px; }
-  .navigation { flex-wrap: wrap; overflow: visible; }
-  .navigation a { flex: 1 1 calc(33.333% - 4px); font-size: .8rem; min-height: 44px; padding: 7px 8px; min-width: 0; }
   .shell :global(.page) { padding-top: 28px; }
   .formGrid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .shell :global(.stack) > :global(.button), .shell :global(.actions) > :global(.button) { width: 100%; }
@@ -101,10 +90,60 @@
   .message { max-width: 95%; }
 }
 @media print {
-  .navigation,
   .shell header,
   .shell nav { display: none !important; }
   .shell { padding: 0; }
+}
+
+@media (max-width: 768px) {
+  .shell { padding-bottom: calc(var(--customer-nav-height) + env(safe-area-inset-bottom)); }
+  .customerMobileNav {
+    position: fixed;
+    z-index: 70;
+    inset: auto 0 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    min-height: var(--customer-nav-height);
+    padding: 6px 8px env(safe-area-inset-bottom);
+    border-top: 1px solid rgba(216, 207, 184, .95);
+    background: rgba(255, 255, 255, .96);
+    box-shadow: 0 -12px 32px -24px rgba(65, 53, 29, .46);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  .customerMobileNav a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    min-height: 48px;
+    padding: 9px 4px;
+    border-radius: 12px;
+    color: var(--muted);
+    font-size: .72rem;
+    font-weight: 650;
+    text-align: center;
+    text-decoration: none;
+    transition: color .18s ease, background .18s ease;
+  }
+  .customerMobileNav a svg { flex: 0 0 auto; }
+  .customerMobileNav a:hover,
+  .customerMobileNav a:focus-visible,
+  .customerMobileNav a[aria-current] {
+    color: var(--brand-gold-deep);
+    background: var(--brand-gold-soft);
+  }
+  .customerMobileNav a[aria-current]::before {
+    content: '';
+    position: absolute;
+    inset: 0 25% auto;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--brand-gold-deep);
+  }
 }
 
 /* Customer home: one task-led primary panel, compact account status, quiet tertiary links. */

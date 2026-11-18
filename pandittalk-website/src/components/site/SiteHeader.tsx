@@ -7,17 +7,41 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { SiteIcon } from './SiteIcon';
 import { availabilityCopy } from '@/content/availability';
 
-const links = [['/pandits', 'Find a Pandit'], ['/guidance', 'Find guidance'], ['/tools', 'Tools'], ['/articles', 'Journal'], ['/our-approach', 'Our approach']] as const;
-const accountLinks = [['/home', 'My home'], ['/account', 'Account'], ['/bookings', 'Bookings'], ['/wallet', 'Wallet'], ['/notifications', 'Notifications'], ['/help', 'Help centre']] as const;
+const publicLinks = [['/pandits', 'Find a Pandit'], ['/guidance', 'Find guidance'], ['/tools', 'Tools'], ['/articles', 'Journal'], ['/our-approach', 'Our approach']] as const;
+const appLinks = [['/home', 'Consult'], ['/pandits', 'Experts'], ['/guidance', 'Guidance'], ['/tools', 'Tools'], ['/articles', 'Articles']] as const;
+const signedInMenuLinks = [['/account/profile', 'Profile'], ['/wallet', 'Wallet'], ['/bookings', 'Sessions'], ['/reports', 'Reports'], ['/notifications', 'Notifications'], ['/articles', 'Articles'], ['/account', 'Settings']] as const;
+const profileMenuLinks = [['/account/profile', 'Profile'], ['/bookings', 'Sessions'], ['/wallet', 'Wallet'], ['/reports', 'Reports'], ['/account', 'Settings']] as const;
 
 export function SiteHeader() {
   const pathname = usePathname();
   const menu = useRef<HTMLDetailsElement>(null);
+  const profileMenu = useRef<HTMLDetailsElement>(null);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [signingOut, setSigningOut] = useState(false);
+  const primaryLinks = signedIn ? appLinks : publicLinks;
   const current = (href: string) => pathname === href || pathname.startsWith(href + '/');
-  const closeMenu = () => { if (menu.current) menu.current.open = false; setMenuOpen(false); };
+  const closeMenu = () => {
+    if (menu.current) menu.current.open = false;
+    if (profileMenu.current) profileMenu.current.open = false;
+    setMenuOpen(false);
+  };
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      });
+      if (!response.ok) throw new Error('Sign out failed');
+      window.location.assign('/');
+    } catch {
+      setSigningOut(false);
+    }
+  };
   const mobileLink = (href: string, label: string, options?: { ariaLabel?: string; title?: string }) => (
     <Link
       href={href}
@@ -54,7 +78,7 @@ export function SiteHeader() {
     if (!menuOpen) return;
     const root = menu.current;
     const panel = root?.querySelector<HTMLElement>('#mobile-navigation');
-    if (!root || !panel) return;
+     if (!root || !panel) return;
     const focusables = () => Array.from(root.querySelectorAll<HTMLElement>('summary, #mobile-navigation a[href], #mobile-navigation button, #mobile-navigation [tabindex]:not([tabindex="-1"])')).filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null);
     const items = focusables();
     const firstNav = items.find(el => el.tagName !== 'SUMMARY');
@@ -164,10 +188,11 @@ export function SiteHeader() {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && menu.current?.open) {
+      if (event.key === 'Escape' && (menu.current?.open || profileMenu.current?.open)) {
         event.preventDefault();
+        const openMenu = menu.current?.open ? menu.current : profileMenu.current;
         closeMenu();
-        menu.current.querySelector('summary')?.focus();
+        openMenu?.querySelector('summary')?.focus();
       }
     };
     const onOutside = (event: Event) => {
@@ -175,6 +200,9 @@ export function SiteHeader() {
         closeMenu();
         // Outside dismiss should return keyboard users to the menu control.
         requestAnimationFrame(() => menu.current?.querySelector('summary')?.focus());
+      }
+      if (profileMenu.current?.open && event.target instanceof Node && !profileMenu.current.contains(event.target)) {
+        profileMenu.current.open = false;
       }
     };
     const desktop = window.matchMedia('(min-width: 1101px)');
@@ -210,20 +238,26 @@ export function SiteHeader() {
     >Skip to content</a>
     <div className="header-inner">
       <Link href="/" className="brand" aria-label="Pandit Talk home"><Image src="/logo.png" alt="" width={39} height={39} sizes="39px" priority /><span aria-hidden="true">Pandit Talk</span></Link>
-      <nav aria-label="Main navigation" className="desktop-nav" aria-describedby="desktop-nav-hint">
+       <nav aria-label="Main navigation" className="desktop-nav" aria-describedby="desktop-nav-hint">
         <p id="desktop-nav-hint" className="sr-only">Arrow keys move between sections. Home and End jump to the first or last link. Escape blurs. Skip to content still targets site-content.</p>
-        {links.map(([href, label]) => <Link href={href} key={href} aria-current={current(href) ? 'page' : undefined}>{label}</Link>)}
+         {primaryLinks.map(([href, label]) => <Link href={href} key={href} aria-current={current(href) ? 'page' : undefined}>{label}</Link>)}
       </nav>
       <div className="header-account" aria-busy={signedIn === null ? true : undefined} aria-describedby="header-account-hint">
         <p id="header-account-hint" className="sr-only">Arrow keys move between account links. Escape blurs the focused link. Skip to content still targets site-content.</p>
         {signedIn ? <>
-          <Link href="/how-it-works#booking-availability-how">{availabilityCopy.headerLink}</Link>
-          <Link href="/notifications" aria-label={unread > 0 ? `Updates, ${unread} unread` : 'Updates'}>
+           <Link className="header-icon-link" href="/notifications" aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}>
             <SiteIcon name="bell" size={17} />
-            {unread > 0 ? `Updates (${unread})` : 'Updates'}
+             <span className="header-control-label">{unread > 0 ? `Notifications (${unread})` : 'Notifications'}</span>
           </Link>
-          <Link href="/account"><SiteIcon name="user" size={17} />Account</Link>
-          <Link className="button" href="/home">My home<SiteIcon name="right" size={16} /></Link>
+           <Link className="header-icon-link" href="/wallet"><SiteIcon name="coins" size={17} /><span className="header-control-label">Wallet</span></Link>
+           <details className="header-profile-menu" ref={profileMenu}>
+             <summary><SiteIcon name="user" size={17} /><span>Profile</span></summary>
+             <div className="header-profile-panel" aria-label="Profile menu">
+               <span className="header-profile-label">Your account</span>
+               {profileMenuLinks.map(([href, label]) => <Link href={href} key={href} onClick={closeMenu}>{label}</Link>)}
+               <button type="button" onClick={() => void handleSignOut()} disabled={signingOut}>{signingOut ? 'Signing out…' : 'Sign out'}</button>
+             </div>
+           </details>
         </> : <>
           <Link href="/how-it-works#booking-availability-how">{availabilityCopy.headerLink}</Link>
           <Link href="/help"><SiteIcon name="info" size={17} />Help</Link>
@@ -235,22 +269,22 @@ export function SiteHeader() {
         {menuOpen && <button type="button" className="mobile-menu-backdrop" aria-label="Close site menu" onClick={closeMenu} />}
         <nav id="mobile-navigation" aria-label="Mobile navigation" role={menuOpen ? 'dialog' : undefined} aria-modal={menuOpen || undefined} aria-labelledby={menuOpen ? 'mobile-menu-title' : undefined} aria-hidden={menuOpen ? undefined : true} inert={menuOpen ? undefined : true}>
           {menuOpen && <p id="mobile-menu-title" className="sr-only">Site menu. Press Escape to close.</p>}
-          <div className="mobile-nav-section mobile-nav-section-primary">
+          {!signedIn && <div className="mobile-nav-section mobile-nav-section-primary">
             <span className="mobile-nav-label">Explore</span>
-            {links.map(([href, label]) => <Fragment key={href}>{mobileLink(href, label)}</Fragment>)}
-          </div>
+            {primaryLinks.map(([href, label]) => <Fragment key={href}>{mobileLink(href, label)}</Fragment>)}
+          </div>}
           {signedIn
             ? <>
               <div className="mobile-nav-section">
                 <span className="mobile-nav-label">Your space</span>
-              {accountLinks.map(([href, label]) => {
+               {signedInMenuLinks.map(([href, label]) => {
                 const text = href === '/notifications' && unread > 0 ? `${label} (${unread})` : label;
                 return <Fragment key={href}>{mobileLink(href, text, { ariaLabel: href === '/notifications' && unread > 0 ? `Notifications, ${unread} unread` : undefined })}</Fragment>;
               })}
               </div>
               <div className="mobile-nav-section">
-                <span className="mobile-nav-label">Continue exploring</span>
-                {mobileLink('/guidance/start', 'Prepare a draft')}
+                 <span className="mobile-nav-label">Support</span>
+                 {mobileLink('/help', 'Help centre')}
                 {mobileLink('/how-it-works#booking-availability-how', 'How booking works')}
               </div>
             </>

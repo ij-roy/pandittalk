@@ -110,3 +110,9 @@ Each entry should record:
 - Decision: Topic tiles on the website link to `/pandits?area=...`, and the Pandit directory initializes its topic filter from that query. The website filter list now uses the same six supported home topics and excludes Legal Advice and Life Path.
 - Why: Visual parity is incomplete if a topic tile changes appearance but does not carry the user into the corresponding expert results. The visible service categories must also match the backend-supported Pandit areas.
 - Impact: Selecting a home topic opens the directory with the matching topic already selected, while direct invalid query values fall back to the unfiltered directory.
+
+## 2026-11-18 — Unify signed-in navigation across mobile and website
+
+- Decision: Use Consult, Experts, Guidance, Tools, and Profile as the five primary destinations on both clients. Keep Wallet, Sessions, Reports, Notifications, Articles, and Settings in secondary account navigation. Remove the mobile menu search and duplicate Profile row, remove the website’s duplicate customer sub-navigation, and show the same five-item fixed navigation on the signed-in website at mobile widths.
+- Why: The previous structure repeated the same account destinations in the mobile drawer, website header, and website customer bar. That increased cognitive load and made the website feel like a different product. The mobile app already had the clearest service-first hierarchy, so it was used as the shared source of truth while preserving existing routes and public marketing links.
+- Impact: Signed-in navigation now has a single primary IA, consistent labels, responsive mobile parity, safe-area-aware website bottom navigation, and account utilities available through Profile/menu controls. Existing routes such as `/bookings`, `/account`, and `/articles` remain valid.

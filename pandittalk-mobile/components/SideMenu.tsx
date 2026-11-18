@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   Alert,
   Linking,
@@ -13,7 +13,6 @@ import {
   Share,
   StyleSheet,
   Text,
-  TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -53,7 +52,6 @@ import {
 } from '@/lib/accountRecovery';
 import { formatCoins } from '@/lib/bookingPricing';
 import { getChatRouteParams } from '@/lib/chatBookingStatus';
-import { filterMenuDestinations } from '@/lib/menuSearch';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useActiveChatBooking } from '@/hooks/useActiveChatBooking';
 
@@ -83,16 +81,11 @@ export function SideMenu({ isVisible, onClose }: Props) {
   const profileImageUrl = readStr(user, 'profileImageUrl');
   const avatarUri = profileImageUrl ? resolveMediaUrl(profileImageUrl) : null;
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
-  const [menuQuery, setMenuQuery] = useState('');
 
   const panelStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
   const scrimStyle = useAnimatedStyle(() => ({ opacity: scrim.value }));
-
-  useEffect(() => {
-    if (!isVisible) setMenuQuery('');
-  }, [isVisible]);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -163,96 +156,66 @@ export function SideMenu({ isVisible, onClose }: Props) {
     });
   };
 
-  const menuItems = useMemo(() => {
+  type MenuItem = {
+    id: string;
+    icon: React.ComponentProps<typeof Feather>['name'];
+    label: string;
+    onPress: () => void;
+  };
+
+  const menuSections = useMemo(() => {
     const rejoinName = activeChat?.panditName?.trim() || 'pandit';
-    const items: {
-      id: string;
-      icon: React.ComponentProps<typeof Feather>['name'];
-      label: string;
-      keywords: string;
-      idle: boolean;
-      onPress: () => void;
-    }[] = [
-      {
-        id: 'wallet',
-        icon: 'credit-card',
-        label: 'Wallet',
-        keywords: 'coins balance recharge',
-        idle: false,
-        onPress: () => navigate('/wallet'),
-      },
-      {
-        id: 'profile',
-        icon: 'user',
-        label: 'Profile',
-        keywords: 'account name phone',
-        idle: false,
-        onPress: () => navigate('/(tabs)/profile'),
-      },
+    const activity: MenuItem[] = [
       {
         id: 'sessions',
         icon: 'calendar',
-        label: 'My Sessions',
-        keywords: 'bookings history',
-        idle: true,
+        label: 'Sessions',
         onPress: () => navigate('/bookings/history'),
       },
       {
         id: 'reports',
         icon: 'file-text',
-        label: 'My Reports',
-        keywords: 'kundli horoscope',
-        idle: true,
+        label: 'Reports',
         onPress: () => navigate('/reports'),
       },
       {
         id: 'notifications',
         icon: 'bell',
         label: 'Notifications',
-        keywords: 'alerts reminders',
-        idle: true,
         onPress: () => navigate('/notifications'),
       },
+    ];
+    const resources: MenuItem[] = [
       {
         id: 'articles',
         icon: 'book-open',
         label: 'Articles',
-        keywords: 'guides reading',
-        idle: true,
         onPress: () => navigate('/articles'),
       },
       {
         id: 'settings',
         icon: 'settings',
         label: 'Settings',
-        keywords: 'account preferences',
-        idle: true,
         onPress: () => navigate('/settings'),
       },
       {
         id: 'share',
         icon: 'share-2',
         label: 'Share PanditTalk',
-        keywords: 'invite',
-        idle: true,
         onPress: onShareApp,
       },
       {
         id: 'rate',
         icon: 'star',
         label: 'Rate PanditTalk',
-        keywords: 'review store',
-        idle: true,
         onPress: onRateApp,
       },
     ];
     if (activeChat) {
-      items.unshift({
+      activity.unshift({
         id: 'rejoin',
         icon: 'message-circle',
         label: `Rejoin chat with ${rejoinName}`,
-        keywords: 'chat session',
-        idle: true,
         onPress: () => {
           closeThen(() => {
             onClose();
@@ -261,15 +224,10 @@ export function SideMenu({ isVisible, onClose }: Props) {
         },
       });
     }
-    return items;
+    return { activity, resources };
     // navigate and closeThen close over the latest drawer animation
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChat]);
-
-  const searching = menuQuery.trim().length > 0;
-  const visibleItems = searching
-    ? filterMenuDestinations(menuItems, menuQuery)
-    : menuItems.filter((item) => item.idle);
 
   return (
     <Modal
@@ -347,25 +305,15 @@ export function SideMenu({ isVisible, onClose }: Props) {
             style={styles.nav}
             contentContainerStyle={styles.navContent}
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
           >
-            <TextInput
-              value={menuQuery}
-              onChangeText={setMenuQuery}
-              placeholder="Search the menu"
-              placeholderTextColor={GREY_LABEL}
-              style={styles.menuSearch}
-              autoCorrect={false}
-              autoCapitalize="none"
-              clearButtonMode="while-editing"
-              accessibilityLabel="Search the menu"
-            />
-            {visibleItems.map((item) => (
+            <Text style={styles.sectionLabel}>Your activity</Text>
+            {menuSections.activity.map((item) => (
               <DrawerRow key={item.id} icon={item.icon} label={item.label} onPress={item.onPress} />
             ))}
-            {searching && visibleItems.length === 0 ? (
-              <Text style={styles.menuEmpty}>No matching menu items.</Text>
-            ) : null}
+            <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>More</Text>
+            {menuSections.resources.map((item) => (
+              <DrawerRow key={item.id} icon={item.icon} label={item.label} onPress={item.onPress} />
+            ))}
           </ScrollView>
 
           {/* Footer */}
@@ -499,24 +447,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingTop: 8,
   },
-  menuSearch: {
-    minHeight: 44,
-    marginHorizontal: 8,
-    marginBottom: 8,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: HEADER_RULE_GREY,
-    backgroundColor: WHITE,
-    color: TEXT_PRIMARY_DARK,
-    fontSize: 15,
-  },
-  menuEmpty: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 14,
-    lineHeight: 20,
+  sectionLabel: {
+    ...Typography.caption,
     color: GREY_LABEL,
+    fontWeight: '700',
+    letterSpacing: 1.1,
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 2,
+    textTransform: 'uppercase',
+  },
+  sectionLabelSpaced: {
+    marginTop: 14,
   },
   footer: {
     paddingHorizontal: 8,
