@@ -11,7 +11,8 @@ export type GuidanceAreaKey =
   | 'education'
   | 'health'
   | 'business'
-  | 'finance';
+  | 'finance'
+  | 'spiritual_protection';
 
 /** List/API session price must match checkout: standard depth + chat format. */
 export const PUBLIC_STANDARD_CHAT_PRICE = 251;
@@ -98,7 +99,7 @@ export const PANDIT_META_BY_PHONE: Record<string, Omit<PanditMeta, 'phone'>> = {
     displayName: 'Shri Hemanshu Tirupati Joshi',
     headline: 'Practical guidance for students and early-career seekers',
     specialty: 'Education paths & early career direction',
-    category: 'Life Path',
+    category: 'Career & Business',
     guidanceAreas: ['education', 'career'],
     pricePerSession: 251,
     isPremium: false,
@@ -170,7 +171,7 @@ export const PANDIT_META_BY_PHONE: Record<string, Omit<PanditMeta, 'phone'>> = {
     displayName: 'Shri Sudhakarji',
     headline: 'Steady counsel for career turns and family questions',
     specialty: 'Career direction, family harmony & everyday decisions',
-    category: 'Life Path',
+    category: 'Career & Business',
     guidanceAreas: ['career', 'love', 'family', 'health'],
     pricePerSession: 251,
     isPremium: false,
@@ -182,7 +183,7 @@ export const PANDIT_META_BY_PHONE: Record<string, Omit<PanditMeta, 'phone'>> = {
     displayName: 'Shri Raju ji',
     headline: 'Practical reflection for relationships and work stress',
     specialty: 'Relationships, work pressure & personal clarity',
-    category: 'Life Path',
+    category: 'Love & Relationships',
     guidanceAreas: ['career', 'love', 'family', 'health'],
     pricePerSession: 251,
     isPremium: false,
@@ -194,7 +195,7 @@ export const PANDIT_META_BY_PHONE: Record<string, Omit<PanditMeta, 'phone'>> = {
     displayName: 'Shri Priyaansh Prakash Thakur',
     headline: 'Thoughtful guidance for students and early decisions',
     specialty: 'Education paths, early career & family support',
-    category: 'Life Path',
+    category: 'Career & Business',
     guidanceAreas: ['career', 'love', 'family', 'health'],
     pricePerSession: 251,
     isPremium: false,
@@ -206,8 +207,8 @@ export const PANDIT_META_BY_PHONE: Record<string, Omit<PanditMeta, 'phone'>> = {
     displayName: 'Shri Himanshu Ji',
     headline: 'Calm listening for health worries and life balance',
     specialty: 'Wellbeing reflection, family balance & life path',
-    category: 'Life Path',
-    guidanceAreas: ['career', 'love', 'family', 'health'],
+    category: 'Health & Wellbeing',
+    guidanceAreas: ['career', 'love', 'family', 'health', 'spiritual_protection'],
     pricePerSession: 251,
     isPremium: false,
     imageSlug: 'himanshu-ji',

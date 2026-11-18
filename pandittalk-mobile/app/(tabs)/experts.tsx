@@ -86,9 +86,7 @@ export type ExpertCategoryFilterId =
   | 'love_relationships'
   | 'finance_wealth'
   | 'marriage_family'
-  | 'legal_advice'
   | 'health_wellbeing'
-  | 'life_path'
   | 'spiritual_protection';
 
 const CATEGORY_LABEL: Record<ExpertCategoryFilterId, string> = {
@@ -96,9 +94,7 @@ const CATEGORY_LABEL: Record<ExpertCategoryFilterId, string> = {
   love_relationships: 'Love & Relationships',
   finance_wealth: 'Finance & Wealth',
   marriage_family: 'Marriage & Family',
-  legal_advice: 'Legal Advice',
   health_wellbeing: 'Health & Wellbeing',
-  life_path: 'Life Path',
   spiritual_protection: 'Spiritual Protection',
   all: 'All',
 };
@@ -109,9 +105,7 @@ const DROPDOWN_ORDER: ExpertCategoryFilterId[] = [
   'love_relationships',
   'finance_wealth',
   'marriage_family',
-  'legal_advice',
   'health_wellbeing',
-  'life_path',
   'spiritual_protection',
 ];
 
@@ -148,9 +142,7 @@ const CATEGORY_MATCH: Record<MatchableId, RegExp> = {
   love_relationships: /(love|relationship|dating|romance|heartbreak|heart break|partner)/i,
   finance_wealth: /(finance|wealth|money|investment|financial|prosperity)/i,
   marriage_family: /(marriage|family|marital|spouse|children|parent|wedding)/i,
-  legal_advice: /(legal|law|litigation|court|compliance|advocate)/i,
   health_wellbeing: /(health|wellbeing|well-being|wellness|medical|healing|body)/i,
-  life_path: /(life path|lifepath|numerology|destiny|purpose|karma)/i,
   spiritual_protection: /(spiritual|protection|vastu|tantra|evil eye|negative energy|shield|aura|remedy)/i,
 };
 

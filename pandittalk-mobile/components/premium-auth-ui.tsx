@@ -17,16 +17,18 @@ import { PremiumCard as SharedPremiumCard } from './ui/PremiumCard';
 export function BrandHero({
   logoSource,
   subtitle,
+  compact = false,
 }: {
   logoSource: number;
   subtitle: string;
+  compact?: boolean;
 }) {
   return (
-    <View style={styles.brandWrap}>
-      <View style={styles.logoHalo}>
-        <Image source={logoSource} style={styles.logo} contentFit="contain" />
+    <View style={[styles.brandWrap, compact && styles.brandWrapCompact]}>
+      <View style={[styles.logoHalo, compact && styles.logoHaloCompact]}>
+        <Image source={logoSource} style={[styles.logo, compact && styles.logoCompact]} contentFit="contain" />
       </View>
-      <Text style={styles.brandName}>PanditTalk</Text>
+      <Text style={[styles.brandName, compact && styles.brandNameCompact]}>PanditTalk</Text>
       <Text style={styles.brandSub}>{subtitle}</Text>
     </View>
   );
@@ -76,6 +78,9 @@ const styles = StyleSheet.create({
     marginBottom: 28,
     paddingHorizontal: 8,
   },
+  brandWrapCompact: {
+    marginBottom: 16,
+  },
   logoHalo: {
     width: 108,
     height: 108,
@@ -92,13 +97,27 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 2,
   },
+  logoHaloCompact: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    marginBottom: 12,
+  },
   logo: {
+    width: 72,
+    height: 72,
+  },
+  logoCompact: {
     width: 72,
     height: 72,
   },
   brandName: {
     ...Typography.h1,
     letterSpacing: -0.3,
+  },
+  brandNameCompact: {
+    fontSize: 22,
+    lineHeight: 28,
   },
   brandSub: {
     marginTop: 8,

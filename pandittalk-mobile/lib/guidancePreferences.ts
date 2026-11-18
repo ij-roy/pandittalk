@@ -1,4 +1,4 @@
-const AREAS = new Set(['career', 'love', 'family', 'marriage', 'education', 'health', 'business', 'finance']);
+const AREAS = new Set(['career', 'love', 'family', 'marriage', 'education', 'health', 'business', 'finance', 'spiritual_protection']);
 const DEPTHS = new Set(['entry', 'standard', 'deep']);
 const FORMATS = new Set(['audio', 'video']);
 

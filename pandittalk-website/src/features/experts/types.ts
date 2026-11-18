@@ -27,9 +27,7 @@ export const categories = [
   ['love_relationships', 'Love & relationships'],
   ['finance_wealth', 'Finance & wealth · spiritual guidance'],
   ['health_wellbeing', 'Health & wellbeing · spiritual guidance'],
-  ['life_path', 'Life path'],
   ['spiritual_protection', 'Spiritual protection'],
-  ['legal_advice', 'Legal concerns · spiritual guidance'],
 ] as const;
 
 const salutations = new Set(['pandit', 'pandita', 'shri', 'shree', 'smt']);

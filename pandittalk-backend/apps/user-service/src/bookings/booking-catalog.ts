@@ -7,6 +7,7 @@ export const BOOKING_AREAS = [
   { key: 'health', label: 'Health' },
   { key: 'business', label: 'Business' },
   { key: 'finance', label: 'Finance' },
+  { key: 'spiritual_protection', label: 'Spiritual Protection' },
 ] as const;
 
 export const BOOKING_DEPTHS = [

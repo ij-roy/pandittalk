@@ -2,9 +2,13 @@ import { Image } from 'expo-image';
 
 import { LinearGradient } from 'expo-linear-gradient';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+
+  Animated,
 
   Pressable,
 
@@ -74,6 +78,10 @@ type Props = {
   tileSize?: number;
 
 };
+
+const PANDITTALK_LOGO = require('../assets/icon.png');
+const METADATA_HOLD_MS = 7000;
+const METADATA_FADE_MS = 1200;
 
 
 
@@ -231,6 +239,104 @@ function ReadTime({ minutes, light }: { minutes: number; light?: boolean }) {
 
 }
 
+function FeedMetadata({ article }: { article: ArticleListItem }) {
+  const [showCategory, setShowCategory] = useState(false);
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const scheduleNext = () => {
+      timer = setTimeout(() => {
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: METADATA_FADE_MS,
+          useNativeDriver: true,
+        }).start(({ finished }) => {
+          if (cancelled || !finished) return;
+
+          setShowCategory((current) => !current);
+          Animated.timing(opacity, {
+            toValue: 1,
+            duration: METADATA_FADE_MS,
+            useNativeDriver: true,
+          }).start(({ finished: fadeInFinished }) => {
+            if (!cancelled && fadeInFinished) scheduleNext();
+          });
+        });
+      }, METADATA_HOLD_MS);
+    };
+
+    scheduleNext();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+      opacity.stopAnimation();
+    };
+  }, [opacity]);
+
+  return (
+    <Animated.Text style={[styles.feedMetadata, { opacity }]}>
+      {showCategory ? articleCategoryLabel(article.category) : `${article.readTimeMinutes} min read`}
+    </Animated.Text>
+  );
+}
+
+function FeedAuthor({ author }: { author: string }) {
+  const normalizedAuthor = author.trim();
+  const isPanditTalkTeam = !normalizedAuthor || /^pandittalk( team)?$/i.test(normalizedAuthor);
+  const displayName = isPanditTalkTeam ? 'PanditTalk Team' : normalizedAuthor;
+  const subtitle = isPanditTalkTeam
+    ? 'Curated guidance for everyday questions'
+    : 'Guidance from the PanditTalk community';
+
+  return (
+    <View style={styles.feedIdentity}>
+      <View style={styles.authorAvatar}>
+        <Image source={PANDITTALK_LOGO} style={styles.authorAvatarImage} contentFit="cover" />
+      </View>
+      <View style={styles.authorCopy}>
+        <Text style={styles.feedAuthorName} numberOfLines={1}>
+          {displayName}
+        </Text>
+        <Text style={styles.feedAuthorSubtitle} numberOfLines={1}>
+          {subtitle}
+        </Text>
+      </View>
+      <Ionicons name="ellipsis-horizontal" size={18} color={MUTED_GREY} />
+    </View>
+  );
+}
+
+function FeedArticlePost({ article }: { article: ArticleListItem }) {
+  return (
+    <View style={styles.feedCard}>
+      <FeedAuthor author={article.author} />
+      <View style={styles.feedCoverFrame}>
+        <CoverImage
+          url={article.coverImageUrl}
+          category={article.category}
+          style={styles.feedCover}
+          overlay
+        />
+        <FeedMetadata article={article} />
+      </View>
+      <View style={styles.feedBody}>
+        <Text style={styles.feedTitle} numberOfLines={2}>
+          {article.title}
+        </Text>
+        {article.excerpt ? (
+          <Text style={styles.feedExcerpt} numberOfLines={2}>
+            {article.excerpt}
+          </Text>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
 
 
 export function ArticleCard({ article, variant, onPress, style, tileSize }: Props) {
@@ -357,63 +463,7 @@ export function ArticleCard({ article, variant, onPress, style, tileSize }: Prop
 
 
 
-    return (
-
-      <View style={styles.feedCard}>
-
-        <CoverImage
-
-          url={article.coverImageUrl}
-
-          category={article.category}
-
-          style={styles.feedCover}
-
-          overlay
-
-        />
-
-        <View style={styles.feedBody}>
-
-          <View style={styles.feedMetaRow}>
-
-            <CategoryChip category={article.category} />
-
-            <ReadTime minutes={article.readTimeMinutes} />
-
-          </View>
-
-          <Text style={styles.feedTitle} numberOfLines={2}>
-
-            {article.title}
-
-          </Text>
-
-          {article.author ? (
-
-            <Text style={styles.feedAuthor} numberOfLines={1}>
-
-              {article.author}
-
-            </Text>
-
-          ) : null}
-
-          {article.excerpt ? (
-
-            <Text style={styles.feedExcerpt} numberOfLines={3}>
-
-              {article.excerpt}
-
-            </Text>
-
-          ) : null}
-
-        </View>
-
-      </View>
-
-    );
+    return <FeedArticlePost article={article} />;
 
   })();
 
@@ -579,15 +629,15 @@ const styles = StyleSheet.create({
 
     backgroundColor: WHITE,
 
-    borderRadius: 16,
+    borderRadius: 0,
 
     borderWidth: 1,
 
     borderColor: BLOG_CARD_BORDER,
 
-    overflow: 'hidden',
+    overflow: 'visible',
 
-    marginBottom: 14,
+    marginBottom: 24,
 
     ...cardShadow,
 
@@ -601,9 +651,70 @@ const styles = StyleSheet.create({
 
   },
 
+  feedIdentity: {
+    alignItems: 'center',
+    backgroundColor: WHITE,
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+
+  authorAvatar: {
+    alignItems: 'center',
+    backgroundColor: SOFT_YELLOW,
+    borderColor: BLOG_CARD_BORDER,
+    borderRadius: 18,
+    borderWidth: 1,
+    height: 36,
+    justifyContent: 'center',
+    overflow: 'hidden',
+    width: 36,
+  },
+
+  authorAvatarImage: {
+    height: '100%',
+    width: '100%',
+  },
+
+  authorCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  feedAuthorName: {
+    color: DEEP_GREY,
+    fontSize: 14,
+    fontWeight: '800',
+    lineHeight: 18,
+  },
+
+  feedAuthorSubtitle: {
+    color: GREY_LABEL,
+    fontSize: 11,
+    lineHeight: 15,
+    marginTop: 1,
+  },
+
+  feedCoverFrame: {
+    position: 'relative',
+  },
+
+  feedMetadata: {
+    bottom: 12,
+    color: WHITE,
+    fontSize: 12,
+    fontWeight: '600',
+    position: 'absolute',
+    right: 14,
+    textShadowColor: 'rgba(0,0,0,0.42)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+
   feedBody: {
 
-    padding: 16,
+    padding: 14,
 
   },
 
@@ -627,7 +738,9 @@ const styles = StyleSheet.create({
 
     color: DEEP_GREY,
 
-    marginBottom: 4,
+    lineHeight: 23,
+
+    marginBottom: 6,
 
   },
 

@@ -36,10 +36,15 @@ export function SocialSignIn({ consent, disabled = false, onResult, onConsentReq
   const [message, setMessage] = useState('');
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [attentionProvider, setAttentionProvider] = useState<'google' | 'apple' | null>(null);
   const googleBox = useRef<HTMLDivElement>(null);
   const messageRef = useRef<HTMLDivElement>(null);
   const consentRef = useRef(consent);
+  const attentionTimer = useRef<number | null>(null);
   useEffect(() => { consentRef.current = consent; }, [consent]);
+  useEffect(() => () => {
+    if (attentionTimer.current !== null) window.clearTimeout(attentionTimer.current);
+  }, []);
 
   function announce(note: string, isError = false) {
     setFailed(isError);
@@ -64,6 +69,16 @@ export function SocialSignIn({ consent, disabled = false, onResult, onConsentReq
       const apple = document.querySelector<HTMLButtonElement>('.auth-panel .actions button.secondary');
       if (apple && !apple.disabled) apple.focus();
     });
+  }
+
+  function promptConsent(provider: 'google' | 'apple') {
+    setAttentionProvider(provider);
+    if (attentionTimer.current !== null) window.clearTimeout(attentionTimer.current);
+    attentionTimer.current = window.setTimeout(() => {
+      setAttentionProvider(null);
+      attentionTimer.current = null;
+    }, 750);
+    onConsentRequired(provider);
   }
 
   function renderMessage() {
@@ -161,21 +176,28 @@ export function SocialSignIn({ consent, disabled = false, onResult, onConsentReq
   async function start(provider: 'google' | 'apple') {
     if (busy || disabled) return;
     if (!consent) {
-      onConsentRequired(provider);
+      promptConsent(provider);
       return;
     }
     if (provider === 'google') {
+      if (!hasGoogle) {
+        announce('Google sign-in is not available on this website yet. You can use phone sign-in.');
+        return;
+      }
       announce('Use the Google button below to choose your account.');
+      return;
+    }
+    if (!hasApple) {
+      announce('Apple sign-in is not available on this website yet. You can use phone sign-in.');
       return;
     }
     setBusy(true);
     setFailed(false);
     setMessage('');
     try {
-      if (!config?.appleClientId || !config.appleRedirectUri) throw new Error('Apple sign-in is unavailable. Please use phone sign-in.');
       if (!window.AppleID) await loadScript('https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js');
       const state = crypto.randomUUID();
-      window.AppleID!.auth.init({ clientId: config.appleClientId, scope: 'name email', redirectURI: config.appleRedirectUri, state, usePopup: true });
+      window.AppleID!.auth.init({ clientId: config!.appleClientId!, scope: 'name email', redirectURI: config!.appleRedirectUri!, state, usePopup: true });
       const result = await window.AppleID!.auth.signIn();
       if (result.authorization.state !== state) throw new Error('The sign-in response could not be verified.');
       await exchange('apple', result.authorization.id_token);
@@ -187,27 +209,25 @@ export function SocialSignIn({ consent, disabled = false, onResult, onConsentReq
   const hasGoogle = !!config?.googleClientId;
   const hasApple = !!config?.appleClientId && !!config?.appleRedirectUri;
   const providerHint = config === undefined
-    ? 'Check the statement above to enable Google or Apple sign-in. Phone sign-in stays available without it.'
+    ? 'Sign-in options are loading. Phone sign-in is available.'
     : hasGoogle || hasApple
-      ? 'Check the statement above to enable Google or Apple sign-in. Phone sign-in stays available without it.'
-      : 'Browser sign-in is not configured yet. Phone sign-in stays available.';
+      ? 'Accept the statement above to enable Google or Apple. Phone sign-in is available.'
+      : 'Google or Apple sign-in is not configured here yet. Phone sign-in is available.';
   return <div className="stack" aria-busy={busy || undefined}>
-    <p className="eyebrow">Or continue with</p>
+    <p className="eyebrow auth-social-heading">Or continue with</p>
     <p className="expert-meta" id="social-provider-help">{providerHint}</p>
     <p className="sr-only" id="social-keys-hint">Arrow keys move between Google and Apple sign-in when shown. Escape blurs.</p>
     <LinkKeyboardGroup className="actions" aria-label="Social sign-in options" aria-describedby="social-keys-hint">
-      <button type="button" data-provider="apple" className="button secondary social-provider-button" disabled={busy || disabled || !consent || !hasApple} aria-disabled={!consent || disabled || !hasApple || busy || undefined} aria-busy={busy || undefined} title={!hasApple ? 'Apple sign-in is not configured on this website yet.' : undefined} onClick={() => void start('apple')}><AppleMark />{busy ? 'Signing in with Apple…' : 'Sign in with Apple'}</button>
+      <button type="button" data-provider="apple" className={`button secondary social-provider-button ${!consent ? 'auth-needs-consent' : ''} ${!hasApple ? 'auth-provider-unavailable' : ''} ${attentionProvider === 'apple' ? 'auth-consent-attention' : ''}`} disabled={busy || disabled} aria-busy={busy || undefined} title={!hasApple ? 'Apple sign-in is not configured on this website yet.' : undefined} onClick={() => void start('apple')}><AppleMark />{busy ? 'Signing in with Apple…' : 'Sign in with Apple'}</button>
       <div className="social-google-slot" data-provider="google">
-        {(!consent || disabled || !hasGoogle) && <button type="button" className="button secondary social-google-placeholder social-provider-button" disabled={busy || disabled || !consent || !hasGoogle} aria-disabled={!consent || disabled || !hasGoogle || busy || undefined} title={!hasGoogle ? 'Google sign-in is not configured on this website yet.' : undefined} onClick={() => {
-          if (!consent) onConsentRequired('google');
-        }}><GoogleMark />Sign in with Google</button>}
+        {(!consent || disabled || !hasGoogle) && <button type="button" className={`button secondary social-google-placeholder social-provider-button ${!consent ? 'auth-needs-consent' : ''} ${!hasGoogle ? 'auth-provider-unavailable' : ''} ${attentionProvider === 'google' ? 'auth-consent-attention' : ''}`} disabled={busy || disabled} aria-busy={busy || undefined} title={!hasGoogle ? 'Google sign-in is not configured on this website yet.' : undefined} onClick={() => void start('google')}><GoogleMark />Sign in with Google</button>}
         <div ref={googleBox} className="social-google-widget" hidden={!consent || disabled || !hasGoogle} role="group" aria-label="Google sign-in" />
       </div>
     </LinkKeyboardGroup>
     {renderMessage()}
     {failed && message ? (
       <>
-        <p className="sr-only" id="social-fail-hint">Arrow keys move between phone Send code focus, free tools and draft. Escape blurs. Consent never blocks Send code. Skip remains site-content.</p>
+        <p className="sr-only" id="social-fail-hint">Arrow keys move between phone Send code focus, free tools and draft. Escape blurs. Skip remains site-content.</p>
         <LinkKeyboardGroup className="actions" aria-label="Social sign-in recovery" aria-describedby="social-fail-hint">
           <button
             type="button"

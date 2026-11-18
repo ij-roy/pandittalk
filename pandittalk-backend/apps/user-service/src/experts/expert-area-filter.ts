@@ -12,9 +12,7 @@ const EXPERT_AREA_TO_GUIDANCE: Record<ExpertAreaId, BookingAreaId[]> = {
   marriage_family: ['family', 'marriage'],
   finance_wealth: ['finance'],
   health_wellbeing: ['health'],
-  life_path: ['education'],
-  legal_advice: [],
-  spiritual_protection: [],
+  spiritual_protection: ['spiritual_protection'],
 };
 
 const BOOKING_AREA_ID_SET = new Set<string>(BOOKING_AREA_IDS);

@@ -208,3 +208,146 @@
   .homePage :global([data-home-secondary-link]) * { transition: none !important; }
   .homePage :global([data-home-summary]):hover { transform: none; }
 }
+
+/* Customer home parity: consultation first, then topics, reading and tools. */
+.homePage :global(.homeOverview) { display: grid; gap: 30px; min-width: 0; }
+.homePage :global(.homeConsultHero) { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 230px; align-items: center; min-height: 300px; padding: clamp(30px, 5vw, 56px); overflow: hidden; border: 1px solid #b9851d; border-radius: 24px; background: radial-gradient(circle at 86% 50%, rgba(255, 221, 91, .38), transparent 25%), linear-gradient(120deg, #805713, #b7891e 60%, #c49b31); color: #fffaf0; box-shadow: 0 18px 44px -26px rgba(108, 72, 8, .52); }
+.homePage :global(.homeConsultHero)::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 48%; opacity: .14; background: repeating-radial-gradient(circle at 20% 50%, transparent 0 40px, rgba(255, 246, 200, .9) 41px 42px, transparent 43px 80px); pointer-events: none; }
+.homePage :global(.homeConsultCopy) { position: relative; z-index: 1; max-width: 660px; }
+.homePage :global(.homeHeroEyebrow) { margin: 0 0 15px; color: #fff5d3; font-size: .75rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.homePage :global(.homeConsultHero h2) { max-width: 700px; margin: 0; color: #fffdf5; font-family: var(--font-body), Arial, sans-serif; font-size: clamp(2.3rem, 5vw, 4rem); font-weight: 800; letter-spacing: -.045em; line-height: 1.03; }
+.homePage :global(.homeConsultHero p:not(.homeHeroEyebrow)) { max-width: 560px; margin: 18px 0 0; color: rgba(255, 250, 236, .9); font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.55; }
+.homePage :global(.homeHeroButton) { display: inline-flex; align-items: center; gap: 9px; min-height: 50px; margin-top: 25px; padding: 12px 21px; border-radius: 15px; background: #fffdf8; color: var(--brand-gold-deep); font-weight: 750; text-decoration: none; box-shadow: 0 10px 20px -14px rgba(42, 26, 4, .62); }
+.homePage :global(.homeHeroButton):hover { color: var(--brand-gold-deep); background: #fff8e4; transform: translateY(-2px); }
+.homePage :global(.homeHeroMark) { position: relative; z-index: 1; justify-self: end; width: min(100%, 230px); height: auto; opacity: .96; filter: drop-shadow(0 15px 20px rgba(48, 28, 4, .26)); }
+.homePage :global(.homePrimaryActions) { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 14px; }
+.homePage :global(.homeChatAction), .homePage :global(.homeBookAction) { display: flex; align-items: center; gap: 13px; min-width: 0; min-height: 78px; padding: 17px 20px; border-radius: 17px; text-decoration: none; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease; }
+.homePage :global(.homeChatAction) { color: #fffdf5; background: var(--brand-gold); box-shadow: 0 15px 24px -20px rgba(114, 77, 10, .64); }
+.homePage :global(.homeChatAction) > span { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.homePage :global(.homeChatAction) strong, .homePage :global(.homeBookAction) strong { font-size: 1.12rem; }
+.homePage :global(.homeChatAction) small { color: rgba(255, 255, 255, .86); font-size: .9rem; line-height: 1.35; }
+.homePage :global(.homeBookAction) { border: 1px solid #d6ae4c; color: var(--brand-gold-deep); background: var(--surface-solid); box-shadow: 0 10px 26px -22px rgba(93, 65, 13, .5); }
+.homePage :global(.homeChatAction):hover, .homePage :global(.homeBookAction):hover { color: inherit; transform: translateY(-2px); box-shadow: 0 17px 30px -22px rgba(93, 65, 13, .58); }
+.homePage :global(.homeChatAction):hover { color: #fffdf5; }
+.homePage :global(.homePanditWrap) { display: grid; gap: 8px; }
+.homePage :global(.homeCardEyebrow) { margin: 0; color: var(--brand-gold-deep); font-size: .7rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.homePage :global(.homePanditCard) { display: flex; align-items: center; gap: 16px; min-width: 0; padding: 18px 20px; border: 1px solid #ead7ab; border-radius: 20px; background: rgba(255, 255, 252, .86); text-decoration: none; box-shadow: 0 15px 28px -28px rgba(75, 53, 25, .5); }
+.homePage :global(.homePanditCard):hover { color: inherit; border-color: #d9b86b; background: #fffefa; transform: translateY(-2px); }
+.homePage :global(.homePanditCard) > svg { flex: 0 0 auto; color: var(--brand-gold-deep); }
+.homePage :global(.homePanditAvatar) { display: grid; place-items: center; flex: 0 0 64px; width: 64px; height: 64px; overflow: hidden; border: 1px solid #ead7ab; border-radius: 50%; background: var(--brand-gold-pale); color: var(--brand-gold-deep); font-family: var(--font-display); font-size: 1.6rem; }
+.homePage :global(.homePanditAvatar) img { width: 100%; height: 100%; object-fit: cover; }
+.homePage :global(.homePanditCopy) { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.homePage :global(.homePanditCopy) strong { overflow: hidden; color: var(--ink); font-size: 1.08rem; text-overflow: ellipsis; white-space: nowrap; }
+.homePage :global(.homePanditCopy) small { overflow: hidden; color: var(--muted); font-size: .84rem; text-overflow: ellipsis; white-space: nowrap; }
+.homePage :global(.homeProfileCard) { padding: 23px 25px; border: 1px solid #ead7ab; border-radius: 20px; background: var(--surface-solid); box-shadow: var(--shadow); }
+.homePage :global(.homeProfileTopline) { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.homePage :global(.homeProfileTopline) .eyebrow { margin: 0; }
+.homePage :global(.homeProfileTopline) strong { color: var(--brand-gold-deep); font-family: var(--font-display); font-size: 1.8rem; font-weight: 600; }
+.homePage :global(.homeProgressTrack) { height: 7px; margin-top: 12px; overflow: hidden; border-radius: 999px; background: var(--brand-gold-pale); }
+.homePage :global(.homeProgressTrack) span { display: block; height: 100%; min-width: 0; border-radius: inherit; background: var(--brand-gold); transition: width .28s ease; }
+.homePage :global(.homeProfileCard) h2 { margin: 18px 0 5px; font-family: var(--font-body), Arial, sans-serif; font-size: 1.25rem; font-weight: 750; letter-spacing: -.02em; }
+.homePage :global(.homeProfileCard) p { max-width: 720px; margin: 0; color: var(--muted); }
+.homePage :global(.homeProfileChips) { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.homePage :global(.homeProfileChips) span { padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: #fffdf8; font-size: .78rem; }
+.homePage :global(.homeProfileChips) span.is-complete { border-color: #e7d19b; color: var(--ink); background: var(--brand-gold-pale); }
+.homePage :global(.homeInlineLink), .homePage :global(.homeSectionLink), .homePage :global(.homeAccountCardLink) { display: inline-flex; align-items: center; gap: 7px; color: var(--brand-gold-deep); font-weight: 750; text-decoration: none; }
+.homePage :global(.homeInlineLink) { margin-top: 18px; font-size: .9rem; }
+.homePage :global(.homeSectionHeading) { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; margin-bottom: 13px; }
+.homePage :global(.homeSectionHeading) h2 { margin: 0; color: var(--ink); font-family: var(--font-body), Arial, sans-serif; font-size: clamp(1.55rem, 2.8vw, 2.15rem); font-weight: 800; letter-spacing: -.035em; }
+.homePage :global(.homeSectionLink) { flex: 0 0 auto; font-size: .9rem; }
+.homePage :global(.homeSectionDescription) { max-width: 760px; margin: 0 0 18px; color: var(--muted); font-size: .98rem; line-height: 1.55; }
+.homePage :global(.homeTopicGrid) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+.homePage :global(.homeTopicTile) { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; min-width: 0; min-height: 92px; padding: 16px; border: 1px solid transparent; border-radius: 17px; color: var(--ink); text-decoration: none; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.homePage :global(.homeTopicTile) strong { min-width: 0; font-size: .98rem; line-height: 1.25; }
+.homePage :global(.homeTopicTile) > svg:first-child { flex: 0 0 auto; }
+.homePage :global(.homeTopicTile) > svg:last-child { opacity: .7; }
+.homePage :global(.homeTopicTile--gold) { background: var(--brand-gold-soft); color: var(--brand-gold-deep); }
+.homePage :global(.homeTopicTile--rose) { background: #f4e4e3; color: #8b4e52; }
+.homePage :global(.homeTopicTile--sage) { background: var(--brand-sage-soft); color: var(--brand-olive-dark); }
+.homePage :global(.homeTopicTile):hover { color: inherit; border-color: currentColor; transform: translateY(-2px); box-shadow: 0 13px 24px -20px rgba(75, 53, 25, .48); }
+.homePage :global(.homeReadingSection) { min-width: 0; }
+.homePage :global(.homeReadingRail) { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(210px, 23%); gap: 14px; min-width: 0; overflow-x: auto; padding: 3px 2px 13px; overscroll-behavior-inline: contain; scrollbar-width: thin; }
+.homePage :global(.homeReadingTile) { display: flex; min-width: 0; flex-direction: column; overflow: hidden; border: 1px solid #e4d3a8; border-radius: 17px; background: var(--surface-solid); text-decoration: none; box-shadow: 0 9px 22px -20px rgba(75, 53, 25, .6); }
+.homePage :global(.homeReadingTile):hover { color: inherit; border-color: #caa54b; transform: translateY(-2px); }
+.homePage :global(.homeReadingTile) img, .homePage :global(.homeReadingPlaceholder) { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+.homePage :global(.homeReadingPlaceholder) { display: grid; place-items: center; padding: 20px; background: radial-gradient(circle at 20% 20%, #ffe8aa, transparent 58%), var(--brand-sage-soft); color: var(--brand-gold-deep); font-family: var(--font-display); text-align: center; }
+.homePage :global(.homeReadingTile) strong { display: -webkit-box; min-height: 3.1em; margin: 0; padding: 13px 14px; overflow: hidden; color: var(--ink); font-size: .98rem; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.homePage :global(.homeToolsSection) { min-width: 0; }
+.homePage :global(.homeToolsGrid) { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.homePage :global(.homeToolTile) { display: grid; place-items: center; gap: 13px; min-width: 0; min-height: 164px; padding: 18px 14px; border-radius: 19px; color: #fffdf5; background: #c29b2f; text-align: center; text-decoration: none; box-shadow: 0 14px 24px -20px rgba(75, 53, 25, .68); transition: transform .2s ease, box-shadow .2s ease; }
+.homePage :global(.homeToolTile) > span { display: grid; place-items: center; width: 70px; height: 70px; border-radius: 50%; color: #fffdf5; background: rgba(111, 78, 13, .34); }
+.homePage :global(.homeToolTile) strong { max-width: 12ch; font-size: .98rem; line-height: 1.25; }
+.homePage :global(.homeToolTile):hover { color: #fffdf5; transform: translateY(-3px); box-shadow: 0 18px 28px -21px rgba(75, 53, 25, .75); }
+.homePage :global(.homeLatest) { margin-top: 32px; }
+.homePage :global(.homeArticleFeed) { display: grid; gap: 28px; max-width: 900px; }
+.homePage :global(.homeArticlePost) { display: block; min-width: 0; overflow: hidden; border: 1px solid #e4d3a8; border-radius: 0; background: var(--surface-solid); color: inherit; text-decoration: none; box-shadow: 0 14px 30px -25px rgba(75, 53, 25, .66); transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+.homePage :global(.homeArticlePost):hover { color: inherit; border-color: #caa54b; transform: translateY(-2px); box-shadow: 0 20px 36px -24px rgba(75, 53, 25, .7); }
+.homePage :global(.homeArticleAuthor) { display: flex; align-items: center; gap: 11px; min-width: 0; padding: 14px 16px; }
+.homePage :global(.homeArticleAuthor) > img { flex: 0 0 38px; width: 38px; height: 38px; border: 1px solid #e4d3a8; border-radius: 50%; object-fit: cover; }
+.homePage :global(.homeArticleAuthor) > span { display: grid; gap: 1px; min-width: 0; flex: 1; }
+.homePage :global(.homeArticleAuthor) strong { overflow: hidden; color: var(--ink); font-size: .9rem; text-overflow: ellipsis; white-space: nowrap; }
+.homePage :global(.homeArticleAuthor) small { overflow: hidden; color: var(--muted); font-size: .77rem; text-overflow: ellipsis; white-space: nowrap; }
+.homePage :global(.homeArticleAuthor) > svg { flex: 0 0 auto; color: var(--brand-gold-deep); }
+.homePage :global(.homeArticleCover) { position: relative; display: block; aspect-ratio: 1 / 1; background: var(--brand-sage-soft); }
+.homePage :global(.homeArticleCover) > img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 0; }
+.homePage :global(.homeArticleMetadata) { position: absolute; right: 14px; bottom: 12px; min-width: 76px; min-height: 20px; color: #fff; font-size: .78rem; font-weight: 700; text-align: right; text-shadow: 0 1px 4px rgba(0, 0, 0, .48); }
+.homePage :global(.homeArticleMetadata) > span { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s ease; }
+.homePage :global(.homeArticleMetadata) > span.is-visible { opacity: 1; }
+.homePage :global(.homeArticleBody) { display: grid; gap: 7px; padding: 17px 18px 20px; }
+.homePage :global(.homeArticleBody) > strong { color: var(--ink); font-size: clamp(1.15rem, 2vw, 1.55rem); line-height: 1.25; }
+.homePage :global(.homeArticleBody) > small { display: -webkit-box; overflow: hidden; color: var(--muted); font-size: .93rem; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.homePage :global(.homeUpcoming) { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 25px; border: 1px solid #ead7ab; border-radius: 20px; background: linear-gradient(120deg, #fff7df, #fffdf8); }
+.homePage :global(.homeUpcoming) h2 { margin: 0 0 6px; font-family: var(--font-body), Arial, sans-serif; font-size: 1.4rem; font-weight: 800; }
+.homePage :global(.homeUpcoming) p:last-child { margin: 0; color: var(--muted); }
+.homePage :global(.homeAccountSection) { padding-top: 6px; }
+.homePage :global(.homeAccountGrid) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.homePage :global(.homeAccountCard) { display: flex; min-width: 0; min-height: 160px; flex-direction: column; padding: 18px 19px; border: 1px solid var(--line); border-radius: 17px; background: var(--surface); text-decoration: none; }
+.homePage :global(.homeAccountCard):hover { color: inherit; border-color: #d9b86b; background: #fffefa; transform: translateY(-2px); }
+.homePage :global(.homeAccountCard) .eyebrow { margin-bottom: 9px; font-size: .64rem; }
+.homePage :global(.homeAccountCard) > strong { color: var(--ink); font-family: var(--font-display); font-size: 1.65rem; line-height: 1.1; }
+.homePage :global(.homeAccountCard) > small { margin-top: 7px; color: var(--muted); font-size: .82rem; line-height: 1.4; }
+.homePage :global(.homeAccountCardLink) { margin-top: auto; padding-top: 14px; font-size: .8rem; }
+.homePage :global(.homePartialStatus) { margin: 16px 0 0; padding: 12px 15px; border: 1px solid #ecd99f; border-radius: 12px; background: var(--brand-gold-pale); color: var(--muted); font-size: .86rem; }
+.homePage :global(.homeInlineButton) { padding: 0; border: 0; color: var(--brand-gold-deep); background: none; font-weight: 750; text-decoration: underline; text-underline-offset: 3px; }
+.homePage :global(.homeEmptyNote) { margin: 0; color: var(--muted); }
+
+@media (max-width: 900px) {
+  .homePage :global(.homeConsultHero) { grid-template-columns: minmax(0, 1fr) 170px; }
+  .homePage :global(.homeHeroMark) { width: 170px; }
+  .homePage :global(.homeTopicGrid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .homePage :global(.homeToolsGrid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .homePage :global(.homeAccountGrid) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .homePage :global(.homeOverview) { gap: 24px; }
+  .homePage :global(.homeConsultHero) { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: 28px 21px 24px; border-radius: 20px; }
+  .homePage :global(.homeConsultHero)::before { width: 100%; }
+  .homePage :global(.homeConsultHero h2) { font-size: clamp(2.15rem, 11vw, 3.1rem); }
+  .homePage :global(.homeHeroMark) { position: absolute; right: -22px; bottom: -18px; width: 145px; opacity: .35; }
+  .homePage :global(.homeHeroButton) { position: relative; z-index: 2; }
+  .homePage :global(.homePrimaryActions) { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .homePage :global(.homeChatAction), .homePage :global(.homeBookAction) { min-height: 70px; padding-inline: 16px; }
+  .homePage :global(.homePanditCard) { padding: 15px; gap: 12px; }
+  .homePage :global(.homePanditAvatar) { flex-basis: 54px; width: 54px; height: 54px; }
+  .homePage :global(.homeTopicGrid) { gap: 10px; }
+  .homePage :global(.homeTopicTile) { grid-template-columns: auto minmax(0, 1fr); min-height: 90px; padding: 13px; }
+  .homePage :global(.homeTopicTile) > svg:last-child { display: none; }
+  .homePage :global(.homeReadingRail) { grid-auto-columns: minmax(185px, 58%); }
+  .homePage :global(.homeToolsGrid) { gap: 10px; }
+  .homePage :global(.homeToolTile) { min-height: 145px; padding: 15px 10px; }
+  .homePage :global(.homeToolTile) > span { width: 60px; height: 60px; }
+  .homePage :global(.homeArticleFeed) { gap: 23px; }
+  .homePage :global(.homeArticleAuthor) { padding-inline: 13px; }
+  .homePage :global(.homeArticleBody) { padding: 15px 14px 18px; }
+  .homePage :global(.homeUpcoming) { align-items: stretch; flex-direction: column; padding: 20px; }
+  .homePage :global(.homeUpcoming) .button { width: 100%; }
+  .homePage :global(.homeAccountGrid) { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .homePage :global(.homeAccountCard) { min-height: 125px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homePage :global(.homeChatAction), .homePage :global(.homeBookAction), .homePage :global(.homePanditCard), .homePage :global(.homeTopicTile), .homePage :global(.homeReadingTile), .homePage :global(.homeToolTile), .homePage :global(.homeArticlePost), .homePage :global(.homeAccountCard), .homePage :global(.homeProgressTrack) span { transition: none; }
+  .homePage :global(.homeArticleMetadata) > span { transition: none; }
+  .homePage :global(.homeChatAction):hover, .homePage :global(.homeBookAction):hover, .homePage :global(.homePanditCard):hover, .homePage :global(.homeTopicTile):hover, .homePage :global(.homeReadingTile):hover, .homePage :global(.homeToolTile):hover, .homePage :global(.homeArticlePost):hover, .homePage :global(.homeAccountCard):hover { transform: none; }
+}

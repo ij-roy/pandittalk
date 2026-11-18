@@ -103,6 +103,7 @@ const AREA_TILES: AreaTile[] = [
   { key: 'health', label: 'Health', icon: 'fitness-outline' },
   { key: 'business', label: 'Business', icon: 'business-outline' },
   { key: 'finance', label: 'Finance & Money', icon: 'cash-outline' },
+  { key: 'spiritual_protection', label: 'Spiritual Protection', icon: 'shield-checkmark-outline' },
 ];
 
 const DEPTH_BULLETS: Record<BookingDepthKey, string[]> = {

@@ -1,6 +1,7 @@
 import { type Href, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Image } from 'expo-image';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Platform,
   RefreshControl,
@@ -13,9 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ArticleCard } from '../../components/ArticleCard';
 import { KeyboardAwareFlatList } from '../../components/KeyboardAwareScreen';
-import { PremiumCard } from '../../components/premium-auth-ui';
 import { ProfileProgressCard } from '../../components/ProfileProgressCard';
-import { SearchBar } from '../../components/SearchBar';
 import { TabTopHeader } from '../../components/TabTopHeader';
 import { AccentTile } from '../../components/ui/AccentTile';
 import { AnimatedPressable } from '../../components/ui/AnimatedPressable';
@@ -36,10 +35,13 @@ import { type AccentToneKey } from '../../constants/Gradients';
 import { shadowElevated } from '../../constants/Shadows';
 import { PAGE_PAD, SECTION_GAP, TAB_BAR_CLEARANCE } from '../../constants/Spacing';
 import { Typography } from '../../constants/Typography';
-import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { fetchArticles, type ArticleListItem } from '../../lib/articlesApi';
 import { getUserProfile } from '../../lib/authApi';
+import { formatInr } from '../../lib/bookingPricing';
+import { fetchExperts, type ExpertEntity } from '../../lib/expertsApi';
+import { AVATAR_IMAGE_CACHE, avatarImageSource } from '../../lib/avatarImageCache';
+import { selectFeaturedPandit } from '../../lib/homeFeaturedPandit';
 import {
   coerceProfileRecord,
   mergeCoinBalanceIntoRecord,
@@ -48,67 +50,61 @@ import { useAuthStore } from '../../store/useAuthStore';
 
 type SvgAssetSource = number;
 
+type ExpertArea =
+  | 'career_business'
+  | 'love_relationships'
+  | 'finance_wealth'
+  | 'marriage_family'
+  | 'health_wellbeing'
+  | 'spiritual_protection';
+
 const guidanceAreas: {
   id: string;
   title: string;
   Icon: SvgAssetSource;
-  areaKey: string;
+  expertArea: ExpertArea;
   tone: AccentToneKey;
 }[] = [
   {
     id: '1',
     title: 'Career &\nBusiness',
     Icon: require('../../assets/images/Homepageicons/CareerBusiness.png'),
-    areaKey: 'career',
+    expertArea: 'career_business',
     tone: 'gold',
   },
   {
     id: '2',
     title: 'Love &\nRelationships',
     Icon: require('../../assets/images/Homepageicons/LoveRelationships.png'),
-    areaKey: 'love',
+    expertArea: 'love_relationships',
     tone: 'rose',
   },
   {
     id: '3',
     title: 'Finance &\nWealth',
     Icon: require('../../assets/images/Homepageicons/FinanceWealth.png'),
-    areaKey: 'finance',
+    expertArea: 'finance_wealth',
     tone: 'gold',
   },
   {
     id: '4',
     title: 'Marriage &\nFamily',
     Icon: require('../../assets/images/Homepageicons/MarriageFamily.png'),
-    areaKey: 'marriage',
+    expertArea: 'marriage_family',
     tone: 'rose',
   },
   {
     id: '5',
-    title: 'Legal Advice',
-    Icon: require('../../assets/images/Homepageicons/LegalAdvice.png'),
-    areaKey: 'business',
-    tone: 'indigo',
-  },
-  {
-    id: '6',
     title: 'Health &\nWellbeing',
     Icon: require('../../assets/images/Homepageicons/HealthWellbeing.png'),
-    areaKey: 'health',
+    expertArea: 'health_wellbeing',
     tone: 'sage',
   },
   {
-    id: '7',
-    title: 'Life Path',
-    Icon: require('../../assets/images/Homepageicons/LifePath.png'),
-    areaKey: 'education',
-    tone: 'indigo',
-  },
-  {
-    id: '8',
+    id: '6',
     title: 'Spiritual\nProtection',
     Icon: require('../../assets/images/Homepageicons/SpiritualProtection.png'),
-    areaKey: 'family',
+    expertArea: 'spiritual_protection',
     tone: 'sage',
   },
 ];
@@ -141,40 +137,74 @@ const astrologyTools: { id: string; title: string; Icon: SvgAssetSource; route: 
 ];
 
 const FEATURED_COUNT = 4;
-const SEARCH_RESULTS_GAP = 4;
+
+function FeaturedPanditCard({ expert }: { expert: ExpertEntity }) {
+  const avatar = avatarImageSource(expert.imageUrl ?? '');
+  const reviewLine =
+    expert.totalReviews > 0
+      ? `${expert.ratingDisplay.toFixed(1)} ★ · ${expert.reviewCountLabel}`
+      : 'New on PanditTalk';
+  const priceLine =
+    expert.pricePerSession > 0
+      ? `Chat from ₹${formatInr(expert.pricePerSession)}`
+      : 'Price shown before booking';
+
+  return (
+    <View style={styles.featuredPanditWrap}>
+      <Text style={styles.featuredPanditEyebrow}>
+        {expert.isOnline ? 'Available now' : 'Available to book'}
+      </Text>
+      <AnimatedPressable
+        style={styles.featuredPanditCard}
+        onPress={() => router.push(`/experts/${expert.id}`)}
+        accessibilityRole="button"
+        accessibilityLabel={`View ${expert.name}`}
+      >
+        <View style={styles.featuredPanditAvatar}>
+          {avatar ? (
+            <Image
+              source={avatar}
+              style={styles.featuredPanditAvatarImage}
+              contentFit="cover"
+              cachePolicy={AVATAR_IMAGE_CACHE}
+              recyclingKey={expert.id}
+              transition={0}
+            />
+          ) : (
+            <Ionicons name="person-outline" size={25} color={GOLD} />
+          )}
+        </View>
+        <View style={styles.featuredPanditCopy}>
+          <Text style={styles.featuredPanditName} numberOfLines={1}>
+            {expert.name}
+          </Text>
+          <Text style={styles.featuredPanditMeta} numberOfLines={1}>
+            {expert.languagesDisplay}
+          </Text>
+          <Text style={styles.featuredPanditMeta} numberOfLines={1}>
+            {reviewLine}
+          </Text>
+          <Text style={styles.featuredPanditPrice} numberOfLines={1}>
+            {priceLine}
+          </Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={GOLD} />
+      </AnimatedPressable>
+    </View>
+  );
+}
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { greetingTitle } = useUserProfile();
   const accessToken = useAuthStore((s) => s.accessToken);
   const setUser = useAuthStore((s) => s.setUser);
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearch = useDebouncedValue(searchQuery, 400);
-  const [searchResults, setSearchResults] = useState<ArticleListItem[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [resultsTop, setResultsTop] = useState(0);
+  const [featuredPandit, setFeaturedPandit] = useState<ExpertEntity | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-
-  const headerBlockRef = useRef<View>(null);
-  const searchSectionRef = useRef<View>(null);
 
   const [articles, setArticles] = useState<ArticleListItem[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
   const [articlesError, setArticlesError] = useState<string | null>(null);
-
-  const measureSearchAnchor = useCallback(() => {
-    const header = headerBlockRef.current;
-    const search = searchSectionRef.current;
-    if (!header || !search) return;
-
-    search.measureLayout(
-      header,
-      (_x, y, _w, h) => {
-        setResultsTop(y + h + SEARCH_RESULTS_GAP);
-      },
-      () => {},
-    );
-  }, []);
 
   const loadArticles = useCallback(async () => {
     const res = await fetchArticles({ limit: 8 });
@@ -195,6 +225,11 @@ export default function HomeScreen() {
     }
   }, [accessToken, setUser]);
 
+  const loadFeaturedPandit = useCallback(async () => {
+    const experts = await fetchExperts();
+    setFeaturedPandit(selectFeaturedPandit(experts));
+  }, []);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     setArticlesError(null);
@@ -205,16 +240,12 @@ export default function HomeScreen() {
           setArticles([]);
         }),
         refreshProfile(),
-        debouncedSearch.trim()
-          ? fetchArticles({ search: debouncedSearch, limit: 10 })
-              .then((res) => setSearchResults(res.articles))
-              .catch(() => setSearchResults([]))
-          : Promise.resolve(),
+        loadFeaturedPandit().catch(() => setFeaturedPandit(null)),
       ]);
     } finally {
       setRefreshing(false);
     }
-  }, [loadArticles, refreshProfile, debouncedSearch]);
+  }, [loadArticles, refreshProfile, loadFeaturedPandit]);
 
   useEffect(() => {
     let cancelled = false;
@@ -238,37 +269,27 @@ export default function HomeScreen() {
   }, [loadArticles]);
 
   useEffect(() => {
-    if (!debouncedSearch.trim()) {
-      setSearchResults([]);
-      setSearchLoading(false);
-      return;
-    }
-
     let cancelled = false;
     void (async () => {
-      setSearchLoading(true);
       try {
-        const res = await fetchArticles({ search: debouncedSearch, limit: 10 });
-        if (!cancelled) setSearchResults(res.articles);
+        const experts = await fetchExperts();
+        if (!cancelled) setFeaturedPandit(selectFeaturedPandit(experts));
       } catch {
-        if (!cancelled) setSearchResults([]);
-      } finally {
-        if (!cancelled) setSearchLoading(false);
+        if (!cancelled) setFeaturedPandit(null);
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [debouncedSearch]);
+  }, []);
 
-  const showResultsPanel = debouncedSearch.trim().length > 0;
   const featuredArticles = useMemo(() => articles.slice(0, FEATURED_COUNT), [articles]);
   const feedArticles = useMemo(() => articles.slice(FEATURED_COUNT), [articles]);
 
   const listHeader = useMemo(
     () => (
-      <View ref={headerBlockRef} style={styles.headerBlock} onLayout={measureSearchAnchor}>
+      <View style={styles.headerBlock}>
         <View style={styles.heroWrap}>
           <HeroBanner
             edgeToEdge
@@ -306,19 +327,11 @@ export default function HomeScreen() {
           </AnimatedPressable>
         </View>
 
+        {featuredPandit ? <FeaturedPanditCard expert={featuredPandit} /> : null}
+
         <View style={styles.progressWrap}>
           <ProfileProgressCard />
         </View>
-
-        <PremiumCard>
-          <View ref={searchSectionRef} style={styles.searchSection} onLayout={measureSearchAnchor}>
-            <SearchBar
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Search consultation topics and experts…"
-            />
-          </View>
-        </PremiumCard>
 
         <SectionHeader title="What would you like to discuss?" />
         <Text style={styles.guidanceHint}>{GUIDANCE_HOME_HINT}</Text>
@@ -332,8 +345,8 @@ export default function HomeScreen() {
               style={styles.guidanceTile}
               onPress={() =>
                 router.push({
-                  pathname: '/guidance',
-                  params: { area: item.areaKey },
+                  pathname: '/experts',
+                  params: { area: item.expertArea },
                 })
               }
             />
@@ -368,11 +381,7 @@ export default function HomeScreen() {
           </ScrollView>
         ) : null}
 
-        {feedArticles.length > 0 ? (
-          <Text style={styles.latestLabel}>Latest</Text>
-        ) : null}
-
-        <SectionHeader title="Optional self-service tools" />
+        <SectionHeader title="Self-service tools" />
         <Text style={styles.toolsIntro}>
           Explore these on your own, or talk through your questions with a pandit in a live session.
         </Text>
@@ -391,46 +400,16 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        {showResultsPanel ? (
-          <View style={[styles.floatingResults, { top: resultsTop }]}>
-            {searchLoading ? (
-              <View style={styles.searchLoadingRow}>
-                <SkeletonCard lines={2} />
-              </View>
-            ) : searchResults.length === 0 ? (
-              <Text style={styles.noResultsText}>No articles found</Text>
-            ) : (
-              <ScrollView
-                keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled
-                style={styles.floatingResultsScroll}
-              >
-                {searchResults.map((article) => (
-                  <ArticleCard
-                    key={article.id}
-                    article={article}
-                    variant="compact"
-                    onPress={() => {
-                      setSearchQuery('');
-                      router.push(`/articles/${article.slug}`);
-                    }}
-                  />
-                ))}
-              </ScrollView>
-            )}
-          </View>
+        {feedArticles.length > 0 ? (
+          <SectionHeader title="Latest" style={styles.latestSection} />
         ) : null}
+
       </View>
     ),
     [
-      searchQuery,
-      showResultsPanel,
-      searchLoading,
-      searchResults,
       featuredArticles,
       feedArticles.length,
-      resultsTop,
-      measureSearchAnchor,
+      featuredPandit,
     ],
   );
 
@@ -491,7 +470,6 @@ export default function HomeScreen() {
         }
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
         initialNumToRender={HOME_LIST_WINDOW.initialNumToRender}
         maxToRenderPerBatch={HOME_LIST_WINDOW.maxToRenderPerBatch}
         windowSize={HOME_LIST_WINDOW.windowSize}
@@ -564,39 +542,64 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  searchSection: {
-    position: 'relative',
+  featuredPanditWrap: {
+    marginBottom: SECTION_GAP,
   },
-
-  floatingResults: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    backgroundColor: SURFACE,
-    borderRadius: 16,
-    borderWidth: 1.2,
-    borderColor: BLOG_CARD_BORDER,
-    maxHeight: 320,
-    overflow: 'hidden',
-    ...shadowElevated,
-    zIndex: 100,
-    elevation: 12,
+  featuredPanditEyebrow: {
+    ...Typography.caption,
+    color: GOLD,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+    textTransform: 'uppercase',
   },
-
-  floatingResultsScroll: {
-    maxHeight: 320,
-  },
-
-  searchLoadingRow: {
-    paddingVertical: 16,
+  featuredPanditCard: {
     alignItems: 'center',
+    backgroundColor: SURFACE,
+    borderColor: BLOG_CARD_BORDER,
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+    minHeight: 92,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    ...shadowElevated,
   },
-
-  noResultsText: {
-    padding: 14,
-    ...Typography.bodySm,
+  featuredPanditAvatar: {
+    alignItems: 'center',
+    backgroundColor: '#F7F1C8',
+    borderColor: BLOG_CARD_BORDER,
+    borderRadius: 30,
+    borderWidth: 1,
+    height: 58,
+    justifyContent: 'center',
+    overflow: 'hidden',
+    width: 58,
+  },
+  featuredPanditAvatarImage: {
+    height: '100%',
+    width: '100%',
+  },
+  featuredPanditCopy: {
+    flex: 1,
+    gap: 2,
+    minWidth: 0,
+  },
+  featuredPanditName: {
+    ...Typography.body,
     color: DEEP_GREY,
-    textAlign: 'center',
+    fontWeight: '800',
+  },
+  featuredPanditMeta: {
+    ...Typography.caption,
+    color: GREY_LABEL,
+  },
+  featuredPanditPrice: {
+    ...Typography.caption,
+    color: DEEP_GREY,
+    fontWeight: '700',
+    marginTop: 2,
   },
 
   guidanceHint: {
@@ -648,12 +651,8 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
 
-  latestLabel: {
-    ...Typography.bodySm,
-    fontWeight: '600',
-    color: DEEP_GREY,
-    marginBottom: 10,
-    marginTop: 4,
+  latestSection: {
+    marginTop: 32,
   },
 
   blogLoadingRow: {

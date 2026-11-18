@@ -106,10 +106,10 @@ async function mockConfiguredSocialProviders(page: import('@playwright/test').Pa
 test('homepage hero leads with value, two choices and a useful guide', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Find a calmer next step for the question on your mind.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Talk to a real Pandit about what’s on your mind.');
   await expect(page.locator('.hero-brand')).toHaveCount(0);
   await expect(page.locator('.hero-copy > .button')).toHaveCount(1);
-  await expect(page.locator('.hero-copy > .button')).toHaveText(/Explore Pandits/);
+  await expect(page.locator('.hero-copy > .button')).toHaveText(/Find a Pandit/);
   await expect(page.locator('.home-draft-note .text-link')).toHaveText(/Write a private draft/);
   await expect(page.locator('.hero-guide-card')).toBeVisible();
   await expect(page.locator('.hero-trust-list li')).toHaveCount(4);
@@ -121,11 +121,12 @@ test('homepage hero leads with value, two choices and a useful guide', async ({ 
 test('homepage explains the first-time visitor path in concrete language', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByText('Choose a topic, compare Pandit profiles, and see what feels right before deciding whether to talk.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Find guidance for love, marriage, career, family, or finances.', { exact: false })).toBeVisible();
+  await expect(page.getByText('Conversations are with real Pandits. Automated tools are separate and clearly labelled.', { exact: true })).toBeVisible();
   await expect(page.getByText('It stays in this browser, is not shared with a Pandit, and does not create a booking.', { exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Start with what feels closest.', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'See who you may speak with.', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Start with a reading or a tool.', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Find the right Pandit for your question.', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Compare Pandits before you book.', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Not ready to talk? Start with a free tool or article.', exact: true })).toBeVisible();
 });
 
 test('homepage points visitors to real booking paths without a waitlist detour', async ({ page }) => {
@@ -152,7 +153,7 @@ test('homepage does not look unfinished while the Pandit API is unavailable', as
   await page.goto('/');
   await expect(page.getByText('Finding Pandits…', { exact: true })).toHaveCount(0);
   await expect(page.locator('.expert-row-skeleton')).toHaveCount(0);
-  await expect(page.getByRole('link', { name: /Explore Pandit profiles/i })).toBeVisible();
+  await expect(page.locator('.pandit-preview-copy .button')).toBeVisible();
 });
 
 test('homepage enhancement remains decorative and motion-aware', async ({ page }) => {
@@ -334,13 +335,59 @@ test('a completed reading can be saved locally and restored on return', async ({
   await expect(page.getByText('Make room for a small useful step.', { exact: true })).toBeVisible();
 });
 
-test('sign-in leads with the private-space value before availability caveats', async ({ page }) => {
+test('sign-in explains account creation, consent, and the primary action', async ({ page }) => {
   await page.goto('/login');
 
-  await expect(page.getByRole('heading', { name: 'Sign in to your private space.', exact: true })).toBeVisible();
+  await expect(page.locator('.auth-page > .eyebrow')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Sign in or create your account.', exact: true })).toBeVisible();
+  await expect(page.getByText('Use your Indian mobile number to create a new account or sign in to your existing PanditTalk account.', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Indian mobile number (+91)')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Send code', exact: true })).toBeDisabled();
+  await expect(page.locator('.auth-legal-link')).toHaveCount(2);
+  await expect(page.locator('.auth-legal-link').first()).toHaveCSS('text-decoration-line', 'underline');
+  await expect(page.locator('.auth-legal-link').first().evaluate(node => Number.parseInt(getComputedStyle(node).fontWeight, 10))).resolves.toBeGreaterThanOrEqual(700);
+  await expect(page.locator('.auth-social-heading')).toHaveCSS('text-align', 'center');
   await expect(page.locator('.auth-availability')).toBeVisible();
   await expect(page.locator('.auth-availability').evaluate(node => node.compareDocumentPosition(document.querySelector('.auth-panel')!) & Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy();
+});
+
+test('login gives the phone form the strongest visual hierarchy', async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/login');
+    const bounds = await page.evaluate(() => {
+      const rect = (selector: string) => {
+        const node = document.querySelector<HTMLElement>(selector);
+        if (!node) throw new Error(`Missing ${selector}`);
+        const box = node.getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom, height: box.height };
+      };
+      return {
+        panel: rect('.auth-panel'),
+        phone: rect('input[name="phone"]'),
+        consent: rect('#auth-social-consent'),
+        primary: rect('.auth-panel form button[type="submit"]'),
+        social: rect('.auth-social-heading'),
+      };
+    });
+    expect(bounds.phone.bottom).toBeLessThan(bounds.social.top);
+    expect(bounds.consent.top).toBeGreaterThan(bounds.phone.bottom);
+    expect(bounds.primary.top).toBeGreaterThan(bounds.consent.bottom);
+    expect(bounds.social.top - bounds.primary.bottom).toBeGreaterThanOrEqual(20);
+    expect(bounds.panel.height).toBeLessThan(width === 390 ? 700 : 620);
+  }
+});
+
+test('social sign-in explains missing consent with an animated attention state', async ({ page }) => {
+  await mockConfiguredSocialProviders(page);
+  await page.goto('/login');
+
+  const google = page.getByRole('button', { name: 'Sign in with Google', exact: true });
+  await google.click();
+
+  await expect(page.locator('#auth-social-consent-toast')).toHaveText('Please confirm the checkbox above before continuing with Google.');
+  await expect(page.locator('#auth-social-consent')).toBeFocused();
+  await expect(google).toHaveClass(/auth-consent-attention/);
 });
 
 test('policy pages keep keyboard guidance out of the visible mobile reading flow', async ({ page }) => {
@@ -568,9 +615,12 @@ test('login keeps provider choices visible when browser sign-in is not configure
 
   await expect(page.getByRole('button', { name: 'Sign in with Apple', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Sign in with Apple', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).toBeDisabled();
-  await expect(page.getByText('Browser sign-in is not configured yet. Phone sign-in stays available.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sign in with Apple', exact: true })).not.toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Sign in with Google', exact: true })).not.toBeDisabled();
+  await expect(page.getByText('Google or Apple sign-in is not configured here yet. Phone sign-in is available.', { exact: true })).toBeVisible();
+  await page.locator('#auth-social-consent').check();
+  await page.getByRole('button', { name: 'Sign in with Google', exact: true }).click();
+  await expect(page.getByText('Google sign-in is not available on this website yet. You can use phone sign-in.', { exact: true })).toBeVisible();
 });
 
 test('login keeps provider buttons visually matched after consent', async ({ page }) => {

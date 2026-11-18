@@ -22,7 +22,7 @@ import {
   getPrivacyPolicyUrl,
   getTermsUrl,
 } from '../constants/legal';
-import { BrandHero, PremiumButton, SectionRule } from '../components/premium-auth-ui';
+import { BrandHero, PremiumButton } from '../components/premium-auth-ui';
 import { SocialAuthButtons } from '../components/SocialAuthButtons';
 import {
   applyAuthSession,
@@ -39,6 +39,7 @@ import { requestGoogleIdToken } from '../lib/googleAuth';
 import { formatCountdownMmSs, useCountdownSeconds } from '../hooks/useCountdownSeconds';
 import { useAuthStore } from '../store/useAuthStore';
 import { useToastStore } from '../store/useToastStore';
+import { Typography } from '../constants/Typography';
 
 const LOGO_MAIN = require('../assets/images/Homepageicons/Logomain.png');
 
@@ -208,16 +209,28 @@ export default function LoginScreen() {
         bottomInset={bottomInset}
         contentContainerStyle={[styles.scrollContent, { paddingTop: Math.max(insets.top, 20) }]}
       >
-          <View style={[styles.mainAboveFooter, { paddingTop: mainTopPad }]}>
+          <View
+            style={[
+              styles.mainAboveFooter,
+              keyboardVisible && styles.mainKeyboard,
+              { paddingTop: mainTopPad },
+            ]}
+          >
             <BrandHero
               logoSource={LOGO_MAIN}
-              subtitle="Guidance grounded in tradition, designed for calm"
+              subtitle="Talk to real Pandits online."
+              compact
             />
 
-            <SectionRule label="Sign in or continue" />
+            <View style={styles.authIntro}>
+              <Text style={styles.title}>Sign in or create your account.</Text>
+              <Text style={styles.subtitle}>
+                Use your Indian mobile number to create a new account or sign in to your existing PanditTalk account.
+              </Text>
+            </View>
 
             <View style={styles.formBlock}>
-              <Text style={styles.fieldLabel}>Mobile number</Text>
+              <Text style={styles.fieldLabel}>Indian mobile number (+91)</Text>
               <View style={styles.phoneCluster}>
                 <View style={styles.ccPill}>
                   <Text style={styles.ccText}>+91</Text>
@@ -225,7 +238,7 @@ export default function LoginScreen() {
                 </View>
                 <TextInput
                   style={styles.phoneField}
-                  placeholder="Enter mobile number"
+                  placeholder="98765 43210"
                   placeholderTextColor={GREY_LABEL}
                   keyboardType="phone-pad"
                   value={phoneLocal}
@@ -247,7 +260,7 @@ export default function LoginScreen() {
                   {legalAccepted ? <Text style={styles.checkboxMark}>✓</Text> : null}
                 </Pressable>
                 <Text style={styles.consentText}>
-                  {'I am 18+ and agree to the '}
+                  {'I am 18 or older and agree to the '}
                   <Text
                     style={styles.legalLink}
                     onPress={() => openLegalPage(getTermsUrl(), 'Terms & Conditions')}
@@ -274,7 +287,7 @@ export default function LoginScreen() {
                 title={
                   otpCooldownRemaining > 0
                     ? `Try again in ${formatCountdownMmSs(otpCooldownRemaining)}`
-                    : 'Get OTP'
+                    : 'Send code'
                 }
                 onPress={handleGetOtp}
                 disabled={!canRequestOtp}
@@ -289,7 +302,6 @@ export default function LoginScreen() {
             </View>
           </View>
 
-          <View style={styles.flexSpacer} />
       </KeyboardAwareScreen>
     </View>
   );
@@ -311,6 +323,31 @@ const styles = StyleSheet.create({
   mainAboveFooter: {
     width: '100%',
     alignSelf: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingBottom: 16,
+  },
+  mainKeyboard: {
+    justifyContent: 'flex-start',
+  },
+  authIntro: {
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  title: {
+    ...Typography.h2,
+    fontSize: 26,
+    lineHeight: 32,
+    textAlign: 'center',
+  },
+  subtitle: {
+    ...Typography.bodySm,
+    marginTop: 8,
+    color: MUTED_GREY,
+    textAlign: 'center',
   },
   formBlock: {
     width: '100%',
@@ -323,6 +360,7 @@ const styles = StyleSheet.create({
     color: MUTED_GREY,
     marginBottom: 10,
     letterSpacing: 0.2,
+    textAlign: 'center',
   },
   phoneCluster: {
     flexDirection: 'row',
@@ -366,6 +404,7 @@ const styles = StyleSheet.create({
   consentRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    justifyContent: 'center',
     gap: 12,
     marginTop: 18,
   },
@@ -396,11 +435,13 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     color: MUTED_GREY,
     fontWeight: '400',
+    textAlign: 'center',
   },
   legalLink: {
-    color: GREY_LABEL,
-    fontWeight: '600',
+    color: GOLD,
+    fontWeight: '700',
     textDecorationLine: 'underline',
+    textDecorationColor: GOLD,
   },
   errorText: {
     marginTop: 10,
@@ -409,10 +450,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   btnSpacer: {
-    height: 22,
-  },
-  flexSpacer: {
-    flexGrow: 1,
-    minHeight: 32,
+    height: 12,
   },
 });

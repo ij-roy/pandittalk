@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Animated, Easing, Platform, StyleSheet, Text, View } from 'react-native';
 
 import {
   CHIP_BORDER,
@@ -28,7 +28,27 @@ type Props = {
 };
 
 export function SocialAuthButtons({ onGoogle, onApple, disabled, dimmed }: Props) {
-  const lookDisabled = Boolean(disabled || dimmed);
+  const [attentionProvider, setAttentionProvider] = useState<'google' | 'apple' | null>(null);
+  const shake = useRef(new Animated.Value(0)).current;
+
+  const pressProvider = (provider: 'google' | 'apple', onPress?: () => void) => {
+    if (dimmed) {
+      setAttentionProvider(provider);
+      shake.stopAnimation();
+      shake.setValue(0);
+      Animated.sequence([
+        Animated.timing(shake, { toValue: -5, duration: 55, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+        Animated.timing(shake, { toValue: 5, duration: 55, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+        Animated.timing(shake, { toValue: -3, duration: 45, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+        Animated.timing(shake, { toValue: 0, duration: 45, easing: Easing.out(Easing.quad), useNativeDriver: true }),
+      ]).start(() => setAttentionProvider(null));
+    }
+    onPress?.();
+  };
+
+  const attentionStyle = (provider: 'google' | 'apple') => (
+    attentionProvider === provider ? { transform: [{ translateX: shake }] } : undefined
+  );
 
   return (
     <View style={styles.wrap}>
@@ -38,31 +58,37 @@ export function SocialAuthButtons({ onGoogle, onApple, disabled, dimmed }: Props
         <View style={styles.ruleLine} />
       </View>
 
-      <AnimatedPressable
-        onPress={onGoogle}
-        disabled={disabled}
-        style={[styles.btn, styles.google, lookDisabled && styles.disabled]}
-        accessibilityRole="button"
-        accessibilityLabel="Continue with Google"
-        accessibilityState={{ disabled: lookDisabled }}
-      >
-        <Ionicons name="logo-google" size={18} color={TEXT_PRIMARY_DARK} />
-        <Text style={styles.googleText}>Continue with Google</Text>
-      </AnimatedPressable>
-
       {Platform.OS === 'ios' ? (
-        <AnimatedPressable
-          onPress={onApple}
-          disabled={disabled}
-          style={[styles.btn, styles.apple, lookDisabled && styles.disabled]}
-          accessibilityRole="button"
-          accessibilityLabel="Continue with Apple"
-          accessibilityState={{ disabled: lookDisabled }}
-        >
-          <Ionicons name="logo-apple" size={20} color={WHITE} />
-          <Text style={styles.appleText}>Continue with Apple</Text>
-        </AnimatedPressable>
+        <Animated.View style={attentionStyle('apple')}>
+          <AnimatedPressable
+            onPress={() => pressProvider('apple', onApple)}
+            disabled={disabled}
+            style={[styles.btn, styles.apple, dimmed && styles.dimmed]}
+            accessibilityRole="button"
+            accessibilityLabel="Sign in with Apple"
+            accessibilityHint={dimmed ? 'Tap to see what is needed before social sign-in.' : undefined}
+            accessibilityState={{ disabled: Boolean(disabled) }}
+          >
+            <Ionicons name="logo-apple" size={20} color={WHITE} />
+            <Text style={styles.appleText}>Sign in with Apple</Text>
+          </AnimatedPressable>
+        </Animated.View>
       ) : null}
+
+      <Animated.View style={attentionStyle('google')}>
+        <AnimatedPressable
+          onPress={() => pressProvider('google', onGoogle)}
+          disabled={disabled}
+          style={[styles.btn, styles.google, dimmed && styles.dimmed]}
+          accessibilityRole="button"
+          accessibilityLabel="Sign in with Google"
+          accessibilityHint={dimmed ? 'Tap to see what is needed before social sign-in.' : undefined}
+          accessibilityState={{ disabled: Boolean(disabled) }}
+        >
+          <Ionicons name="logo-google" size={18} color={TEXT_PRIMARY_DARK} />
+          <Text style={styles.googleText}>Sign in with Google</Text>
+        </AnimatedPressable>
+      </Animated.View>
     </View>
   );
 }
@@ -120,7 +146,7 @@ const styles = StyleSheet.create({
     color: WHITE,
     letterSpacing: 0.2,
   },
-  disabled: {
-    opacity: 0.42,
+  dimmed: {
+    opacity: 0.8,
   },
 });

@@ -7,7 +7,7 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { SiteIcon } from './SiteIcon';
 import { availabilityCopy } from '@/content/availability';
 
-const links = [['/pandits', 'Pandits'], ['/guidance', 'Find guidance'], ['/tools', 'Tools'], ['/articles', 'Journal'], ['/our-approach', 'Our approach']] as const;
+const links = [['/pandits', 'Find a Pandit'], ['/guidance', 'Find guidance'], ['/tools', 'Tools'], ['/articles', 'Journal'], ['/our-approach', 'Our approach']] as const;
 const accountLinks = [['/home', 'My home'], ['/account', 'Account'], ['/bookings', 'Bookings'], ['/wallet', 'Wallet'], ['/notifications', 'Notifications'], ['/help', 'Help centre']] as const;
 
 export function SiteHeader() {

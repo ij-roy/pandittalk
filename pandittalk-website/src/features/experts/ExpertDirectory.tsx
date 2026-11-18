@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useApi } from '@/lib/api/client';
 import { LinkKeyboardGroup } from '@/components/site/LinkKeyboardGroup';
@@ -26,6 +27,7 @@ function LoadingRows({ count = 3 }: { count?: number }) {
 }
 
 export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
+  const searchParams = useSearchParams();
   const filtersId = useId();
   const searchId = `${filtersId}-search`;
   const areaId = `${filtersId}-area`;
@@ -34,7 +36,10 @@ export function ExpertDirectory({ compact = false }: { compact?: boolean }) {
   const resultsId = `${filtersId}-results`;
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [area, setArea] = useState('');
+  const [area, setArea] = useState(() => {
+    const requested = searchParams.get('area') || '';
+    return categories.some(([id]) => id === requested) ? requested : '';
+  });
   const [language, setLanguage] = useState('');
   const [sort, setSort] = useState('rating');
   const [filtersOpen, setFiltersOpen] = useState(false);

@@ -6,9 +6,7 @@ export const EXPERT_AREA_IDS = [
   'love_relationships',
   'finance_wealth',
   'marriage_family',
-  'legal_advice',
   'health_wellbeing',
-  'life_path',
   'spiritual_protection',
 ] as const;
 
@@ -24,6 +22,7 @@ export const BOOKING_AREA_IDS = [
   'health',
   'business',
   'finance',
+  'spiritual_protection',
 ] as const;
 
 export type BookingAreaId = (typeof BOOKING_AREA_IDS)[number];
