@@ -3,3 +3,4 @@ export * from './dto';
 export * from './interfaces';
 export * from './schemas';
 export * from './database';
+export * from './service-port';

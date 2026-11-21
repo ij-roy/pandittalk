@@ -7,6 +7,7 @@ import { join } from 'path';
 import { parseAllowedOrigins } from './config/cors-origins';
 import { RedisIoAdapter } from './redis/redis-io.adapter';
 import { UserServiceModule } from './user-service.module';
+import { resolveServicePort } from '@pandittalk/common';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(
@@ -74,7 +75,11 @@ async function bootstrap() {
     }),
   );
 
-  const port = Number(configService.get('USER_SERVICE_PORT', 3001));
+  const port = resolveServicePort(
+    configService.get<string>('PORT'),
+    configService.get<string>('USER_SERVICE_PORT'),
+    3001,
+  );
 
   await app.listen(port, '0.0.0.0');
   Logger.log(`user-service listening on 0.0.0.0:${port}`, 'Bootstrap');

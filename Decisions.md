@@ -116,3 +116,27 @@ Each entry should record:
 - Decision: Use Consult, Experts, Guidance, Tools, and Profile as the five primary destinations on both clients. Keep Wallet, Sessions, Reports, Notifications, Articles, and Settings in secondary account navigation. Remove the mobile menu search and duplicate Profile row, remove the website’s duplicate customer sub-navigation, and show the same five-item fixed navigation on the signed-in website at mobile widths.
 - Why: The previous structure repeated the same account destinations in the mobile drawer, website header, and website customer bar. That increased cognitive load and made the website feel like a different product. The mobile app already had the clearest service-first hierarchy, so it was used as the shared source of truth while preserving existing routes and public marketing links.
 - Impact: Signed-in navigation now has a single primary IA, consistent labels, responsive mobile parity, safe-area-aware website bottom navigation, and account utilities available through Profile/menu controls. Existing routes such as `/bookings`, `/account`, and `/articles` remain valid.
+
+## 2026-11-21 — Prefer Render's runtime port for backend services
+
+- Decision: Resolve each Nest service's listening port from the runtime `PORT` value first, then its service-specific environment variable (`USER_SERVICE_PORT` or `PANDIT_SERVICE_PORT`), and finally the existing local default.
+- Why: Render assigns the public web-service port at runtime, while local development still benefits from the existing 3001/3002 defaults. This keeps both deployment and local workflows working without hardcoding the hosting platform's port.
+- Impact: The user and Pandit service entrypoints bind to Render's assigned port when deployed, continue binding to their existing local ports when `PORT` is absent, and share a tested port-resolution helper in the common library.
+
+## 2026-11-21 — Keep shared production settings aligned across local env files
+
+- Decision: Keep `NODE_ENV=production` in the root runtime env and keep the shared production `ALLOWED_ORIGINS` list in the backend env as well as the root env.
+- Why: The root Compose runtime and the backend service load different env-file paths, so relying on only one file can silently omit production mode or CORS origins depending on how the service starts.
+- Impact: Both local runtime paths now have the non-secret shared settings; Render-specific `REDIS_URL`, `PORT`, and final `API_PUBLIC_URL` remain deployment-time values and are not guessed.
+
+## 2026-11-21 — Point the Cloudflare load balancer at the Render backend
+
+- Decision: Update the Cloudflare KV `backends_config` entry for the primary backend to `https://pandittalk.onrender.com`, while preserving the existing Kali origin as the secondary fallback.
+- Why: The backend is now deployed and healthy on Render, and the Cloudflare Worker remains the shared public API/WSS front door for the website, dashboard, and mobile app. Keeping the fallback preserves the existing load-balancer topology while routing production traffic to the new deployment.
+- Impact: Cloudflare's scheduled health check marks the Render origin healthy and the old Kali origin unavailable; the Worker routes through Render without changing client-facing Worker URLs.
+
+## 2026-11-21 — Use Supabase transaction pooling for Render Prisma connections
+
+- Decision: Keep Prisma migrations on `DIRECT_URL`, but normalize Supabase pooler `DATABASE_URL` at runtime to transaction mode on port 6543 with `connection_limit=1` and `pgbouncer=true`; set Render's runtime `DATABASE_URL` to the matching pooler parameters.
+- Why: The failed Render deployment hit Supabase session-mode capacity (`EMAXCONNSESSION`) while Prisma requested a larger dedicated-session pool. Transaction pooling with one Prisma connection fits the managed database limit without changing application behavior.
+- Impact: The Render deployment `dep-dc0q4d6c6qcc73f4cdk0` is live and its `/readiness` endpoint reports PostgreSQL, Redis, and MongoDB ready. Local non-Supabase database URLs remain unchanged.
